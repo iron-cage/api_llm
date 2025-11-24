@@ -308,7 +308,7 @@ mod private
   #[ derive( Debug, Serialize, Deserialize, Clone, PartialEq ) ]
   pub struct ModelIdsShared
   {
-    /// The model identifier string (e.g., "gpt-4o", "text-embedding-ada-002").
+    /// The model identifier string (e.g., "gpt-5.1-chat-latest", "text-embedding-ada-002").
     pub value : String,
   }
 
@@ -345,6 +345,7 @@ mod private
   /// - `/responses` (POST)
   /// - `ResponseProperties`
   #[ derive( Debug, Serialize, Deserialize, Clone, PartialEq ) ]
+  #[ serde( transparent ) ]
   pub struct ReasoningEffort
   {
     /// The reasoning effort level ("low", "medium", "high").

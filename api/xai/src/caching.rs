@@ -89,7 +89,7 @@ mod private
   /// let cached_client = CachedClient::new( client, 100 );
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "What is Rust?" ) ] )
   ///   .form();
   ///
@@ -213,7 +213,7 @@ mod private
     /// let cached_client = CachedClient::new( client, 100 );
     ///
     /// let request = ChatCompletionRequest::former()
-    ///   .model( "grok-3".to_string() )
+    ///   .model( "grok-2-1212".to_string() )
     ///   .messages( vec![ Message::user( "Hello!" ) ] )
     ///   .form();
     ///

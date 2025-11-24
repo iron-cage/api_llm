@@ -221,7 +221,7 @@ println!( "{}", "=".repeat( 80 ) );
 
   let response = timeout(
   Duration::from_secs( 45 ), // Search grounding may take longer
-  client.models().by_name( "gemini-2.0-flash-experimental" ).generate_content( &request )
+  client.models().by_name( "gemini-2.5-flash" ).generate_content( &request )
   ).await??;
 
   let duration = start_time.elapsed();
@@ -450,7 +450,7 @@ println!( "\n🧪 Test Query {} of {}", i + 1, test_queries.len() );
 
     match timeout(
     Duration::from_secs( 30 ),
-    client.models().by_name( "gemini-2.0-flash-experimental" ).generate_content( &request )
+    client.models().by_name( "gemini-2.5-flash" ).generate_content( &request )
     ).await {
       Ok( Ok( response ) ) => {
         let duration = start_time.elapsed();

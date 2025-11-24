@@ -39,7 +39,7 @@ async fn main() -> Result< (), OpenAIError >
   // 1. Create a long-running streaming response
   println!("Creating a streaming response that we can cancel...");
   let create_request = CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-3.5-turbo".to_string()))
+    .model(ModelIdsResponses::from("gpt-5-nano".to_string()))
     .input(ResponseInput::String("Write a very detailed, long story about a magical kingdom. Include many characters and plot twists.".to_string()))
     .max_output_tokens(2000)
     .stream(true)

@@ -49,12 +49,12 @@ Key principles:
 
 | Crate | Provider | Tests | Default Model |
 |-------|----------|-------|---------------|
-| [api_gemini](api/gemini/) | Google Gemini | 485 | gemini-1.5-pro-latest |
-| [api_openai](api/openai/) | OpenAI | 643 | gpt-4o |
-| [api_claude](api/claude/) | Anthropic Claude | 435 | claude-3-5-sonnet |
+| [api_gemini](api/gemini/) | Google Gemini | 485 | gemini-2.5-flash |
+| [api_openai](api/openai/) | OpenAI | 643 | gpt-5.1-chat-latest |
+| [api_claude](api/claude/) | Anthropic Claude | 435 | claude-sonnet-4-5-20250929 |
 | [api_ollama](api/ollama/) | Ollama (Local) | 378 | llama3.2 |
 | [api_huggingface](api/huggingface/) | HuggingFace | 534 | meta-llama/Llama-3.2-3B-Instruct |
-| [api_xai](api/xai/) | xAI Grok | 127 | grok-beta |
+| [api_xai](api/xai/) | xAI Grok | 127 | grok-2-1212 |
 
 ## Quick Start
 

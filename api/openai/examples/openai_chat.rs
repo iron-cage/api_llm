@@ -69,7 +69,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   // Create a simple conversation request with comprehensive configuration
   // Using the same question as the Gemini reference for consistency
   let request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-4o".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5.1-chat-latest".to_string() ) )
     .input( ResponseInput::String( "Hello! Can you explain what artificial intelligence is in simple terms?".to_string() ) )
     .temperature( 0.7 )
     .max_output_tokens( 1024 )

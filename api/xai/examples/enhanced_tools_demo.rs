@@ -80,7 +80,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   // Initial request asking for multiple pieces of information
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::user( "What's the weather in Tokyo, the current time in London, and Apple's stock price?" )
     ] )
@@ -194,7 +194,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       println!( "📤 Sending tool results to model...\n" );
 
       let followup_request = ChatCompletionRequest::former()
-        .model( "grok-3".to_string() )
+        .model( "grok-2-1212".to_string() )
         .messages( messages )
         .tools( vec![ weather_tool, time_tool, stock_tool ] )
         .form();

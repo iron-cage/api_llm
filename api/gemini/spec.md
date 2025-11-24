@@ -477,7 +477,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let response = client
         .models()
-        .by_name("gemini-2.0-flash-experimental")
+        .by_name("gemini-2.5-flash")
         .generate_content(&request)
         .await?;
 

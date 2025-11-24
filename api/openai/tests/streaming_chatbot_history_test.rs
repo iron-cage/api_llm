@@ -34,7 +34,7 @@ async fn test_conversation_history_preservation() -> Result< (), Box< dyn std::e
 
   // First interaction : set x=13
   let request1 = CreateResponseRequest::former()
-    .model("gpt-4o-mini".to_string())
+    .model("gpt-5-mini".to_string())
     .input(ResponseInput::String("x=13".to_string()))
     .instructions(system_instructions.clone())
     .stream(true);
@@ -68,7 +68,7 @@ async fn test_conversation_history_preservation() -> Result< (), Box< dyn std::e
 
   // Second interaction : ask for x*3 using previous_response_id for context
   let mut request2 = CreateResponseRequest::former()
-    .model("gpt-4o-mini".to_string())
+    .model("gpt-5-mini".to_string())
     .input(ResponseInput::String("Please calculate x times 3".to_string()))
     .instructions(system_instructions.clone())
     .stream(true);

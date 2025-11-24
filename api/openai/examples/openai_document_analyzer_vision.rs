@@ -80,7 +80,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
 
     // Create input with image
     let request = CreateResponseRequest::former()
-      .model("gpt-4o".to_string())
+      .model("gpt-5.1-chat-latest".to_string())
       .input(
         ResponseInput::Items(
           vec![
@@ -167,7 +167,7 @@ Please analyze this image and extract information in the following JSON format:
 "#;
 
   let structured_request = CreateResponseRequest::former()
-    .model("gpt-4o".to_string())
+    .model("gpt-5.1-chat-latest".to_string())
     .input(
       ResponseInput::Items(
         vec![

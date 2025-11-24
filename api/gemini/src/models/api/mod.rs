@@ -25,7 +25,7 @@
 /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
 /// let client = Client::new()?;
 /// let models_api = client.models();
-/// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+/// let model = models_api.by_name( "gemini-2.5-flash" );
 ///
 /// // Get model information
 /// let info = model.get().await?;

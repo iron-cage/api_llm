@@ -59,7 +59,7 @@ mod private
     /// Create a simple text request
     ///
     /// # Arguments
-    /// * `model` - The model identifier (e.g., "gpt-4", "gpt-3.5-turbo")
+    /// * `model` - The model identifier (e.g., "gpt-4", "gpt-5-nano")
     /// * `text` - The text input for the model
     ///
     /// # Returns

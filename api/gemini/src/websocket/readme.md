@@ -57,7 +57,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   // Create WebSocket stream for content generation
   let mut stream = client
     .models()
-    .by_name( "gemini-2.0-flash-experimental" )
+    .by_name( "gemini-2.5-flash" )
     .stream_generate_content_websocket( &request )
     .await?;
 

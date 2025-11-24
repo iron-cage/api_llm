@@ -36,7 +36,7 @@ async fn test_chat_completion_basic()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Say hello" ) ] )
     .max_tokens( 20u32 )
     .form();
@@ -81,7 +81,7 @@ async fn test_chat_completion_with_system_message()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::system( "You are a helpful assistant that speaks like a pirate" ),
       Message::user( "Say hello" ),
@@ -106,7 +106,7 @@ async fn test_chat_completion_with_temperature()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Count from 1 to 3" ) ] )
     .temperature( 0.2 ) // Low temperature for deterministic output
     .max_tokens( 20u32 )
@@ -129,7 +129,7 @@ async fn test_chat_completion_with_max_tokens()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Write a long story" ) ] )
     .max_tokens( 10u32 ) // Very limited
     .form();
@@ -163,7 +163,7 @@ async fn test_chat_completion_with_multiple_messages()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::user( "My name is Alice" ),
       Message::assistant( "Hello Alice! Nice to meet you." ),
@@ -192,7 +192,7 @@ async fn test_chat_completion_model_grok_beta()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Hello" ) ] )
     .max_tokens( 10u32 )
     .form();
@@ -240,7 +240,7 @@ async fn test_chat_completion_empty_message_handling()
 
   // XAI might accept empty messages unlike some other APIs
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "" ) ] )
     .max_tokens( 10u32 )
     .form();

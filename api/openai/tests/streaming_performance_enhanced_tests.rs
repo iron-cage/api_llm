@@ -441,7 +441,7 @@ async fn test_streaming_performance_real_api()
   let config = StreamingTestConfig::default();
 
   let request = CreateResponseRequest::former()
-    .model( "gpt-4o-mini".to_string() )
+    .model( "gpt-5-mini".to_string() )
     .input( ResponseInput::String( "Count from 1 to 10 slowly".to_string() ) )
     .stream( true )
     .form();
@@ -552,7 +552,7 @@ async fn test_concurrent_streaming_performance()
       let _permit = semaphore_clone.acquire().await.expect( "Failed to acquire permit" );
 
       let request = CreateResponseRequest::former()
-        .model( "gpt-4o-mini".to_string() )
+        .model( "gpt-5-mini".to_string() )
         .input( ResponseInput::String( format!( "Stream {} - say hello briefly", stream_id ) ) )
         .stream( true )
         .form();
@@ -653,7 +653,7 @@ async fn test_streaming_memory_efficiency()
 
   // Request a longer response to test memory efficiency
   let request = CreateResponseRequest::former()
-    .model( "gpt-4o-mini".to_string() )
+    .model( "gpt-5-mini".to_string() )
     .input( ResponseInput::String( "Write a short story about performance optimization".to_string() ) )
     .stream( true )
     .form();

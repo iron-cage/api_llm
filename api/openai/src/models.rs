@@ -199,7 +199,7 @@ mod private
       // For now, we'll use hardcoded values based on known model patterns
       match model_id
       {
-        id if id.starts_with( "gpt-4o" ) => Some( ModelPricing
+        id if id.starts_with( "gpt-5.1-chat-latest" ) => Some( ModelPricing
         {
           input_cost_per_1k_tokens : 0.005,
           output_cost_per_1k_tokens : 0.015,
@@ -236,7 +236,7 @@ mod private
     {
       match model_id
       {
-        id if id.starts_with( "gpt-4o" ) => ModelCapabilities
+        id if id.starts_with( "gpt-5.1-chat-latest" ) => ModelCapabilities
         {
           supports_function_calling : true,
           supports_vision : true,

@@ -42,7 +42,7 @@ async fn test_streaming_chat_completion_basic()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Count from 1 to 5" ) ] )
     .max_tokens( 50u32 )
     .form();
@@ -88,7 +88,7 @@ async fn test_streaming_with_system_message()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::system( "You are a helpful assistant that responds concisely" ),
       Message::user( "Say hello" ),
@@ -124,7 +124,7 @@ async fn test_streaming_finish_reason()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Say hi" ) ] )
     .max_tokens( 5u32 ) // Very limited to likely trigger "length" finish
     .form();
@@ -164,7 +164,7 @@ async fn test_streaming_role_in_first_chunk()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Hi" ) ] )
     .max_tokens( 10u32 )
     .form();
@@ -193,7 +193,7 @@ async fn test_streaming_collect_all_content()
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Write the word 'test' three times" ) ] )
     .max_tokens( 30u32 )
     .form();

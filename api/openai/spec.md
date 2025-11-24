@@ -554,7 +554,7 @@ cargo check --no-default-features
 Use `former` crate for request building:
 ```rust
 let request = CreateResponseRequest::former()
-  .model("gpt-4o".to_string())
+  .model("gpt-5.1-chat-latest".to_string())
   .input(ResponseInput::String("Hello".to_string()))
   .max_output_tokens(100)
   .form();

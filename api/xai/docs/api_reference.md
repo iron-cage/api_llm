@@ -62,7 +62,7 @@ https://api.x.ai/v1
 **Request Format:**
 ```json
 {
-  "model": "grok-beta",
+  "model": "grok-2-1212",
   "messages": [
     {
       "role": "system",
@@ -81,7 +81,7 @@ https://api.x.ai/v1
 ```
 
 **Key Parameters:**
-- `model` (required): Model identifier (e.g., "grok-beta", "grok-4")
+- `model` (required): Model identifier (e.g., "grok-2-1212", "grok-4")
 - `messages` (required): Array of message objects with `role` and `content`
 - `temperature` (optional): 0.0-2.0, controls randomness (0.2-0.4 for factual)
 - `max_tokens` (optional): Maximum tokens to generate
@@ -103,7 +103,7 @@ https://api.x.ai/v1
   "id": "chatcmpl-...",
   "object": "chat.completion",
   "created": 1234567890,
-  "model": "grok-beta",
+  "model": "grok-2-1212",
   "choices": [
     {
       "index": 0,
@@ -208,11 +208,11 @@ https://api.x.ai/v1
 
 **Response Format:**
 ```
-data: {"id":"chatcmpl-...","object":"chat.completion.chunk","created":...,"model":"grok-beta","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","created":...,"model":"grok-2-1212","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
 
-data: {"id":"chatcmpl-...","object":"chat.completion.chunk","created":...,"model":"grok-beta","choices":[{"index":0,"delta":{"content":" there"},"finish_reason":null}]}
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","created":...,"model":"grok-2-1212","choices":[{"index":0,"delta":{"content":" there"},"finish_reason":null}]}
 
-data: {"id":"chatcmpl-...","object":"chat.completion.chunk","created":...,"model":"grok-beta","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
+data: {"id":"chatcmpl-...","object":"chat.completion.chunk","created":...,"model":"grok-2-1212","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
 
 data: [DONE]
 ```
@@ -464,7 +464,7 @@ curl https://api.x.ai/v1/chat/completions \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "grok-beta",
+    "model": "grok-2-1212",
     "messages": [
       {"role": "user", "content": "What is the capital of France?"}
     ],
@@ -479,7 +479,7 @@ curl https://api.x.ai/v1/chat/completions \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "grok-beta",
+    "model": "grok-2-1212",
     "messages": [
       {"role": "user", "content": "Tell me a story"}
     ],
@@ -498,7 +498,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-  model="grok-beta",
+  model="grok-2-1212",
   messages=[
     { "role": "system", "content": "You are a helpful assistant." },
     { "role": "user", "content": "Hello!" }
@@ -512,7 +512,7 @@ print( response.choices[ 0 ].message.content )
 
 ```python
 stream = client.chat.completions.create(
-  model="grok-beta",
+  model="grok-2-1212",
   messages=[ { "role": "user", "content": "Count to 10" } ],
   stream=True
 )

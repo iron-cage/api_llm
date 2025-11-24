@@ -23,7 +23,7 @@ mod private
   //! let env = XaiEnvironmentImpl::new( secret )?;
   //! let client = Client::build( env )?;
   //! let request = ChatCompletionRequest::former()
-  //!   .model( "grok-3".to_string() )
+  //!   .model( "grok-2-1212".to_string() )
   //!   .messages( vec![ Message::user( "Hello!" ) ] )
   //!   .form();
   //! let response = rt.block_on( client.chat().create( request ) )?;
@@ -69,7 +69,7 @@ mod private
   /// let sync_client = SyncClient::new( client )?;
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///
@@ -167,7 +167,7 @@ mod private
     /// let sync_client = SyncClient::new( client )?;
     ///
     /// let request = ChatCompletionRequest::former()
-    ///   .model( "grok-3".to_string() )
+    ///   .model( "grok-2-1212".to_string() )
     ///   .messages( vec![ Message::user( "Hello!" ) ] )
     ///   .form();
     ///
@@ -211,7 +211,7 @@ mod private
     /// let sync_client = SyncClient::new( client )?;
     ///
     /// let request = ChatCompletionRequest::former()
-    ///   .model( "grok-3".to_string() )
+    ///   .model( "grok-2-1212".to_string() )
     ///   .messages( vec![ Message::user( "Hello!" ) ] )
     ///   .form();
     ///
@@ -312,7 +312,7 @@ mod private
     /// let client = Client::build( env )?;
     /// let sync_client = SyncClient::new( client )?;
     ///
-    /// let model = sync_client.get_model( "grok-3" )?;
+    /// let model = sync_client.get_model( "grok-2-1212" )?;
     /// println!( "Model : {}", model.id );
     /// # Ok( () )
     /// # }
@@ -391,7 +391,7 @@ mod private
   /// use api_xai::sync_count_tokens;
   ///
   /// # fn example() -> Result< (), Box< dyn std::error::Error > > {
-  /// let count = sync_count_tokens( "Hello, world!", "grok-3" )?;
+  /// let count = sync_count_tokens( "Hello, world!", "grok-2-1212" )?;
   /// println!( "Token count : {}", count );
   /// # Ok( () )
   /// # }
@@ -428,7 +428,7 @@ mod private
   ///
   /// # fn example() -> Result< (), Box< dyn std::error::Error > > {
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///
@@ -470,7 +470,7 @@ mod private
   ///
   /// # fn example() -> Result< (), Box< dyn std::error::Error > > {
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///

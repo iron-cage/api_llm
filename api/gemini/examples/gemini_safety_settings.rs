@@ -57,7 +57,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   let response_default = client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &request_default )
   .await?;
 
@@ -145,7 +145,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   let response_strict = client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &request_strict )
   .await?;
 
@@ -239,7 +239,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   let response_educational = client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &request_educational )
   .await?;
 

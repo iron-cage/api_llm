@@ -27,7 +27,7 @@ mod private
   /// let client = Client::build( env )?;
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///
@@ -81,7 +81,7 @@ mod private
     /// # let env = XaiEnvironmentImpl::new( secret )?;
     /// # let client = Client::build( env )?;
     /// let request = ChatCompletionRequest::former()
-    ///   .model( "grok-3".to_string() )
+    ///   .model( "grok-2-1212".to_string() )
     ///   .messages( vec![
     ///     Message::system( "You are a helpful assistant" ),
     ///     Message::user( "What is 2 + 2?" ),
@@ -142,7 +142,7 @@ mod private
     /// # let env = XaiEnvironmentImpl::new( secret )?;
     /// # let client = Client::build( env )?;
     /// let request = ChatCompletionRequest::former()
-    ///   .model( "grok-3".to_string() )
+    ///   .model( "grok-2-1212".to_string() )
     ///   .messages( vec![ Message::user( "Count to 5" ) ] )
     ///   .form();
     ///

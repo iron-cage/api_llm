@@ -566,7 +566,7 @@ mod tests
     let request = RequestMetadata
     {
       estimated_tokens : 50,
-      model : "gpt-3.5-turbo".to_string(),
+      model : "gpt-5-nano".to_string(),
       request_type : "chat".to_string(),
       priority : 5,
       user_id : Some( "user123".to_string() ),
@@ -583,7 +583,7 @@ mod tests
     let request = RequestMetadata
     {
       estimated_tokens : 50,
-      model : "gpt-3.5-turbo".to_string(),
+      model : "gpt-5-nano".to_string(),
       request_type : "chat".to_string(),
       priority : 5,
       user_id : Some( "user123".to_string() ),
@@ -609,7 +609,7 @@ mod tests
       let request = RequestMetadata
       {
         estimated_tokens : 50,
-        model : "gpt-3.5-turbo".to_string(),
+        model : "gpt-5-nano".to_string(),
         request_type : "chat".to_string(),
         priority : 5,
         user_id : Some( format!( "user{i}" ) ),

@@ -100,7 +100,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
 
     // Create a response
     let request = CreateResponseRequest::former()
-        .model("gpt-4o".to_string())
+        .model("gpt-5.1-chat-latest".to_string())
         .input(ResponseInput::String("Hello, world!".to_string()))
         .form();
 

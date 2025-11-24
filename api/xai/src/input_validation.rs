@@ -23,7 +23,7 @@ mod private
   //!
   //! ## What is Validated?
   //!
-  //! - **Model Names**: Only valid XAI models (grok-3, grok-beta, grok-2)
+  //! - **Model Names**: Only valid XAI models (grok-2-1212, grok-2-1212, grok-2)
   //! - **Messages**: Non-empty arrays, non-empty content
   //! - **Temperature**: Range [0.0, 2.0]
   //! - **Max Tokens**: Positive values within context window
@@ -79,7 +79,7 @@ mod private
   /// use api_xai::{ validate_request, ChatCompletionRequest, Message };
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .temperature( 0.7 )
   ///   .form();
@@ -88,7 +88,7 @@ mod private
   /// assert!( validate_request( &request ).is_ok() );
   ///
   /// let bad_request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .temperature( 3.0 ) // Invalid!
   ///   .form();
@@ -120,8 +120,8 @@ mod private
   ///
   /// # Valid Models
   ///
-  /// - `grok-3` - Latest Grok model
-  /// - `grok-beta` - Beta version
+  /// - `grok-2-1212` - Latest Grok model
+  /// - `grok-2-1212` - Beta version
   /// - `grok-2` - Previous version
   ///
   /// # Arguments
@@ -134,7 +134,7 @@ mod private
   #[ cfg( feature = "input_validation" ) ]
   pub fn validate_model( model : &str ) -> Result< () >
   {
-    const VALID_MODELS : &[ &str ] = &[ "grok-3", "grok-beta", "grok-2" ];
+    const VALID_MODELS : &[ &str ] = &[ "grok-2-1212", "grok-2-1212", "grok-2" ];
 
     if !VALID_MODELS.contains( &model )
     {

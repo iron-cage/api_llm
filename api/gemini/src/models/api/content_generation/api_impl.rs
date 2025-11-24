@@ -54,7 +54,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+/// let model = models_api.by_name( "gemini-2.5-flash" );
   /// 
   /// // Simple text generation
   /// let request = GenerateContentRequest {
@@ -280,7 +280,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "gemini-2.0-flash-exp" );
+  /// let model = models_api.by_name( "gemini-2.5-flash" );
   /// 
   /// let request = GenerateContentRequest {
   ///   contents : vec![ Content {
@@ -351,7 +351,7 @@ impl ModelApi< '_ >
   ///
   /// let mut stream = client
   ///   .models()
-  ///   .by_name( "gemini-2.0-flash-exp" )
+  ///   .by_name( "gemini-2.5-flash" )
   ///   .stream_builder()
   ///   .add_content( "user", "Tell me about Rust" )
   ///   .temperature( 0.7 )
@@ -437,7 +437,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+/// let model = models_api.by_name( "gemini-2.5-flash" );
   /// 
   /// let response = model.generate_text( "Explain quantum computing in simple terms" ).await?;
   /// println!( "Generated : {}", response );
@@ -497,7 +497,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+/// let model = models_api.by_name( "gemini-2.5-flash" );
   /// 
   /// // Generate creative response with high temperature
   /// let creative = model.generate_text_with_config(
@@ -581,7 +581,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+/// let model = models_api.by_name( "gemini-2.5-flash" );
   /// 
   /// // Start conversation
   /// let mut conversation = vec![];
@@ -680,7 +680,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+/// let model = models_api.by_name( "gemini-2.5-flash" );
   ///
   /// let response = model.generation_request()
   ///   .with_prompt( "Write a story about AI" )

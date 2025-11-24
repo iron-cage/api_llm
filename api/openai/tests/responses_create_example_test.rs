@@ -26,7 +26,7 @@ async fn test_responses_create_example_secret_loading()
 
   // Create request similar to the example
   let request = CreateResponseRequest::former()
-    .model( "gpt-4o-mini".to_string() )
+    .model( "gpt-5-mini".to_string() )
     .input( ResponseInput::String( "What is the capital of France?".to_string() ) )
     .form();
 

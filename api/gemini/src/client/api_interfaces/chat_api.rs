@@ -457,7 +457,7 @@ impl ChatApi< '_ >
     {
       client : self.client,
       messages : Vec::new(),
-      model : "gemini-2.0-flash-exp".to_string(), // Default model
+      model : "gemini-2.5-flash".to_string(), // Default model
       temperature : None,
       max_tokens : None,
       top_p : None,

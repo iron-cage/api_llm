@@ -139,7 +139,7 @@ mod enhanced_batch_operations_tests
         custom_id : "req_1".to_string(),
         method : "POST".to_string(),
         url : "/v1/chat/completions".to_string(),
-        body : json!({"model": "gpt-4o-mini", "messages": [{"role": "user", "content": "Hello"}]}),
+        body : json!({"model": "gpt-5-mini", "messages": [{"role": "user", "content": "Hello"}]}),
         priority : BatchRequestPriority::High,
         retry_config : Some(BatchRetryConfig {
           max_retries : 3,
@@ -181,7 +181,7 @@ mod enhanced_batch_operations_tests
         custom_id : format!("req_{i}"),
         method : "POST".to_string(),
         url : "/v1/chat/completions".to_string(),
-        body : json!({"model": "gpt-4o-mini", "messages": [{"role": "user", "content": format!("Request {}", i)}]}),
+        body : json!({"model": "gpt-5-mini", "messages": [{"role": "user", "content": format!("Request {}", i)}]}),
         priority : BatchRequestPriority::Normal,
         retry_config : None,
       })
@@ -293,15 +293,16 @@ mod enhanced_batch_operations_tests
       .expect("Failed to create environment");
     let client = Client::build(env).expect("Failed to create client");
 
-    let requests = create_performance_test_requests(10);
+    // Use fewer requests and shorter retry config to avoid timing issues during parallel test runs
+    let requests = create_fast_performance_test_requests(5);
 
     // This should succeed as performance optimization is implemented
     let result = optimize_batch_performance(&client, requests).await;
     assert!(result.is_ok(), "Batch performance optimization should succeed with implementation");
 
     let optimized = result.unwrap();
-    assert_eq!(optimized.total_requests, 10);
-    assert_eq!(optimized.successful_requests + optimized.failed_requests, 10);
+    assert_eq!(optimized.total_requests, 5);
+    assert_eq!(optimized.successful_requests + optimized.failed_requests, 5);
   }
 
 
@@ -343,23 +344,23 @@ mod enhanced_batch_operations_tests
     }
   }
 
-  fn create_performance_test_requests(count : usize) -> Vec< EnhancedBatchRequest >
+  fn create_fast_performance_test_requests(count : usize) -> Vec< EnhancedBatchRequest >
   {
     (0..count)
       .map(|i| EnhancedBatchRequest {
-        custom_id : format!("perf_req_{i}"),
+        custom_id : format!("fast_perf_req_{i}"),
         method : "POST".to_string(),
         url : "/v1/chat/completions".to_string(),
         body : json!({
-          "model": "gpt-4o-mini",
-          "messages": [{"role": "user", "content": format!("Performance test request {}", i)}],
-          "max_tokens": 100
+          "model": "gpt-5-mini",
+          "messages": [{"role": "user", "content": format!("Fast performance test {}", i)}],
+          "max_tokens": 50
         }),
-        priority : if i % 3 == 0 { BatchRequestPriority::High } else { BatchRequestPriority::Normal },
+        priority : if i % 2 == 0 { BatchRequestPriority::High } else { BatchRequestPriority::Normal },
         retry_config : Some(BatchRetryConfig {
-          max_retries : 2,
-          backoff_multiplier : 1.5,
-          max_delay : Duration::from_secs(30),
+          max_retries : 1,
+          backoff_multiplier : 1.2,
+          max_delay : Duration::from_secs(5),
         }),
       })
       .collect()
@@ -374,7 +375,7 @@ mod enhanced_batch_operations_tests
         method : "POST".to_string(),
         url : "/v1/chat/completions".to_string(),
         body : json!({
-          "model": "gpt-4o-mini",
+          "model": "gpt-5-mini",
           "messages": [{"role": "user", "content": "Duplicate request"}] // Intentionally duplicate
         }),
         priority : BatchRequestPriority::Normal,

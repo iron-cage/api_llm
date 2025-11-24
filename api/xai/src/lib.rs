@@ -128,7 +128,7 @@
 //!
 //! // Create a chat request using the Former builder
 //! let request = ChatCompletionRequest::former()
-//!   .model( "grok-3".to_string() )
+//!   .model( "grok-2-1212".to_string() )
 //!   .messages( vec![ Message::user( "Hello, Grok! How are you?" ) ] )
 //!   .form();
 //!

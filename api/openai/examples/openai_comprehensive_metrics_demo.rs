@@ -97,13 +97,13 @@ async fn main() -> Result< () >
 
   // Create test requests for metrics collection
   let request1 = CreateChatCompletionRequest::former()
-    .model( "gpt-3.5-turbo".to_string() )
+    .model( "gpt-5-nano".to_string() )
     .messages( vec![ api_openai::chat::Message::user( "What is performance monitoring?".to_string() ) ] )
     .max_tokens( 150 )
     .form();
 
   let request2 = CreateChatCompletionRequest::former()
-    .model( "gpt-3.5-turbo".to_string() )
+    .model( "gpt-5-nano".to_string() )
     .messages( vec![ api_openai::chat::Message::user( "Explain metrics collection in software systems".to_string() ) ] )
     .max_tokens( 200 )
     .form();

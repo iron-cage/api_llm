@@ -66,7 +66,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
     );
 
     let request = CreateResponseRequest::former()
-      .model("gpt-4o".to_string())
+      .model("gpt-5.1-chat-latest".to_string())
       .input(ResponseInput::String(research_prompt))
       .tools(vec![Tool::WebSearch(WebSearchTool::default())])
       .form();

@@ -35,7 +35,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg".to_string();
 
   let request = CreateResponseRequest::former()
-  .model( "gpt-4o".to_string() )
+  .model( "gpt-5.1-chat-latest".to_string() )
   .input
   (
     ResponseInput::Items

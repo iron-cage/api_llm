@@ -295,7 +295,7 @@ async fn test_tuning_job_creation()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -327,7 +327,7 @@ async fn test_tuning_job_status_update()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -358,7 +358,7 @@ async fn test_tuning_job_metrics_update()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -401,7 +401,7 @@ async fn test_tuning_job_checkpoint()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -442,7 +442,7 @@ async fn test_tuning_job_duration()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -489,7 +489,7 @@ async fn test_tuning_manager_create_job()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -523,7 +523,7 @@ async fn test_tuning_manager_get_job()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -555,7 +555,7 @@ async fn test_tuning_manager_list_jobs()
   let config1 = TuningJobConfig
   {
     job_name : "job1".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train1.jsonl".to_string(),
@@ -616,7 +616,7 @@ async fn test_tuning_manager_update_status()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -654,7 +654,7 @@ async fn test_tuning_manager_cancel_job()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -691,7 +691,7 @@ async fn test_tuning_manager_delete_job()
   let config = TuningJobConfig
   {
     job_name : "test_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -733,7 +733,7 @@ async fn test_config_validation_success()
   let config = TuningJobConfig
   {
     job_name : "valid_job".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -800,7 +800,7 @@ async fn test_training_time_estimation()
   let config = TuningJobConfig
   {
     job_name : "estimation_test".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -834,7 +834,7 @@ async fn test_training_cost_estimation()
   let config = TuningJobConfig
   {
     job_name : "cost_test".to_string(),
-    base_model : "gpt-3.5-turbo".to_string(),
+    base_model : "gpt-5-nano".to_string(),
     training_data : TrainingDataConfig
     {
       training_file : "train.jsonl".to_string(),
@@ -906,7 +906,7 @@ async fn test_tuning_stats()
     let config = TuningJobConfig
     {
       job_name : format!( "job_{}", i ),
-      base_model : "gpt-3.5-turbo".to_string(),
+      base_model : "gpt-5-nano".to_string(),
       training_data : TrainingDataConfig
       {
         training_file : "train.jsonl".to_string(),

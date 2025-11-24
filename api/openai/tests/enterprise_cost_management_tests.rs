@@ -138,7 +138,7 @@ async fn test_usage_breakdown_structure()
 
   // Add model usage
   breakdown.model_usage.insert( "gpt-4".to_string(), 15.0 );
-  breakdown.model_usage.insert( "gpt-3.5-turbo".to_string(), 5.0 );
+  breakdown.model_usage.insert( "gpt-5-nano".to_string(), 5.0 );
 
   assert_eq!( breakdown.time_usage.len(), 1 );
   assert_eq!( breakdown.token_usage.len(), 1 );

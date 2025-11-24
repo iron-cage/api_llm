@@ -88,7 +88,7 @@ async fn main() -> Result< () >
 
   // Create a test chat completion request
   let request = CreateChatCompletionRequest::former()
-    .model( "gpt-3.5-turbo".to_string() )
+    .model( "gpt-5-nano".to_string() )
     .messages( vec![ api_openai::chat::Message::user( "Explain circuit breaker pattern in 2 sentences".to_string() ) ] )
     .max_tokens( 100 )
     .form();

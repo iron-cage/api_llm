@@ -95,7 +95,7 @@ impl UserData
   println!("```\n");
 
   let request = CreateResponseRequest::former()
-    .model("gpt-4o".to_string())
+    .model("gpt-5.1-chat-latest".to_string())
     .input(ResponseInput::String(review_prompt))
     .form();
 

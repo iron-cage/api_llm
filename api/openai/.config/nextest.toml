@@ -1,0 +1,43 @@
+# Nextest configuration for api_openai
+# This configuration provides automatic retry logic for tests that fail due to
+# transient issues like API rate limits, network timeouts, etc.
+
+[profile.default]
+# Retry failed tests automatically to handle transient API failures
+retries = 3
+backoff = "exponential"
+delay = "1s"
+max-delay = "20s"
+jitter = true
+
+# Limit parallel test execution to avoid overwhelming API rate limits
+# Default would use all CPU cores, but API tests need rate limit consideration
+# Using 4 threads balances speed vs API rate limits (2 threads was worse at 70%)
+test-threads = 4
+
+# Do not fail fast - run all tests even if some fail
+fail-fast = false
+
+[profile.ci]
+# More aggressive retries for CI environment
+retries = 5
+backoff = "exponential"
+delay = "2s"
+max-delay = "30s"
+jitter = true
+
+# Fail fast on the first test failure in CI to save time
+fail-fast = true
+
+[[profile.default.overrides]]
+# Integration tests that make real API calls get more retries and much longer delays
+# These tests hit real OpenAI API which has strict rate limits during parallel execution
+filter = 'test(integration) or test(sync_api) or test(embedding)'
+retries = 10
+delay = "5s"
+max-delay = "120s"
+
+[[profile.default.overrides]]
+# Performance tests should not be retried as they measure timing
+filter = 'test(performance) or test(benchmark)'
+retries = 0

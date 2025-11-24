@@ -166,7 +166,7 @@ mod private
   ///
   /// # Required Fields
   ///
-  /// - `model`: Model ID (e.g., "grok-3")
+  /// - `model`: Model ID (e.g., "grok-2-1212")
   /// - `messages`: Conversation messages
   ///
   /// # Optional Fields
@@ -185,7 +185,7 @@ mod private
   /// use api_xai::{ ChatCompletionRequest, Message };
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .temperature( 0.7 )
   ///   .max_tokens( 100u32 )
@@ -194,7 +194,7 @@ mod private
   #[ derive( Debug, Serialize, Deserialize, Clone, PartialEq, Former ) ]
   pub struct ChatCompletionRequest
   {
-    /// Model ID (e.g., "grok-3", "grok-4").
+    /// Model ID (e.g., "grok-2-1212", "grok-4").
     pub model : String,
 
     /// Conversation messages.

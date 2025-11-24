@@ -127,7 +127,7 @@ fn test_sync_stream_iterator_structure()
   // Create a basic chat request
   let _request = ChatCompletionRequest
   {
-    model : "gpt-3.5-turbo".to_string(),
+    model : "gpt-5-nano".to_string(),
     messages : vec![],
     temperature : None,
     top_p : None,
@@ -289,7 +289,7 @@ fn test_sync_chat_streaming_method_signatures()
   // Create a basic request
   let _request = ChatCompletionRequest
   {
-    model : "gpt-3.5-turbo".to_string(),
+    model : "gpt-5-nano".to_string(),
     messages : vec![],
     temperature : None,
     top_p : None,

@@ -136,11 +136,11 @@ fn test_sync_chat_api()
 
   let request = ChatCompletionRequest
   {
-    model : "gpt-3.5-turbo".to_string(),
+    model : "gpt-5-nano".to_string(),
     messages : vec![ message ],
-    temperature : Some( 0.7 ),
+    temperature : None,
     top_p : Some( 1.0 ),
-    max_tokens : Some( 100 ),
+    max_tokens : None,
     n : Some( 1 ),
     stop : None,
     stream : Some( false ),

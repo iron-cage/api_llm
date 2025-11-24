@@ -39,7 +39,7 @@ async fn main() -> Result< (), OpenAIError >
   // 1. First create a response
   println!("Creating a response...");
   let create_request = CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-3.5-turbo".to_string()))
+    .model(ModelIdsResponses::from("gpt-5-nano".to_string()))
     .input(ResponseInput::String("Tell me a short joke.".to_string()))
     .max_output_tokens(100)
     .form();

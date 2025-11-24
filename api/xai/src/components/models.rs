@@ -17,7 +17,7 @@ mod private
   #[ derive( Debug, Serialize, Deserialize, Clone, PartialEq ) ]
   pub struct Model
   {
-    /// Unique model identifier (e.g., "grok-3", "grok-4").
+    /// Unique model identifier (e.g., "grok-2-1212", "grok-4").
     pub id : String,
 
     /// Object type (always "model").

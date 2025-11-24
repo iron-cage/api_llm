@@ -138,7 +138,7 @@ async fn test_sse_parsing_api_compatibility()
   // Verify that ChatCompletionRequest can still be created
   let request = ChatCompletionRequest
   {
-    model : "gpt-4o-mini".to_string(),
+    model : "gpt-5-mini".to_string(),
     messages : vec![],
     stream : Some( true ),
     max_tokens : Some( 100 ),

@@ -102,7 +102,7 @@ println!( "{}", serde_json::to_string_pretty( &request )? );
   // Generate content using the Gemini model
   let response = client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &request )
   .await?;
 

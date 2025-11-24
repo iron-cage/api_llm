@@ -48,7 +48,7 @@ fn create_request_simple_string_input()
   let json_string = json_result.unwrap();
 
   // Check for required fields instead of exact JSON match to handle field order and extra fields
-  assert!( json_string.contains( r#""model": "gpt-4o""# ), "Model field should be gpt-4o" );
+  assert!( json_string.contains( r#""model": "gpt-5.1-chat-latest""# ), "Model field should be gpt-4o" );
   assert!( json_string.contains( r#""input": "Hello!""# ), "Input field should be Hello!" );
 }
 
@@ -68,7 +68,7 @@ fn create_request_with_optional_params()
   assert!( json_result.is_ok(), "Serialization failed" );
   let json_string = json_result.unwrap();
 
-  assert!( json_string.contains( r#""model": "gpt-4o-mini""# ) ); // Check for direct string
+  assert!( json_string.contains( r#""model": "gpt-5-mini""# ) ); // Check for direct string
   assert!( json_string.contains( r#""input": "Write a poem.""# ) );
   assert!( json_string.contains( r#""temperature": 0.8"# ) );
   assert!( json_string.contains( r#""top_p": 0.9"# ) );
@@ -89,7 +89,7 @@ fn create_request_item_input()
   let json_string = json_result.unwrap();
 
   // Check for required fields instead of exact JSON match to handle field order and extra fields
-  assert!( json_string.contains( r#""model": "gpt-4o""# ), "Model field should be gpt-4o" );
+  assert!( json_string.contains( r#""model": "gpt-5.1-chat-latest""# ), "Model field should be gpt-4o" );
   assert!( json_string.contains( r#""type": "message""# ), "Should contain message type" );
   assert!( json_string.contains( r#""role": "user""# ), "Should contain user role" );
   assert!( json_string.contains( r#""type": "input_text""# ), "Should contain input_text type" );
@@ -115,7 +115,7 @@ fn create_request_with_metadata()
   assert!( json_string.contains( r#""metadata":"# ) );
   assert!( json_string.contains( r#""user_id": "abc-123""# ) );
   assert!( json_string.contains( r#""session_id": "xyz-789""# ) );
-  assert!( json_string.contains( r#""model": "gpt-4o""# ) ); // Check for direct string
+  assert!( json_string.contains( r#""model": "gpt-5.1-chat-latest""# ) ); // Check for direct string
   assert!( json_string.contains( r#""input": "Hello with metadata!""# ) );
   assert!( !json_string.contains( r#""temperature":"# ) );
   assert!( !json_string.contains( r#""store":"# ) );
@@ -134,7 +134,7 @@ fn create_request_multiple_messages()
   println!( "Serialized JSON with Multiple Messages:\n{json_string}" );
 
   assert!( json_string.starts_with( '{' ) );
-  assert!( json_string.contains( r#""model": "gpt-4o""# ) ); // Check for direct string
+  assert!( json_string.contains( r#""model": "gpt-5.1-chat-latest""# ) ); // Check for direct string
   assert!( json_string.contains( r#""input": ["# ) );
   assert!( json_string.contains( r#""role": "user""# ) );
   assert!( json_string.contains( r#""role": "assistant""# ) );
@@ -164,7 +164,7 @@ fn create_request_with_file_search_tool()
 
   println!( "Serialized JSON with File Search Tool:\n{json_string}" );
 
-  assert!( json_string.contains( r#""model": "gpt-4o""# ) ); // Check for direct string
+  assert!( json_string.contains( r#""model": "gpt-5.1-chat-latest""# ) ); // Check for direct string
   assert!( json_string.contains( r#""input": "Search my files for info on project X.""# ) );
   assert!( json_string.contains( r#""tools": ["# ) );
   assert!( json_string.contains( r#""type": "file_search""# ) );
@@ -184,7 +184,7 @@ fn create_request_with_web_search_tool()
 
   println!( "Serialized JSON with Web Search Tool:\n{json_string}" );
 
-  assert!( json_string.contains( r#""model": "gpt-4o""# ) ); // Check for direct string
+  assert!( json_string.contains( r#""model": "gpt-5.1-chat-latest""# ) ); // Check for direct string
   assert!( json_string.contains( r#""input": "What's the latest news?""# ) );
   assert!( json_string.contains( r#""tools": ["# ) );
   assert!( json_string.contains( r#""type": "web_search_preview""# ) );
@@ -277,7 +277,7 @@ fn create_request_with_image_input()
 
   println!( "Serialized JSON with Image Input:\n{json_string}" );
 
-  assert!( json_string.contains( r#""model": "gpt-4o""# ) ); // Check for direct string
+  assert!( json_string.contains( r#""model": "gpt-5.1-chat-latest""# ) ); // Check for direct string
   assert!( json_string.contains( r#""input": ["# ) );
   assert!( json_string.contains( r#""role": "user""# ) );
   assert!( json_string.contains( r#""content": ["# ) );

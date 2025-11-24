@@ -46,8 +46,8 @@ mod private
   //!
   //! Example of correct syntax:
   //! ```rust,ignore
-  //! log_request!( "POST", "/chat", Some("grok-3") );  // Correct
-  //! log_request( "POST", "/chat", Some("grok-3") );   // Wrong - won't compile
+  //! log_request!( "POST", "/chat", Some("grok-2-1212") );  // Correct
+  //! log_request( "POST", "/chat", Some("grok-2-1212") );   // Wrong - won't compile
   //! ```
 
   /// Logs an API request.
@@ -67,7 +67,7 @@ mod private
   /// # {
   /// use api_xai::log_request;
   ///
-  /// log_request!( "POST", "/chat/completions", Some( "grok-3" ) );
+  /// log_request!( "POST", "/chat/completions", Some( "grok-2-1212" ) );
   /// # }
   /// ```
   #[ macro_export ]
@@ -328,7 +328,7 @@ mod private
   /// # {
   /// use api_xai::create_operation_span;
   ///
-  /// let span = create_operation_span( "chat_completion", Some( "grok-3" ) );
+  /// let span = create_operation_span( "chat_completion", Some( "grok-2-1212" ) );
   /// let _guard = span.enter();
   /// // Your operation here
   /// # }

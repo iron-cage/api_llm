@@ -234,7 +234,7 @@ async fn cancel_response()
   // REAL API ONLY
   // Create a long-running response that we can cancel
   let cancel_request = CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-3.5-turbo".to_string()))
+    .model(ModelIdsResponses::from("gpt-5-nano".to_string()))
     .input(ResponseInput::String("Write a very long story about artificial intelligence, make it at least 500 words.".to_string()))
     .max_output_tokens(1000)
     .form();

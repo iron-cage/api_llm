@@ -107,7 +107,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   /*
   let response = client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &request )
   .await?;
 
@@ -227,7 +227,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   /*
   let multi_response = client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &multi_image_request )
   .await?;
 
@@ -311,7 +311,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   /*
   let structured_response = client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &structured_request )
   .await?;
 

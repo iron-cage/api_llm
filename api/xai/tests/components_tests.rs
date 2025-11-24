@@ -54,7 +54,7 @@ fn message_tool_constructor_works()
 fn chat_request_serializes_correctly()
 {
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Test" ) ] )
     .temperature( 0.7 )
     .max_tokens( 100u32 )
@@ -62,7 +62,7 @@ fn chat_request_serializes_correctly()
 
   let json = serde_json::to_value( &request ).unwrap();
 
-  assert_eq!( json[ "model" ], "grok-3" );
+  assert_eq!( json[ "model" ], "grok-2-1212" );
   assert!( ( json[ "temperature" ].as_f64().unwrap() - 0.7 ).abs() < 0.0001 );
   assert_eq!( json[ "max_tokens" ], 100 );
   assert!( json[ "messages" ].is_array() );
@@ -72,7 +72,7 @@ fn chat_request_serializes_correctly()
 fn chat_request_omits_none_fields()
 {
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Test" ) ] )
     .form();
 
@@ -88,7 +88,7 @@ fn chat_request_omits_none_fields()
 fn chat_request_includes_some_fields()
 {
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Test" ) ] )
     .temperature( 0.5 )
     .form();
@@ -195,7 +195,7 @@ fn usage_deserializes_correctly()
 fn model_deserializes_correctly()
 {
   let json = r#"{
-    "id": "grok-3",
+    "id": "grok-2-1212",
     "object": "model",
     "created": 1234567890,
     "owned_by": "xai"
@@ -203,7 +203,7 @@ fn model_deserializes_correctly()
 
   let model : Model = serde_json::from_str( json ).unwrap();
 
-  assert_eq!( model.id, "grok-3" );
+  assert_eq!( model.id, "grok-2-1212" );
   assert_eq!( model.object, "model" );
   assert_eq!( model.created, 1_234_567_890 );
   assert_eq!( model.owned_by, "xai" );
@@ -216,7 +216,7 @@ fn list_models_response_deserializes_correctly()
     "object": "list",
     "data": [
       {
-        "id": "grok-3",
+        "id": "grok-2-1212",
         "object": "model",
         "created": 1234567890,
         "owned_by": "xai"
@@ -234,7 +234,7 @@ fn list_models_response_deserializes_correctly()
 
   assert_eq!( response.object, "list" );
   assert_eq!( response.data.len(), 2 );
-  assert_eq!( response.data[ 0 ].id, "grok-3" );
+  assert_eq!( response.data[ 0 ].id, "grok-2-1212" );
   assert_eq!( response.data[ 1 ].id, "grok-4" );
 }
 
@@ -265,7 +265,7 @@ fn message_with_some_content_includes_field()
 fn chat_request_clone_works()
 {
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Test" ) ] )
     .form();
 

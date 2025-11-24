@@ -58,7 +58,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
     // Create request with full conversation history
     let request = ChatCompletionRequest::former()
-      .model( "grok-3".to_string() )
+      .model( "grok-2-1212".to_string() )
       .messages( messages.clone() )
       .max_tokens( 500u32 )
       .form();

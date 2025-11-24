@@ -49,12 +49,12 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
     println!( "===================" );
 
     let text = "Hello, how are you today?";
-    let token_count = count_tokens( text, "grok-3" )?;
+    let token_count = count_tokens( text, "grok-2-1212" )?;
     println!( "   Text : \"{text}\"" );
     println!( "   Tokens : {token_count}\n" );
 
     let request = ChatCompletionRequest::former()
-      .model( "grok-3".to_string() )
+      .model( "grok-2-1212".to_string() )
       .messages( vec![ Message::user( "What is the meaning of life?" ) ] )
       .form();
 
@@ -73,7 +73,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
     println!( "======================" );
 
     let request = ChatCompletionRequest::former()
-      .model( "grok-3".to_string() )
+      .model( "grok-2-1212".to_string() )
       .messages( vec![ Message::user( "Hello!" ) ] )
       .temperature( 0.7 )
       .max_tokens( 100_u32 )
@@ -87,7 +87,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
     // Try invalid temperature
     let bad_request = ChatCompletionRequest::former()
-      .model( "grok-3".to_string() )
+      .model( "grok-2-1212".to_string() )
       .messages( vec![ Message::user( "Hello!" ) ] )
       .temperature( 3.0 )  // Invalid!
       .form();
@@ -106,7 +106,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
     println!( "======================" );
 
     let request = ChatCompletionRequest::former()
-      .model( "grok-3".to_string() )
+      .model( "grok-2-1212".to_string() )
       .messages( vec![ Message::user( "Debug this!" ) ] )
       .temperature( 0.5 )
       .form();
@@ -125,7 +125,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
     let cached_client = CachedClient::new( client.clone(), 10 );
 
     let request = ChatCompletionRequest::former()
-      .model( "grok-3".to_string() )
+      .model( "grok-2-1212".to_string() )
       .messages( vec![ Message::user( "What is 2+2?" ) ] )
       .max_tokens( 10_u32 )
       .form();
@@ -155,17 +155,17 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
     let requests = vec!
     [
       ChatCompletionRequest::former()
-        .model( "grok-3".to_string() )
+        .model( "grok-2-1212".to_string() )
         .messages( vec![ Message::user( "What is 1+1?" ) ] )
         .max_tokens( 5_u32 )
         .form(),
       ChatCompletionRequest::former()
-        .model( "grok-3".to_string() )
+        .model( "grok-2-1212".to_string() )
         .messages( vec![ Message::user( "What is 2+2?" ) ] )
         .max_tokens( 5_u32 )
         .form(),
       ChatCompletionRequest::former()
-        .model( "grok-3".to_string() )
+        .model( "grok-2-1212".to_string() )
         .messages( vec![ Message::user( "What is 3+3?" ) ] )
         .max_tokens( 5_u32 )
         .form(),

@@ -75,7 +75,7 @@ Authorization: Bearer xai-...
 
 ```json
 {
-  "model": "grok-beta",
+  "model": "grok-2-1212",
   "messages": [
     { "role": "system", "content": "..." },
     { "role": "user", "content": "..." }
@@ -167,7 +167,7 @@ data: [DONE]
 Based on research, recommended defaults:
 
 ```rust
-pub const DEFAULT_MODEL : &str = "grok-beta";
+pub const DEFAULT_MODEL : &str = "grok-2-1212";
 pub const DEFAULT_BASE_URL : &str = "https://api.x.ai/v1";
 pub const DEFAULT_TIMEOUT_SECS : u64 = 30;
 pub const DEFAULT_MAX_TOKENS : u32 = 1000;
@@ -201,7 +201,7 @@ Given OpenAI compatibility:
 curl https://api.x.ai/v1/chat/completions \
   -H "Authorization: Bearer $XAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"model":"grok-beta","messages":[{"role":"user","content":"Hi"}]}'
+  -d '{"model":"grok-2-1212","messages":[{"role":"user","content":"Hi"}]}'
 ```
 
 ### With OpenAI Python SDK
@@ -215,7 +215,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-  model="grok-beta",
+  model="grok-2-1212",
   messages=[{"role":"user","content":"Hello"}]
 )
 ```

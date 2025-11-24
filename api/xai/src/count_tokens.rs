@@ -27,8 +27,8 @@ mod private
   //! ## Model Mapping
   //!
   //! XAI's Grok models use GPT-4 tokenization:
-  //! - `grok-3` → uses `cl100k_base` encoding (same as GPT-4)
-  //! - `grok-beta` → uses `cl100k_base` encoding
+  //! - `grok-2-1212` → uses `cl100k_base` encoding (same as GPT-4)
+  //! - `grok-2-1212` → uses `cl100k_base` encoding
   //!
   //! This mapping may need updates as XAI releases new models.
 
@@ -45,7 +45,7 @@ mod private
   /// # Arguments
   ///
   /// * `text` - The text to count tokens for
-  /// * `model` - The model name (e.g., "grok-3", "grok-beta")
+  /// * `model` - The model name (e.g., "grok-2-1212", "grok-2-1212")
   ///
   /// # Returns
   ///
@@ -63,7 +63,7 @@ mod private
   /// use api_xai::count_tokens::count_tokens;
   ///
   /// # fn example() -> Result< (), Box< dyn std::error::Error > > {
-  /// let count = count_tokens( "Hello, world!", "grok-3" )?;
+  /// let count = count_tokens( "Hello, world!", "grok-2-1212" )?;
   /// println!( "Token count : {}", count );
   /// # Ok( () )
   /// # }
@@ -103,7 +103,7 @@ mod private
   ///
   /// # fn example() -> Result< (), Box< dyn std::error::Error > > {
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///
@@ -209,7 +209,7 @@ mod private
     // XAI Grok models use GPT-4's tokenization (cl100k_base)
     match model
     {
-      "grok-3" | "grok-beta" | "grok-2" =>
+      "grok-2-1212" | "grok-2" =>
       {
         // Map to gpt-4 for tiktoken
         get_bpe_from_model( "gpt-4" )
@@ -246,7 +246,7 @@ mod private
   ///
   /// # fn example() -> Result< (), Box< dyn std::error::Error > > {
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///

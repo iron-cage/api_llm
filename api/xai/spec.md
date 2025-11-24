@@ -500,10 +500,10 @@ for result in results
 use api_xai::{ log_request, log_response, log_error, create_operation_span };
 
 // Log API request
-log_request!( "POST", "/chat/completions", Some( "grok-3" ) );
+log_request!( "POST", "/chat/completions", Some( "grok-2-1212" ) );
 
 // Create span for operation tracking
-let span = create_operation_span( "chat_completion", Some( "grok-3" ) );
+let span = create_operation_span( "chat_completion", Some( "grok-2-1212" ) );
 let _guard = span.enter();
 
 // Log response with timing
@@ -545,11 +545,11 @@ log_failover!( "https://api.x.ai/v1/", "https://backup.x.ai/v1/", "Primary unhea
 use api_xai::{ count_tokens, count_tokens_for_request, validate_request_size };
 
 // Count tokens in text
-let count = count_tokens( "Hello, world!", "grok-3" )?;
+let count = count_tokens( "Hello, world!", "grok-2-1212" )?;
 
 // Count tokens in full request
 let request = ChatCompletionRequest::former()
-  .model( "grok-3".to_string() )
+  .model( "grok-2-1212".to_string() )
   .messages( vec![ Message::user( "Hello!" ) ] )
   .form();
 
@@ -588,7 +588,7 @@ let client = Client::build( env )?;
 let cached_client = CachedClient::new( client, 100 ); // Cache 100 responses
 
 let request = ChatCompletionRequest::former()
-  .model( "grok-3".to_string() )
+  .model( "grok-2-1212".to_string() )
   .messages( vec![ Message::user( "Hello!" ) ] )
   .form();
 
@@ -626,7 +626,7 @@ let response2 = cached_client.cached_create( request ).await?;
 use api_xai::{ validate_request, ChatCompletionRequest, Message };
 
 let request = ChatCompletionRequest::former()
-  .model( "grok-3".to_string() )
+  .model( "grok-2-1212".to_string() )
   .messages( vec![ Message::user( "Hello!" ) ] )
   .temperature( Some( 0.7 ) )
   .form();
@@ -671,7 +671,7 @@ validate_request( &request )?; // Returns error if invalid
 use api_xai::{ to_curl, ChatCompletionRequest, Message };
 
 let request = ChatCompletionRequest::former()
-  .model( "grok-3".to_string() )
+  .model( "grok-2-1212".to_string() )
   .messages( vec![ Message::user( "Hello!" ) ] )
   .form();
 
@@ -717,11 +717,11 @@ let processor = BatchProcessor::new( client, 5 ); // Max 5 concurrent
 let requests = vec!
 [
   ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Request 1" ) ] )
     .form(),
   ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Request 2" ) ] )
     .form(),
 ];
@@ -833,7 +833,7 @@ let client = Client::build( env )?;
 let sync_client = SyncClient::new( client )?; // Creates tokio Runtime
 
 let request = ChatCompletionRequest::former()
-  .model( "grok-3".to_string() )
+  .model( "grok-2-1212".to_string() )
   .messages( vec![ Message::user( "Hello!" ) ] )
   .form();
 

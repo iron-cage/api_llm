@@ -69,7 +69,7 @@ async fn test_tool_calling_basic()
   );
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::user( "What's the weather like in San Francisco?" )
     ] )
@@ -156,7 +156,7 @@ async fn test_tool_calling_with_execution()
 
   // Step 1: Initial request with tool
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::user( "What is 15 multiplied by 7?" )
     ] )
@@ -197,7 +197,7 @@ async fn test_tool_calling_with_execution()
       ];
 
       let followup_request = ChatCompletionRequest::former()
-        .model( "grok-3".to_string() )
+        .model( "grok-2-1212".to_string() )
         .messages( messages.clone() )
         .tools( vec![ calculator_tool ] )
         .form();
@@ -262,7 +262,7 @@ async fn test_tool_calling_multiple_tools()
   );
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::user( "What's the weather and time in Tokyo?" )
     ] )
@@ -298,7 +298,7 @@ async fn test_tool_calling_no_tools_works()
 
   // Request without tools should still work
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::user( "Say hello" )
     ] )

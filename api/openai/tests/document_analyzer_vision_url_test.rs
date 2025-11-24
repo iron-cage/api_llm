@@ -32,7 +32,7 @@ async fn test_document_analyzer_vision_new_url_works()
   println!("🔍 Testing base64-encoded image input");
 
   let request = CreateResponseRequest::former()
-    .model("gpt-4o".to_string())
+    .model("gpt-5.1-chat-latest".to_string())
     .input(
       ResponseInput::Items(
         vec![
@@ -95,7 +95,7 @@ async fn test_document_analyzer_vision_working_url()
   println!("🔍 Testing base64-encoded image input");
 
   let request = CreateResponseRequest::former()
-    .model("gpt-4o".to_string())
+    .model("gpt-5.1-chat-latest".to_string())
     .input(
       ResponseInput::Items(
         vec![

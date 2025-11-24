@@ -80,7 +80,7 @@ fn response_simple_completed()
     "response_id_123",
     "msg_1",
     "Hello, how can I help you today?",
-    "gpt-4o"
+    "gpt-5.1-chat-latest"
   );
 
   let response : ResponseObject2 = serde_json::from_str( &json_data ).expect( "Failed to deserialize ResponseObject" );
@@ -126,7 +126,7 @@ fn response_with_usage()
       "output_tokens": 20,
       "total_tokens": 30
     },
-    "model": "gpt-4o",
+    "model": "gpt-5.1-chat-latest",
     "parallel_tool_calls": true
   }
   "#;
@@ -167,7 +167,7 @@ fn response_with_refusal()
         "status": "completed"
       }
     ],
-    "model": "gpt-4o",
+    "model": "gpt-5.1-chat-latest",
     "parallel_tool_calls": true
   }
   "#;
@@ -217,7 +217,7 @@ fn response_with_function_call()
         "status": "completed"
       }
     ],
-    "model": "gpt-4o",
+    "model": "gpt-5.1-chat-latest",
     "parallel_tool_calls": true
   }
   "#;
@@ -271,7 +271,7 @@ fn response_with_file_search_call()
         ]
       }
     ],
-    "model": "gpt-4o",
+    "model": "gpt-5.1-chat-latest",
     "parallel_tool_calls": true
   }
   "#;
@@ -315,7 +315,7 @@ fn response_with_web_search_call()
         "status": "completed"
       }
     ],
-    "model": "gpt-4o",
+    "model": "gpt-5.1-chat-latest",
     "parallel_tool_calls": true
   }
   "#;
@@ -358,7 +358,7 @@ fn response_with_computer_call()
         "status": "completed"
       }
     ],
-    "model": "gpt-4o",
+    "model": "gpt-5.1-chat-latest",
     "parallel_tool_calls": true
   }
   "#;
@@ -403,7 +403,7 @@ fn response_failed()
       "message": "An internal error occurred."
     },
     "output": [],
-    "model": "gpt-4o",
+    "model": "gpt-5.1-chat-latest",
     "parallel_tool_calls": true
   }
   "#;

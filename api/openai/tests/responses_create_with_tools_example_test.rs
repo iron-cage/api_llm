@@ -30,7 +30,7 @@ async fn test_responses_create_with_tools_example_secret_loading()
 
   // Create request with tools similar to the example
   let request = CreateResponseRequest::former()
-    .model( "gpt-4o".to_string() )
+    .model( "gpt-5.1-chat-latest".to_string() )
     .input( ResponseInput::String( "What is the capital of Japan?".to_string() ) )
     .tools
     (

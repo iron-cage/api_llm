@@ -22,7 +22,7 @@
 //! `YOUR_API_KEY_HERE` with your actual Gemini API key:
 //! 
 //! ```bash
-//! curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-experimental:generateContent?key=YOUR_API_KEY_HERE" \
+//! curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=YOUR_API_KEY_HERE" \
 //!   -H "Content-Type : application/json" \
 //!   -d '{...}'
 //! ```
@@ -222,7 +222,7 @@ impl AsCurl for GenerateContentRequest
   #[ inline ]
   fn as_curl_with_options( &self, options : &CurlOptions ) -> String
   {
-    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-experimental:generateContent";
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
     let json_body = curl_helpers::safe_json_serialize( self );
     curl_helpers ::generate_curl_command( url, &json_body, options )
   }

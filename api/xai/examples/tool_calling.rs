@@ -44,7 +44,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   // Initial request with tool
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![
       Message::user( "What's the weather like in Tokyo?" )
     ] )
@@ -82,7 +82,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
       // Send function result back to model
       let followup = ChatCompletionRequest::former()
-        .model( "grok-3".to_string() )
+        .model( "grok-2-1212".to_string() )
         .messages( vec![
           Message::user( "What's the weather like in Tokyo?" ),
           choice.message.clone(),

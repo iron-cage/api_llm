@@ -227,7 +227,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
     {
       client
       .models()
-      .by_name( "gemini-2.0-flash-exp" )
+      .by_name( "gemini-2.5-flash" )
       .generate_content( &request )
       .await
     })
@@ -272,7 +272,7 @@ Err( e ) => println!( "Failed after {} attempts : {:?}", retry_config.max_attemp
 
   match client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &malformed_request )
   .await
   {
@@ -304,7 +304,7 @@ Err( e ) => println!( "Failed after {} attempts : {:?}", retry_config.max_attemp
   Result< String, Box< dyn core::error::Error > >
   {
     // Try with advanced model first
-    let models = vec![ "gemini-2.0-flash-exp", "gemini-2.0-flash-exp", "gemini-2.0-flash-exp" ];
+    let models = vec![ "gemini-2.5-flash", "gemini-2.5-flash", "gemini-2.5-flash" ];
 
     for model in models
     {

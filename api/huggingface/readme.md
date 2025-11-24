@@ -210,7 +210,7 @@ Get your API key from [huggingface.co/settings/tokens](https://huggingface.co/se
 
 - **[Features Overview](docs/features.md)** - Feature list and cargo features
 - **[API Reference](docs/api_reference.md)** - Comprehensive API documentation
-- **[Examples](examples/readme.md)** - Working code examples
+- **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/huggingface/examples)** - Working code examples
 - **[Specification](spec.md)** - Detailed technical specification
 
 ## Dependencies

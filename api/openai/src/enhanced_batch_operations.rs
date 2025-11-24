@@ -459,7 +459,7 @@ mod private
             custom_id : format!( "req_{index}_1" ),
             method : "POST".to_string(),
             url : batch_config.endpoint.clone(),
-            body : json!( { "model": "gpt-3.5-turbo", "messages": [ { "role": "user", "content": "Hello" } ] } ),
+            body : json!( { "model": "gpt-5-nano", "messages": [ { "role": "user", "content": "Hello" } ] } ),
             priority : BatchRequestPriority::Normal,
             retry_config : Some( BatchRetryConfig
             {

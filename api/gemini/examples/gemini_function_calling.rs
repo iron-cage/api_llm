@@ -906,7 +906,7 @@ impl FunctionCallingAgent
 
       let response = timeout(
       Duration::from_secs( self.config.timeout_seconds ),
-      self.client.models().by_name( "gemini-2.0-flash-exp" ).generate_content( &request )
+      self.client.models().by_name( "gemini-2.5-flash" ).generate_content( &request )
       ).await??;
 
       if let Some( candidate ) = response.candidates.first()

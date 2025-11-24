@@ -97,7 +97,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   let client = Client::build( env )?;
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Hello, Grok!" ) ] )
     .form();
 
@@ -122,7 +122,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   let client = Client::build( env )?;
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-3".to_string() )
+    .model( "grok-2-1212".to_string() )
     .messages( vec![ Message::user( "Tell me a story" ) ] )
     .stream( true )
     .form();

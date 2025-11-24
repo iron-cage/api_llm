@@ -83,11 +83,11 @@ mod private
   /// let requests = vec!
   /// [
   ///   ChatCompletionRequest::former()
-  ///     .model( "grok-3".to_string() )
+  ///     .model( "grok-2-1212".to_string() )
   ///     .messages( vec![ Message::user( "Hello!" ) ] )
   ///     .form(),
   ///   ChatCompletionRequest::former()
-  ///     .model( "grok-3".to_string() )
+  ///     .model( "grok-2-1212".to_string() )
   ///     .messages( vec![ Message::user( "Goodbye!" ) ] )
   ///     .form(),
   /// ];
@@ -188,11 +188,11 @@ mod private
     /// let requests = vec!
     /// [
     ///   ChatCompletionRequest::former()
-    ///     .model( "grok-3".to_string() )
+    ///     .model( "grok-2-1212".to_string() )
     ///     .messages( vec![ Message::user( "Request 1" ) ] )
     ///     .form(),
     ///   ChatCompletionRequest::former()
-    ///     .model( "grok-3".to_string() )
+    ///     .model( "grok-2-1212".to_string() )
     ///     .messages( vec![ Message::user( "Request 2" ) ] )
     ///     .form(),
     /// ];
@@ -296,11 +296,11 @@ mod private
     /// let requests = vec!
     /// [
     ///   ChatCompletionRequest::former()
-    ///     .model( "grok-3".to_string() )
+    ///     .model( "grok-2-1212".to_string() )
     ///     .messages( vec![ Message::user( "Request 1" ) ] )
     ///     .form(),
     ///   ChatCompletionRequest::former()
-    ///     .model( "grok-3".to_string() )
+    ///     .model( "grok-2-1212".to_string() )
     ///     .messages( vec![ Message::user( "Request 2" ) ] )
     ///     .form(),
     /// ];

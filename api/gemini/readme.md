@@ -210,9 +210,9 @@ async fn example()
 
 | Model | Context Window | Vision | Capabilities |
 |-------|---------------|--------|--------------|
+| gemini-2.5-flash | 1M tokens | Yes | Latest stable |
 | gemini-1.5-pro | 1M tokens | Yes | Full capabilities |
 | gemini-1.5-flash | 1M tokens | Yes | Fast, cost-effective |
-| gemini-2.0-flash-experimental | 1M tokens | Yes | Latest experimental |
 | text-embedding-004 | - | No | Embeddings only |
 
 ## Documentation

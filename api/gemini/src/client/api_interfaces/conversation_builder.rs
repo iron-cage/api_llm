@@ -95,7 +95,7 @@ impl ConversationBuilder< '_ >
   ///
   /// # Arguments
   ///
-  /// * `model` - Model identifier (e.g., "gemini-2.0-flash-exp", "gemini-1.5-pro")
+  /// * `model` - Model identifier (e.g., "gemini-2.5-flash", "gemini-1.5-pro")
   ///
   /// # Panics
   ///

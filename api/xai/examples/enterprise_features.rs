@@ -84,7 +84,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
     // Execute with retry
     let request = ChatCompletionRequest::former()
-      .model( "grok-3".to_string() )
+      .model( "grok-2-1212".to_string() )
       .messages( vec![
         Message::user( format!( "Say hello in request {i}" ) )
       ] )

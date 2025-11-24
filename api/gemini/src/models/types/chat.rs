@@ -68,7 +68,7 @@ impl ChatCompletionRequestBuilder
     Self
     {
       messages : Vec::new(),
-      model : "gemini-2.0-flash-exp".to_string(),
+      model : "gemini-2.5-flash".to_string(),
       max_tokens : None,
       temperature : None,
       top_p : None,

@@ -84,7 +84,7 @@ mod private
     ///
     /// # Arguments
     ///
-    /// * `model_id` - Model identifier (e.g., "grok-3", "grok-4")
+    /// * `model_id` - Model identifier (e.g., "grok-2-1212", "grok-4")
     ///
     /// # Errors
     ///
@@ -98,7 +98,7 @@ mod private
     /// # let secret = Secret::load_with_fallbacks( "XAI_API_KEY" )?;
     /// # let env = XaiEnvironmentImpl::new( secret )?;
     /// # let client = Client::build( env )?;
-    /// let model = client.models().get( "grok-3" ).await?;
+    /// let model = client.models().get( "grok-2-1212" ).await?;
     ///
     /// println!( "Model : {}", model.id );
     /// println!( "Owned by : {}", model.owned_by );

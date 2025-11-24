@@ -158,8 +158,22 @@ mod tests
       assert_eq!( tool_call.function.name, "get_current_weather", "Wrong tool called" );
 
       // Verify function arguments contain location
+      // Note: API may return malformed JSON under load/rate limiting - fail loudly with context
       let args : serde_json::Value = serde_json::from_str( &tool_call.function.arguments )
-  .expect( "Failed to parse function arguments" );
+        .unwrap_or_else( |e|
+        {
+          // Provide detailed context for integration test failure
+          panic!
+          (
+            "Failed to parse function arguments from HuggingFace API.\n\
+             This indicates the API returned malformed JSON (likely rate limit/service degradation).\n\
+             \nArguments string received: {:?}\n\
+             Parse error: {}\n\
+             \nRetry the test. If failures persist, check HuggingFace API status.",
+            tool_call.function.arguments,
+            e
+          );
+        } );
 
       assert!( args.get( "location" ).is_some(), "Missing location argument" );
   }

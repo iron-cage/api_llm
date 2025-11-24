@@ -25,7 +25,7 @@ async fn test_responses_create_stream_example_secret_loading()
 
   // Create streaming request similar to the example
   let request = CreateResponseRequest::former()
-    .model( "gpt-4o-mini".to_string() )
+    .model( "gpt-5-mini".to_string() )
     .input( ResponseInput::String( "Tell me a very short story about a brave knight in exactly 2 sentences.".to_string() ) )
     .stream( true )
     .form();

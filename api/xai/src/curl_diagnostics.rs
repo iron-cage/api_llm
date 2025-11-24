@@ -62,7 +62,7 @@ mod private
   /// use api_xai::{ to_curl, ChatCompletionRequest, Message };
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .temperature( 0.7 )
   ///   .form();
@@ -75,7 +75,7 @@ mod private
   /// //   -H "Authorization : Bearer $XAI_API_KEY" \
   /// //   -H "Content-Type : application/json" \
   /// //   -d '{
-  /// //   "model": "grok-3",
+  /// //   "model": "grok-2-1212",
   /// //   "messages": [{"role": "user", "content": "Hello!"}],
   /// //   "temperature": 0.7
   /// // }'
@@ -123,7 +123,7 @@ mod private
   /// use api_xai::{ to_curl_with_key, ChatCompletionRequest, Message };
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///
@@ -170,7 +170,7 @@ mod private
   /// use api_xai::{ to_curl_with_endpoint, ChatCompletionRequest, Message };
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///
@@ -225,7 +225,7 @@ mod private
   /// use api_xai::{ to_curl_compact, ChatCompletionRequest, Message };
   ///
   /// let request = ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   ///
@@ -233,7 +233,7 @@ mod private
   /// println!( "{}", curl );
   ///
   /// // Output (single line):
-  /// // curl -X POST https://api.x.ai/v1/chat/completions -H "Authorization : Bearer $XAI_API_KEY" -H "Content-Type : application/json" -d '{"model":"grok-3","messages":[...]}'
+  /// // curl -X POST https://api.x.ai/v1/chat/completions -H "Authorization : Bearer $XAI_API_KEY" -H "Content-Type : application/json" -d '{"model":"grok-2-1212","messages":[...]}'
   /// # }
   /// ```
   #[ cfg( feature = "curl_diagnostics" ) ]

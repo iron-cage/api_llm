@@ -83,8 +83,8 @@ impl ModelsApi< '_ >
   /// # Arguments
   ///
   /// * `model_id` - The model identifier. Can be:
-  ///   - Simple name : `"gemini-2.0-flash-experimental"`
-  ///   - Full name : `"models/gemini-2.0-flash-experimental"`
+  ///   - Simple name : `"gemini-2.5-flash"`
+  ///   - Full name : `"models/gemini-2.5-flash"`
   ///
   /// # Returns
   ///
@@ -113,7 +113,7 @@ impl ModelsApi< '_ >
   /// let models_api = client.models();
   ///
   /// // Get model by simple name
-  /// let model = models_api.get( "gemini-2.0-flash-experimental" ).await?;
+  /// let model = models_api.get( "gemini-2.5-flash" ).await?;
   /// println!( "Model : {} - {}",
   ///   model.display_name.as_deref().unwrap_or( "N/A" ),
   ///   model.name
@@ -173,7 +173,7 @@ impl ModelsApi< '_ >
   ///
   /// # Arguments
   ///
-  /// * `model_id` - The model identifier (e.g., "gemini-2.0-flash-experimental")
+  /// * `model_id` - The model identifier (e.g., "gemini-2.5-flash")
   ///
   /// # Returns
   ///
@@ -188,7 +188,7 @@ impl ModelsApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+  /// let model = models_api.by_name( "gemini-2.5-flash" );
   ///
   /// // Use the model handle for operations
   /// let request = GenerateContentRequest {
@@ -358,7 +358,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+  /// let model = models_api.by_name( "gemini-2.5-flash" );
   ///
   /// let info = model.get().await?;
   /// println!( "Model : {} ({})", info.display_name.as_deref().unwrap_or( "N/A" ), info.name );
@@ -418,9 +418,9 @@ impl ModelApi< '_ >
   /// # fn example() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+  /// let model = models_api.by_name( "gemini-2.5-flash" );
   ///
-  /// assert_eq!( model.model_id(), "gemini-2.0-flash-experimental" );
+  /// assert_eq!( model.model_id(), "gemini-2.5-flash" );
   /// # Ok( () )
   /// # }
   /// ```
@@ -572,7 +572,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "gemini-2.0-flash-experimental" );
+  /// let model = models_api.by_name( "gemini-2.5-flash" );
   ///
   /// // Count tokens for simple text
   /// let request = CountTokensRequest {

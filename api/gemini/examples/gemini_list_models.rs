@@ -64,7 +64,7 @@ println!( "Found {} models:\n", models_response.models.len() );
   // Example : Get detailed information about a specific model
   println!( "=== Getting Specific Model Details ===" );
 
-  let model_name = "models/gemini-2.0-flash-exp";
+  let model_name = "models/gemini-2.5-flash";
   let specific_model = client.models().get( model_name ).await?;
 
 println!( "Detailed info for {}:", specific_model.name );

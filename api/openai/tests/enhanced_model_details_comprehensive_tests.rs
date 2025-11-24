@@ -147,7 +147,7 @@ fn test_model_lifecycle_structure()
     status : ModelStatus::Deprecated,
     deprecation_date : Some( "2024-06-01".to_string() ),
     sunset_date : Some( "2024-12-31".to_string() ),
-    replacement_model : Some( "gpt-4o".to_string() ),
+    replacement_model : Some( "gpt-5.1-chat-latest".to_string() ),
   };
 
   assert_eq!(lifecycle.status, ModelStatus::Deprecated);
@@ -236,7 +236,7 @@ async fn test_enhanced_model_details_retrieval()
   let client = create_test_client().expect("Failed to create test client");
 
   // Test retrieving enhanced details for a specific model
-  let result = client.models().retrieve_enhanced("gpt-3.5-turbo").await;
+  let result = client.models().retrieve_enhanced("gpt-5-nano").await;
 
   match result
   {
@@ -355,7 +355,7 @@ async fn test_model_capabilities_validation()
 
   let client = create_test_client().expect("Failed to create test client");
 
-  let models_to_test = vec![ "gpt-4", "gpt-3.5-turbo", "text-embedding-ada-002" ];
+  let models_to_test = vec![ "gpt-4", "gpt-5-nano", "text-embedding-ada-002" ];
 
   for model_id in models_to_test
   {
@@ -442,7 +442,7 @@ async fn test_model_lifecycle_information()
 fn test_model_comparison_functionality()
 {
   let model_a = create_test_enhanced_model("gpt-4", 8192, 0.03, 0.06);
-  let model_b = create_test_enhanced_model("gpt-3.5-turbo", 4096, 0.001, 0.002);
+  let model_b = create_test_enhanced_model("gpt-5-nano", 4096, 0.001, 0.002);
 
   let comparison = ModelComparison::compare(&model_a, &model_b);
 
@@ -489,7 +489,7 @@ async fn test_enhanced_model_details_performance()
   let start = std::time::Instant::now();
 
   // Test bulk retrieval performance
-  let models = vec![ "gpt-4", "gpt-3.5-turbo", "text-embedding-ada-002" ];
+  let models = vec![ "gpt-4", "gpt-5-nano", "text-embedding-ada-002" ];
 
   for model_id in models
   {

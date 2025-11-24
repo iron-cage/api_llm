@@ -68,7 +68,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   let client = Client::build( env ).expect( "Failed to create client" );
 
   // Use faster model for interactive experience
-  let model = "gpt-3.5-turbo".to_string();
+  let model = "gpt-5-nano".to_string();
   println!( "🤖 Using model : {model} (optimized for speed)" );
   println!( "🎯 Temperature : 0.7 (balanced creativity)" );
   println!();

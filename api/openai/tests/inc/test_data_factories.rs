@@ -289,7 +289,7 @@ impl ResponseObjectFactory
       "created_at": 1678886400,
       "status": "completed",
       "output": [],
-      "model": "gpt-4o",
+      "model": "gpt-5.1-chat-latest",
       "parallel_tool_calls": true,
       "usage": {
         "prompt_tokens": prompt_tokens,
@@ -321,7 +321,7 @@ impl ResponseObjectFactory
           "status": "completed"
         }
       ],
-      "model": "gpt-4o",
+      "model": "gpt-5.1-chat-latest",
       "parallel_tool_calls": true
     }).to_string()
   }
@@ -335,7 +335,7 @@ impl ResponseObjectFactory
       "created_at": 1678886400,
       "status": "failed",
       "output": [],
-      "model": "gpt-4o",
+      "model": "gpt-5.1-chat-latest",
       "parallel_tool_calls": true,
       "last_error": {
         "code": error_code,
@@ -367,7 +367,7 @@ impl ResponseObjectFactory
         "created_at": 1678886400,
         "status": "completed",
         "output": [],
-        "model": "gpt-4o",
+        "model": "gpt-5.1-chat-latest",
         "parallel_tool_calls": true
       })
     } ).collect();
@@ -395,8 +395,8 @@ impl ResponseObjectFactory
 /// Common test data constants
 pub mod constants
 {
-  pub const DEFAULT_MODEL: &str = "gpt-4o";
-  pub const DEFAULT_MODEL_MINI: &str = "gpt-4o-mini";
+  pub const DEFAULT_MODEL: &str = "gpt-5.1-chat-latest";
+  pub const DEFAULT_MODEL_MINI: &str = "gpt-5-mini";
   pub const COMPUTER_MODEL: &str = "computer-use-preview";
 
   pub const DEFAULT_TEMPERATURE: f32 = 0.8;

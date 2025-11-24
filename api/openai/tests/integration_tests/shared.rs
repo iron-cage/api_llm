@@ -71,7 +71,7 @@ pub fn assert_valid_response(response : &ResponseObject)
 pub fn create_basic_test_request() -> CreateResponseRequest
 {
   CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-3.5-turbo".to_string()))
+    .model(ModelIdsResponses::from("gpt-5-nano".to_string()))
     .input(ResponseInput::Items(
       vec![
         InputItem::Message(
@@ -92,7 +92,6 @@ pub fn create_basic_test_request() -> CreateResponseRequest
       ]
     ))
     .max_output_tokens(50)
-    .temperature(0.7)
     .parallel_tool_calls(true)
     .form()
 }
@@ -120,7 +119,7 @@ pub fn create_tools_test_request() -> CreateResponseRequest
 
 
   CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-3.5-turbo".to_string()))
+    .model(ModelIdsResponses::from("gpt-5-nano".to_string()))
     .input(ResponseInput::String("What's the weather like in Paris?".to_string()))
     .tools(vec![get_weather_tool])
     .tool_choice(ToolChoice::String("required".to_string()))

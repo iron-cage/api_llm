@@ -337,7 +337,7 @@ impl Client
     ///
     /// // Create batch job
     /// let requests = vec![ /* GenerateContentRequest instances */ ];
-    /// let batch_job = client.batches().create_inline( "gemini-2.0-flash-exp", requests ).await?;
+    /// let batch_job = client.batches().create_inline( "gemini-2.5-flash", requests ).await?;
     ///
     /// // Poll for completion and retrieve results
     /// let results = client.batches().wait_and_retrieve( &batch_job.job_id, std::time::Duration::from_secs( 300 ) ).await?;

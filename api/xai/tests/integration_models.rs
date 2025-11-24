@@ -49,16 +49,16 @@ async fn test_get_specific_model_grok_beta()
 {
   let client = create_test_client();
 
-  let model = client.models().get( "grok-3" ).await
-    .expect( "Get grok-3 model should succeed" );
+  let model = client.models().get( "grok-2-1212" ).await
+    .expect( "Get grok-2-1212 model should succeed" );
 
   // Verify model details
-  assert_eq!( model.id, "grok-3", "Model ID should be grok-3" );
+  assert_eq!( model.id, "grok-2-1212", "Model ID should be grok-2-1212" );
   assert_eq!( model.object, "model", "Object type should be 'model'" );
   assert!( model.created > 0, "Should have creation timestamp" );
   assert!( !model.owned_by.is_empty(), "Should have owner" );
 
-  println!( "✅ Get grok-3 model test passed" );
+  println!( "✅ Get grok-2-1212 model test passed" );
   println!( "Model : {}", model.id );
   println!( "Created : {}", model.created );
   println!( "Owned by : {}", model.owned_by );
@@ -102,7 +102,7 @@ async fn test_list_models_contains_expected_models()
     .collect();
 
   // Check for common Grok model IDs
-  let expected_models = vec![ "grok-3" ];
+  let expected_models = vec![ "grok-2-1212" ];
 
   for expected in &expected_models {
     let found = model_ids.iter().any( |id| id.contains( expected ) );

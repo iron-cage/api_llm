@@ -255,7 +255,7 @@ println!( "⚙️  Timeout: {}s, Network: {}", config.timeout_seconds, config.en
 
   let response = timeout(
   Duration::from_secs( ( config.timeout_seconds + 15 ) as u64 ), // Add buffer time
-  client.models().by_name( "gemini-2.0-flash-experimental" ).generate_content( &request )
+  client.models().by_name( "gemini-2.5-flash" ).generate_content( &request )
   ).await??;
 
   let duration = start_time.elapsed();

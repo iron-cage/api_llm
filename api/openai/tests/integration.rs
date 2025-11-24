@@ -162,7 +162,7 @@ async fn create_response()
   let client = isolated_client.client();
 
   let request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::Items(
       vec![
         InputItem::Message(
@@ -183,7 +183,6 @@ async fn create_response()
       ]
     ))
     .max_output_tokens( 50 )
-    .temperature( 0.7 )
     .parallel_tool_calls( true )
     .form();
 
@@ -238,7 +237,7 @@ async fn create_response_stream()
   let client = isolated_client.client();
 
   let request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::String( "Count from 1 to 5".to_string() ) )
     .max_output_tokens( 100 )
     .stream( true )
@@ -337,7 +336,7 @@ async fn create_response_with_tools()
   );
 
   let request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::String( "What's the weather like in Boston?".to_string() ) )
     .tools( vec![ tool ] )
     .tool_choice( ToolChoice::String( "auto".to_string() ) )
@@ -373,7 +372,7 @@ async fn retrieve_response()
 
   // First create a response
   let create_request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::String( "Test".to_string() ) )
     .max_output_tokens( 50 )
     .form();
@@ -415,7 +414,7 @@ async fn list_response_input_items()
 
   // Create a response with multiple input items
   let create_request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::Items(
       vec![
         InputItem::Message(
@@ -477,7 +476,7 @@ async fn delete_response()
 
   // First create a response
   let create_request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::String( "Test for deletion".to_string() ) )
     .max_output_tokens( 50 )
     .store( false ) // Don't store to make deletion easier
@@ -523,7 +522,7 @@ async fn update_response()
 
   // First create a response
   let create_request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::String( "Test for update".to_string() ) )
     .form();
 
@@ -571,7 +570,7 @@ async fn cancel_response()
 
   // Create a long-running response that we can cancel
   let create_request = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-3.5-turbo".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-nano".to_string() ) )
     .input( ResponseInput::String( "Write a very long story about..." .to_string() ) )
     .max_output_tokens( 1000 )
     .stream( true )

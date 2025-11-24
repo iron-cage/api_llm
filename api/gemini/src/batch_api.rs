@@ -43,7 +43,7 @@ impl< 'a > BatchApi< 'a >
   ///
   /// # Arguments
   ///
-  /// * `model` - Model name (e.g., "gemini-2.0-flash-exp")
+  /// * `model` - Model name (e.g., "gemini-2.5-flash")
   /// * `requests` - Vec of GenerateContentRequest to process
   ///
   /// # Returns

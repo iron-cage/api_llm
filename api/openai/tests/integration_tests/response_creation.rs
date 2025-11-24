@@ -65,7 +65,7 @@ async fn create_response_stream()
   let client = isolated_client.client();
 
   let request = CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-3.5-turbo".to_string()))
+    .model(ModelIdsResponses::from("gpt-5-nano".to_string()))
     .input(ResponseInput::String("Count from 1 to 5".to_string()))
     .max_output_tokens(100)
     .stream(true)

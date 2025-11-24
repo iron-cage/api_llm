@@ -121,7 +121,7 @@ async fn process_content_item(
   );
 
   let request = CreateResponseRequest::former()
-    .model("gpt-4o-mini".to_string())
+    .model("gpt-5-mini".to_string())
     .input(ResponseInput::String(analysis_prompt))
     .form();
 

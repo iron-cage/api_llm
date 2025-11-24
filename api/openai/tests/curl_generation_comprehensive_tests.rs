@@ -210,11 +210,11 @@ fn test_models_retrieve_request_to_curl()
 {
   let client = create_test_client().expect("Failed to create test client");
 
-  let curl_command = client.models().retrieve_to_curl("gpt-3.5-turbo").expect("Failed to generate cURL");
+  let curl_command = client.models().retrieve_to_curl("gpt-5-nano").expect("Failed to generate cURL");
 
   assert!(curl_command.contains("curl"));
   assert!(curl_command.contains("-X GET"));
-  assert!(curl_command.contains("https://api.openai.com/v1/models/gpt-3.5-turbo"));
+  assert!(curl_command.contains("https://api.openai.com/v1/models/gpt-5-nano"));
   assert!(curl_command.contains("Authorization: Bearer") || curl_command.contains("authorization: Bearer"));
 }
 
@@ -362,9 +362,9 @@ async fn test_curl_generation_integration_models()
   assert!(list_curl.contains("https://api.openai.com/v1/models"));
 
   // Test retrieve model cURL generation
-  let retrieve_curl = client.models().retrieve_to_curl("gpt-3.5-turbo").expect("Failed to generate retrieve cURL");
+  let retrieve_curl = client.models().retrieve_to_curl("gpt-5-nano").expect("Failed to generate retrieve cURL");
   assert!(retrieve_curl.contains("-X GET"));
-  assert!(retrieve_curl.contains("https://api.openai.com/v1/models/gpt-3.5-turbo"));
+  assert!(retrieve_curl.contains("https://api.openai.com/v1/models/gpt-5-nano"));
 }
 
 #[ test ]

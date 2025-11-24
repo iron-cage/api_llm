@@ -66,7 +66,7 @@ use super::super::Client;
     /// ];
     ///
     /// let batch_request = BatchGenerateContentRequest { requests };
-    /// let response = models_api.batch_generate_content("gemini-2.0-flash-experimental", &batch_request).await?;
+    /// let response = models_api.batch_generate_content("gemini-2.5-flash", &batch_request).await?;
     ///
     /// for (i, response) in response.responses.iter().enumerate() {
     ///   println!("Response {}: {:?}", i, response);
@@ -230,7 +230,7 @@ use super::super::Client;
     /// ];
     ///
     /// let batch_request = BatchCountTokensRequest { requests };
-    /// let response = models_api.batch_count_tokens("gemini-2.0-flash-experimental", &batch_request).await?;
+    /// let response = models_api.batch_count_tokens("gemini-2.5-flash", &batch_request).await?;
     ///
     /// for (i, response) in response.responses.iter().enumerate() {
     ///   println!("Request {}: {} tokens", i, response.total_tokens);
@@ -318,7 +318,7 @@ use super::super::Client;
     ///   estimate_generation_tokens : Some(true),
     /// };
     ///
-    /// let response = models_api.analyze_tokens("gemini-2.0-flash-experimental", &request).await?;
+    /// let response = models_api.analyze_tokens("gemini-2.5-flash", &request).await?;
     ///
     /// println!("Total tokens : {}", response.total_tokens);
     /// if let Some(breakdown) = response.token_breakdown {
@@ -406,7 +406,7 @@ use super::super::Client;
     ///
     /// let request = CompareModelsRequest {
     ///   model_names : vec![
-    ///     "gemini-2.0-flash-experimental".to_string(),
+    ///     "gemini-2.5-flash".to_string(),
     ///     "gemini-1.5-pro-002".to_string(),
     ///     "text-embedding-004".to_string(),
     ///   ],
@@ -647,7 +647,7 @@ use super::super::Client;
     ///
     /// let request = ModelStatusRequest {
     ///   model_names : vec![
-    ///     "gemini-2.0-flash-experimental".to_string(),
+    ///     "gemini-2.5-flash".to_string(),
     ///     "gemini-1.5-pro-002".to_string(),
     ///   ],
     ///   include_health_metrics : Some(true),

@@ -78,11 +78,11 @@ fn test_create_response_request_builder_basic()
 {
   // Test that Former derive creates proper builder
   let request = CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-4o".to_string()))
+    .model(ModelIdsResponses::from("gpt-5.1-chat-latest".to_string()))
     .input(ResponseInput::String("Test input".to_string()))
     .form();
 
-  assert_eq!(request.model, ModelIdsResponses::from("gpt-4o".to_string()));
+  assert_eq!(request.model, ModelIdsResponses::from("gpt-5.1-chat-latest".to_string()));
   assert_eq!(request.input, ResponseInput::String("Test input".to_string()));
   assert!(request.instructions.is_none()); // Optional field should be None by default
   assert!(request.metadata.is_none());
@@ -98,7 +98,7 @@ fn test_create_response_request_builder_complete()
   let metadata = Metadata::from(metadata);
 
   let request = CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-4o".to_string()))
+    .model(ModelIdsResponses::from("gpt-5.1-chat-latest".to_string()))
     .input(ResponseInput::String("Test input".to_string()))
     .instructions("System instructions".to_string())
     .metadata(metadata.clone())
@@ -111,7 +111,7 @@ fn test_create_response_request_builder_complete()
     .parallel_tool_calls(true)
     .form();
 
-  assert_eq!(request.model, ModelIdsResponses::from("gpt-4o".to_string()));
+  assert_eq!(request.model, ModelIdsResponses::from("gpt-5.1-chat-latest".to_string()));
   assert_eq!(request.input, ResponseInput::String("Test input".to_string()));
   assert_eq!(request.instructions, Some("System instructions".to_string()));
   assert_eq!(request.metadata, Some(metadata));
@@ -130,7 +130,7 @@ fn test_builder_chaining_fluent_interface()
 {
   // Test that builder methods can be chained fluently
   let request = CreateResponseRequest::former()
-    .model(ModelIdsResponses::from("gpt-3.5-turbo".to_string()))
+    .model(ModelIdsResponses::from("gpt-5-nano".to_string()))
     .temperature(0.5)
     .top_p(0.8)
     .max_output_tokens(500i32)

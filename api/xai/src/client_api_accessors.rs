@@ -22,7 +22,7 @@ mod private
   ///
   /// // Using the chat accessor
   /// let request = api_xai::ChatCompletionRequest::former()
-  ///   .model( "grok-3".to_string() )
+  ///   .model( "grok-2-1212".to_string() )
   ///   .messages( vec![ Message::user( "Hello!" ) ] )
   ///   .form();
   /// let response = client.chat().create( request ).await?;

@@ -410,7 +410,7 @@ conversation_history: Option< &Vec< Content > >,
 
   let response = timeout(
   Duration::from_secs( 30 ),
-  client.models().by_name( "gemini-2.0-flash-experimental" ).generate_content( &request )
+  client.models().by_name( "gemini-2.5-flash" ).generate_content( &request )
   ).await??;
 
   let duration = start_time.elapsed();
@@ -701,7 +701,7 @@ println!( "{}", "-".repeat( 60 ) );
 
   let basic_response = client
   .models()
-  .by_name( "gemini-2.0-flash-experimental" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &basic_request )
   .await?;
 

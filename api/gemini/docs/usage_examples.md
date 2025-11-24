@@ -217,7 +217,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
     ..Default::default()
   };
 
-  let response = client.models().by_name( "gemini-2.0-flash-experimental" ).generate_content( &request ).await?;
+  let response = client.models().by_name( "gemini-2.5-flash" ).generate_content( &request ).await?;
 
   // Check for grounding metadata and citations
   if let Some( grounding_metadata ) = &response.grounding_metadata
@@ -272,7 +272,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
     ..Default::default()
   };
 
-  let response = client.models().by_name( "gemini-2.0-flash-experimental" ).generate_content( &request ).await?;
+  let response = client.models().by_name( "gemini-2.5-flash" ).generate_content( &request ).await?;
   Ok( () )
 }
 ```
@@ -324,7 +324,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
     ..Default::default()
   };
 
-  let response = client.models().by_name( "gemini-2.0-flash-experimental" ).generate_content( &request ).await?;
+  let response = client.models().by_name( "gemini-2.5-flash" ).generate_content( &request ).await?;
   Ok( () )
 }
 ```

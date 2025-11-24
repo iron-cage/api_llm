@@ -77,7 +77,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   println!( "User : {user_question_1}" );
 
   let request_1 = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-4o-mini".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-mini".to_string() ) )
     .input( ResponseInput::String( conversation_context.clone() ) )
     .temperature( 0.8 )
     .max_output_tokens( 2048 )
@@ -112,7 +112,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   println!( "User : {user_question_2}" );
 
   let request_2 = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-4o-mini".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-mini".to_string() ) )
     .input( ResponseInput::String( conversation_context.clone() ) )
     .temperature( 0.8 )
     .max_output_tokens( 2048 )
@@ -147,7 +147,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   println!( "User : {user_question_3}" );
 
   let request_3 = CreateResponseRequest::former()
-    .model( ModelIdsResponses::from( "gpt-4o-mini".to_string() ) )
+    .model( ModelIdsResponses::from( "gpt-5-mini".to_string() ) )
     .input( ResponseInput::String( conversation_context.clone() ) )
     .temperature( 0.8 )
     .max_output_tokens( 2048 )

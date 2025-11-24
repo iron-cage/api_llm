@@ -89,7 +89,7 @@ async fn demonstrate_request_optimization() -> Result< (), Box< dyn core::error:
       } ),
       ..Default::default()
     };
-    let _ = client.models().by_name( "gemini-2.0-flash-exp" ).generate_content( &request ).await;
+    let _ = client.models().by_name( "gemini-2.5-flash" ).generate_content( &request ).await;
   }
   let inefficient_time = start.elapsed();
 println!( "❌ Recreating request structure : {inefficient_time:?}" );
@@ -117,7 +117,7 @@ println!( "❌ Recreating request structure : {inefficient_time:?}" );
   {
     // Only update the text field
   request_template.contents[ 0 ].parts[ 0 ].text = Some( format!( "Request {i}" ) );
-    let _ = client.models().by_name( "gemini-2.0-flash-exp" ).generate_content( &request_template ).await;
+    let _ = client.models().by_name( "gemini-2.5-flash" ).generate_content( &request_template ).await;
   }
   let efficient_time = start.elapsed();
 println!( "✅ Reusing request template : {efficient_time:?}" );
@@ -238,7 +238,7 @@ async fn make_simple_request( client: &Client, prompt: &str ) -> Result< Generat
 
   client
   .models()
-  .by_name( "gemini-2.0-flash-exp" )
+  .by_name( "gemini-2.5-flash" )
   .generate_content( &request )
   .await
 }

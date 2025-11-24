@@ -23,7 +23,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   // First, create a response to get an ID
   let create_request = CreateResponseRequest
   {
-    model : ModelIdsResponses::from( "gpt-4o".to_string() ),
+    model : ModelIdsResponses::from( "gpt-5.1-chat-latest".to_string() ),
     input : ResponseInput::String( "Hello for get example!".to_string() ),
     previous_response_id : None,
     reasoning : None,

@@ -33,7 +33,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let client = Client::build(env).expect("Failed to create client");
 
   let request = CreateResponseRequest::former()
-  .model( "gpt-4o".to_string() )
+  .model( "gpt-5.1-chat-latest".to_string() )
   .input( ResponseInput::String( "What was a positive news story from today?".to_string() ) )
   .tools
   (
