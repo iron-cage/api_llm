@@ -1,20 +1,171 @@
-//! Test server management for `api_ollama` integration tests.
+//! Test server management and robustness infrastructure for `api_ollama` integration tests.
 //!
-//! This module provides automatic Ollama server lifecycle management for tests:
-//! - Starts a dedicated test server with minimal model on unique port per binary
-//! - Ensures test isolation by preventing cross-binary resource contamination
-//! - Automatically pulls tinyllama model if not available
-//! - Cleans up server after all tests complete
-//! - Provides detailed error messages with resolution steps
+//! # Overview
 //!
-//! # Test Isolation Strategy (issue-server-exhaustion-001)
+//! This module provides three critical robustness systems:
 //!
-//! Each test binary gets its own Ollama server instance on a unique port calculated
-//! from the binary name hash. This prevents server resource exhaustion that occurred
-//! when all tests shared port 11435, causing intermittent timeout failures after ~67 tests.
+//! 1. **Isolated Test Servers** - Eliminate environmental dependencies via hash-based port allocation
+//! 2. **Timing Safety Framework** - Handle system load variance with 2x safety buffers
+//! 3. **Loud Failure Enforcement** - Prevent silent test skips that hide infrastructure problems
 //!
-//! Port range: 11435-11534 (100 ports for test binaries)
-//! Formula: `BASE_PORT` + (`hash(binary_name)` % `PORT_RANGE`)
+//! # Quick Start
+//!
+//! ```rust,ignore
+//! use crate::server_helpers::{get_isolated_endpoint, wait_for_checks};
+//!
+//! #[tokio::test]
+//! async fn test_api_feature() {
+//!   // Use isolated server instead of hardcoded localhost:11434
+//!   let endpoint = get_isolated_endpoint().await
+//!     .expect("Failed to get test endpoint");
+//!
+//!   let client = OllamaClient::new(endpoint, Duration::from_secs(30))?;
+//!
+//!   // Your test logic with real API calls
+//!   let response = client.chat(request).await?;
+//!   assert!(response.message.content.len() > 0);
+//! }
+//! ```
+//!
+//! # Test Isolation Architecture (issue-server-exhaustion-001)
+//!
+//! Each test binary gets its own dedicated Ollama server instance on a unique port calculated
+//! from the binary name hash. This prevents server resource exhaustion that occurred when all
+//! tests shared port 11435, causing intermittent timeout failures after ~67 tests.
+//!
+//! **Port allocation**:
+//! - Range: 11435-11534 (100 ports for test binaries)
+//! - Formula: `BASE_PORT` + (`hash(binary_name)` % `PORT_RANGE`)
+//! - Model: smollm2:360m (23% faster than tinyllama)
+//! - Cleanup: Automatic on test completion
+//!
+//! # Robustness Patterns
+//!
+//! ## Pattern 1: Endpoint Isolation
+//!
+//! **Problem**: Tests depending on system Ollama (localhost:11434) are flaky because they race
+//! with system state. Test passes when system Ollama stopped, fails when running.
+//!
+//! **Solution**: Use `get_isolated_endpoint()` for all tests making real API calls.
+//!
+//! **Example**: See `health_checks_tests.rs:test_intermittent_failure_handling` (issue-flaky-test-002)
+//! - Before: 80% fail rate due to hardcoded localhost:11434
+//! - After: 10/10 marathon passes with isolated endpoint
+//!
+//! ## Pattern 2: Timing Safety
+//!
+//! **Problem**: Brittle sleep-based synchronization fails under system load. Exact timing
+//! assertions break when GC pauses or thread scheduling delays occur.
+//!
+//! **Solution**: Use `wait_for_checks()` with built-in 2x safety buffers instead of raw sleep.
+//!
+//! **Formula**: `wait_time = check_interval × min_checks × safety_factor(2.0)`
+//!
+//! **Example**:
+//! ```rust,ignore
+//! // BAD - Brittle exact timing
+//! tokio::time::sleep(Duration::from_millis(300)).await;
+//! assert_eq!(status.total_checks(), 3); // Fails if 4 checks happen
+//!
+//! // GOOD - Safety buffer + range assertion
+//! wait_for_checks(interval, 3).await; // 600ms for nominal 300ms
+//! assert!(status.total_checks() >= 3); // Tolerates variance
+//! ```
+//!
+//! ## Pattern 3: Loud Failures
+//!
+//! **Problem**: Silent test skips (println + return) hide infrastructure problems and reduce
+//! test coverage visibility. Tests appear to pass but actually skipped execution.
+//!
+//! **Solution**: Use `with_test_server!` macro or `.expect()` - never silent skip.
+//!
+//! **Example**:
+//! ```rust,ignore
+//! // BAD - Silent skip
+//! match client.embeddings(req).await {
+//!   Ok(emb) => emb,
+//!   Err(e) => {
+//!     println!("⏭️  Skipping test - {e}");
+//!     return; // Test appears to pass but didn't run!
+//!   }
+//! }
+//!
+//! // GOOD - Loud failure
+//! client.embeddings(req).await
+//!   .expect("Embeddings should succeed - test server is running")
+//! ```
+//!
+//! # Common Pitfalls
+//!
+//! ## Pitfall 1: Hardcoded localhost:11434 in API-Calling Tests
+//!
+//! **Symptom**: Test passes when system Ollama stopped, fails when running
+//! **Root Cause**: Race condition with system Ollama state
+//! **Fix**: Use `get_isolated_endpoint().await?` instead of hardcoded URL
+//! **Example**: `health_checks_tests.rs:test_intermittent_failure_handling`
+//!
+//! ## Pitfall 2: Exact Timing Assertions
+//!
+//! **Symptom**: Test fails intermittently under system load
+//! **Root Cause**: No safety margin for scheduler variance, GC pauses
+//! **Fix**: Use `>=` assertions with 2x safety buffers via `wait_for_checks()`
+//! **Example**: Wait 600ms for nominal 300ms (3 × 100ms × 2.0)
+//!
+//! ## Pitfall 3: Silent Test Skips
+//!
+//! **Symptom**: Test suite shows 100% pass but coverage is low
+//! **Root Cause**: Tests silently return on errors instead of failing
+//! **Fix**: Replace `println!() + return` with `.expect()` or panic
+//! **Example**: 7 instances fixed in `embeddings_tests.rs` (issue-silent-skip-002 through -005)
+//!
+//! ## Pitfall 4: Shared Mutable State Across Tests
+//!
+//! **Symptom**: Tests fail based on execution order, not code correctness
+//! **Root Cause**: Multiple tests modifying same resource (port, file, etc)
+//! **Fix**: Each test binary automatically gets isolated server (hash-based port)
+//! **Architecture**: Port allocation prevents conflicts - no manual coordination needed
+//!
+//! # Migration Guide
+//!
+//! When adding new integration tests that make API calls:
+//!
+//! ```rust,ignore
+//! // BEFORE (hardcoded, flaky):
+//! let client = OllamaClient::new(
+//!   "http://localhost:11434".to_string(),
+//!   Duration::from_secs(30)
+//! )?;
+//!
+//! // AFTER (isolated, robust):
+//! let endpoint = get_isolated_endpoint().await?;
+//! let client = OllamaClient::new(endpoint, Duration::from_secs(30))?;
+//! ```
+//!
+//! When adding timing-dependent tests:
+//!
+//! ```rust,ignore
+//! // BEFORE (brittle):
+//! tokio::time::sleep(Duration::from_millis(500)).await;
+//! assert_eq!(checks, 5);
+//!
+//! // AFTER (robust):
+//! wait_for_checks(interval, 5).await;
+//! assert!(checks >= 5);
+//! ```
+//!
+//! # Marathon Validation
+//!
+//! For tests prone to flakiness (timing-dependent, API-calling):
+//!
+//! ```bash
+//! # Run 20 iterations to detect <5% flake rate
+//! bash tests/-marathon_test.sh test_name 20
+//!
+//! # Run 100 iterations to detect <1% flake rate
+//! bash tests/-marathon_test.sh test_name 100
+//! ```
+//!
+//! **When to use**: After fixing flaky tests or adding timing-dependent logic.
 
 use std::process::{ Command, Stdio, Child };
 use std::sync::{ Arc, Mutex, OnceLock };
@@ -502,18 +653,147 @@ pub async fn get_test_client() -> Result< ( OllamaClient, String ), String >
 }
 
 /// Macro to ensure test server is available before running test
+///
+/// **Fix(issue-silent-skip-001)**: Changed from silent skip to loud failure.
+/// **Root cause**: Silent skips (println + return) hide infrastructure problems and reduce test coverage visibility.
+/// **Pitfall**: Tests must fail loudly when prerequisites are missing - use `#[ignore]` attribute for optional tests.
+///
+/// # When to Use
+///
+/// **Use this macro** for tests that need isolated Ollama client with test model:
+/// - Quick tests that just need client + model (no manual endpoint setup)
+/// - Tests that should fail loudly if infrastructure unavailable
+/// - Migration from legacy silent skip pattern
+///
+/// **Don't use** when:
+/// - Test needs custom endpoint URL (use `get_isolated_endpoint()` directly)
+/// - Test needs custom client configuration (timeout, retries, etc.)
+/// - Test is truly optional/experimental (use `#[ignore]` attribute instead)
+///
+/// # Loud Failure Rationale
+///
+/// Tests should never silently skip because:
+/// - Hides broken test infrastructure (Ollama not installed, port conflicts)
+/// - Reduces effective test coverage without visibility
+/// - Violates "fail loudly" robustness principle
+/// - Makes debugging harder (no clear signal of what's wrong)
+///
+/// # Migration Guide
+///
+/// ```rust,ignore
+/// // ❌ BEFORE - Silent skip pattern (issue-silent-skip-001 through -005)
+/// #[tokio::test]
+/// async fn test_embeddings_feature() {
+///   let client = match get_test_client().await {
+///     Ok((c, _)) => c,
+///     Err(e) => {
+///       println!("⏭️  Skipping test - {e}");
+///       return;
+///     }
+///   };
+///   // Test logic...
+/// }
+///
+/// // ✅ AFTER - Loud failure with macro
+/// #[tokio::test]
+/// async fn test_embeddings_feature() {
+///   with_test_server!(|client, model| async move {
+///     // Test logic...
+///     Ok(())
+///   });
+/// }
+/// ```
+///
+/// # Known Pitfalls
+///
+/// **Pitfall**: Catching macro panic to implement silent skip
+/// **Symptom**: Code like `if let Err(_) = std::panic::catch_unwind(...)`
+/// **Root Cause**: Attempting to bypass loud failure enforcement
+/// **Fix**: If test is optional, use `#[ignore]` attribute, don't catch panic
+/// **Pattern**: Mark test with `#[ignore = "reason"]` not `catch_unwind`
+///
+/// **Pitfall**: Using macro for configuration-only tests
+/// **Symptom**: Test fails with "server unavailable" but only validates client creation
+/// **Root Cause**: Macro requires full test server for simple config validation
+/// **Fix**: Tests that don't make API calls shouldn't use this macro
+/// **Example**: Tests for URL parsing, builder patterns, config validation
+///
+/// **Pitfall**: Returning wrong type from closure
+/// **Symptom**: Compiler error "expected `()`, found `Result<...>`"
+/// **Root Cause**: Macro expects async block returning `Result<(), Error>`
+/// **Fix**: Ensure closure returns `Result<(), E>` where E implements Display
+/// **Pattern**: `async move { /* test */ Ok(()) }`
+///
+/// # Resolution Steps
+///
+/// If test fails with "Test server unavailable":
+/// 1. Install Ollama: `curl -fsSL https://ollama.com/install.sh | sh`
+/// 2. Verify Ollama runs: `ollama --version`
+/// 3. Check port availability: `lsof -i :11435-11534`
+/// 4. Review `server_helpers.rs` startup logs for diagnostics
+///
+/// # Optional Tests
+///
+/// If a test is truly optional (e.g., requires external service), use `#[ignore]` attribute:
+/// ```rust,ignore
+/// #[tokio::test]
+/// #[ignore = "requires external Ollama service"]
+/// async fn test_optional_feature() { ... }
+/// ```
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// // Example 1: Basic usage
+/// #[tokio::test]
+/// async fn test_chat_basic() {
+///   with_test_server!(|client, model| async move {
+///     let response = client.chat(ChatRequest::new(model)).await?;
+///     assert!(!response.message.content.is_empty());
+///     Ok(())
+///   });
+/// }
+///
+/// // Example 2: Multiple assertions
+/// #[tokio::test]
+/// async fn test_embeddings_dimensions() {
+///   with_test_server!(|client, model| async move {
+///     let request = EmbeddingsRequest::new(model, vec!["test".to_string()]);
+///     let response = client.embeddings(request).await?;
+///
+///     assert_eq!(response.embeddings.len(), 1);
+///     assert!(response.embeddings[0].len() > 0);
+///     Ok(())
+///   });
+/// }
+/// ```
 #[ macro_export ]
 macro_rules! with_test_server {
   ($test_fn:expr) => {{
-    // INTEGRATION TEST - Skip gracefully when Ollama server unavailable
-    // This allows tests to pass in environments without Ollama installed
     match $crate::server_helpers::get_test_client().await
     {
       Ok( ( client, model ) ) => $test_fn( client, model ).await,
       Err( e ) =>
       {
-        println!( "⏭️  Skipping integration test - Ollama server unavailable: {e}" );
-        return;
+        panic!(
+          "\n\n\
+          ❌ TEST INFRASTRUCTURE FAILURE: Test server unavailable\n\
+          \n\
+          Error: {e}\n\
+          \n\
+          This test requires a running Ollama server managed by server_helpers.rs.\n\
+          The test server failed to start, which indicates a configuration or environment problem.\n\
+          \n\
+          Resolution steps:\n\
+          1. Install Ollama: curl -fsSL https://ollama.com/install.sh | sh\n\
+          2. Verify Ollama: ollama --version\n\
+          3. Check ports 11435-11534 are available: lsof -i :11435-11534\n\
+          4. Review test output above for detailed diagnostics\n\
+          \n\
+          If this test is optional, mark it with #[ignore] attribute.\n\
+          Silent test skips are forbidden - tests must fail loudly or be explicitly ignored.\n\
+          \n"
+        );
       },
     }
   }};
@@ -550,4 +830,357 @@ mod tests
 
     println!( "✅ Test server lifecycle validated" );
   }
+}
+
+//
+// Endpoint Isolation Helpers
+//
+
+/// Get isolated test endpoint URL for robust testing
+///
+/// Returns URL for isolated test server running on hash-based unique port.
+/// Eliminates race conditions with system Ollama on port 11434.
+///
+/// # When to Use
+///
+/// **Use this** whenever your test makes REAL API calls (`.chat()`, `.embeddings()`, `.generate()`).
+///
+/// **Don't use** for configuration-only tests that just validate client creation without API calls.
+///
+/// **Decision criteria**:
+/// - If test calls `.await` on API method → Use `get_isolated_endpoint()`
+/// - If test only checks client construction → Hardcoded endpoint acceptable
+///
+/// # Robustness Properties
+///
+/// - **Environmental Independence**: No dependency on system Ollama state
+/// - **Parallel Safety**: Hash-based port allocation prevents conflicts
+/// - **Deterministic**: Same binary always gets same port
+///
+/// # Errors
+///
+/// Returns error if test server initialization fails or server is not available.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// #[tokio::test]
+/// async fn test_api_call() {
+///   let endpoint = get_isolated_endpoint().await
+///     .expect("Failed to get test endpoint");
+///
+///   let client = OllamaClient::new(endpoint, Duration::from_secs(30))?;
+///   // Test uses isolated server, not system Ollama
+/// }
+/// ```
+///
+/// # Migration Pattern
+///
+/// **Before** (hardcoded, flaky):
+/// ```rust,ignore
+/// let client = OllamaClient::new(
+///   "http://localhost:11434".to_string(),  // ← Race with system Ollama
+///   Duration::from_secs(30)
+/// )?;
+/// ```
+///
+/// **After** (isolated, robust):
+/// ```rust,ignore
+/// let endpoint = get_isolated_endpoint().await?;
+/// let client = OllamaClient::new(
+///   endpoint,  // ← Uses unique test server port
+///   Duration::from_secs(30)
+/// )?;
+/// ```
+///
+/// # Known Pitfalls
+///
+/// **Pitfall**: Using hardcoded `localhost:11434` in test making real API calls
+///
+/// **Symptom**: Test passes when system Ollama is stopped, fails when system Ollama is running.
+/// Test failure is intermittent and environment-dependent.
+///
+/// **Root Cause**: Test connects to system Ollama instead of isolated test server, creating race
+/// condition with system state. Health checks, model state, or port availability differ.
+///
+/// **Fix**: Replace hardcoded URL with `get_isolated_endpoint().await?`
+///
+/// **Real Example**: `health_checks_tests.rs:test_intermittent_failure_handling` (issue-flaky-test-002)
+/// - Before: 80% fail rate due to hardcoded endpoint
+/// - After: 10/10 marathon passes with isolated endpoint
+/// - See lines 251-432 for complete implementation
+#[ allow( dead_code ) ] // Used across multiple test files
+pub async fn get_isolated_endpoint() -> Result< String, String >
+{
+  let server_arc = get_test_server().await?;
+
+  let test_port =
+  {
+    let server_guard = server_arc.lock()
+      .map_err( |e| format!( "Failed to lock test server mutex: {e}" ) )?;
+    let test_server = server_guard.as_ref()
+      .ok_or_else( || "Test server not initialized - server_helpers startup failed".to_string() )?;
+    test_server.port()
+  }; // Guard dropped here before returning (prevents deadlock)
+
+  Ok( format!( "http://127.0.0.1:{test_port}" ) )
+}
+
+/// Get invalid endpoint URL for failure testing
+///
+/// Returns endpoint URL guaranteed to fail (RFC 5737 non-routable address),
+/// for testing error handling, circuit breakers, retry logic, and health check failure scenarios.
+///
+/// # When to Use
+///
+/// **Use this** when testing failure scenarios:
+/// - Circuit breaker opening behavior (needs guaranteed failures)
+/// - Health check failure detection and recovery
+/// - Retry exhaustion scenarios (must fail every time)
+/// - Timeout behavior validation (connection attempts guaranteed to timeout)
+///
+/// **Don't use** for:
+/// - Tests requiring real API responses (use `get_isolated_endpoint()` instead)
+/// - Tests simulating intermittent failures (use `client.simulate_endpoint_failure()`)
+/// - Tests requiring specific error types (connection errors are generic)
+///
+/// # Known Pitfalls
+///
+/// **Pitfall**: Using `get_invalid_endpoint()` for positive test cases
+/// **Symptom**: Test always fails with connection errors, never validates actual functionality
+/// **Root Cause**: Invalid endpoint cannot serve real API responses
+/// **Fix**: Use `get_isolated_endpoint()` for tests requiring real responses
+/// **Example**: Health check recovery tests need real endpoint to validate recovery
+///
+/// **Pitfall**: Expecting specific error messages from invalid endpoint
+/// **Symptom**: Tests break when underlying HTTP library changes error messages
+/// **Root Cause**: Connection errors are implementation-dependent (OS, HTTP client)
+/// **Fix**: Test for error presence, not specific error text
+/// **Pattern**: `assert!(result.is_err())` not `assert_eq!(err.to_string(), "...")`
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// // Example 1: Circuit breaker opening
+/// #[tokio::test]
+/// async fn test_circuit_breaker_opens_on_failures() {
+///   let endpoint = get_invalid_endpoint();
+///   let client = OllamaClient::new(endpoint, Duration::from_secs(1))?;
+///
+///   // All requests will fail, triggering circuit breaker
+///   for _ in 0..5 {
+///     assert!(client.chat(...).await.is_err());
+///   }
+///   assert_eq!(client.circuit_breaker_state(), CircuitState::Open);
+/// }
+///
+/// // Example 2: Retry exhaustion
+/// #[tokio::test]
+/// async fn test_retry_exhaustion() {
+///   let endpoint = get_invalid_endpoint();
+///   let client = OllamaClient::new(endpoint, Duration::from_secs(1))?
+///     .with_retries(3);
+///
+///   let start = Instant::now();
+///   let result = client.chat(...).await;
+///
+///   assert!(result.is_err()); // Failed after all retries
+///   assert!(start.elapsed() >= Duration::from_secs(3)); // 3 retry attempts
+/// }
+/// ```
+#[ must_use ]
+#[ allow( dead_code ) ] // Used across multiple test files
+pub fn get_invalid_endpoint() -> String
+{
+  // Use non-routable address for guaranteed failure
+  // RFC 5737: 192.0.2.0/24 reserved for documentation/testing
+  "http://192.0.2.1:11434".to_string()
+}
+
+//
+// Timing Robustness Helpers
+//
+
+/// Calculate safe wait time with 2x safety buffer for timing-dependent tests
+///
+/// Formula: `wait_time = check_interval × min_checks × safety_factor`
+///
+/// # When to Use
+///
+/// **Use this** for timing-dependent tests that need to wait for:
+/// - Health check iterations (wait for N checks to complete)
+/// - Periodic background tasks (wait for N task executions)
+/// - Retry attempts (wait for N retry cycles)
+/// - Rate limiting windows (wait for rate limit to reset)
+///
+/// **Don't use** for:
+/// - Exact timing measurements (defeats purpose of safety buffer)
+/// - Production code timeouts (tests only - production needs tighter bounds)
+/// - Tests with external time constraints (API rate limits, session expirations)
+///
+/// # Robustness Rationale
+///
+/// Timing-dependent tests fail intermittently when:
+/// - System is under load (GC pauses, thread scheduling delays)
+/// - CI environment has variable performance
+/// - Background tasks interfere with timing
+///
+/// Safety buffer (2.0x) accounts for:
+/// - Scheduler variance (OS thread context switches)
+/// - GC pauses in async runtime
+/// - Network stack delays
+/// - Measurement granularity
+///
+/// # Known Pitfalls
+///
+/// **Pitfall**: Using exact timing assertions after safe wait
+/// **Symptom**: Test expects exactly N checks but gets N+1 or N+2
+/// **Root Cause**: Safety buffer allows extra iterations beyond minimum
+/// **Fix**: Use `>=` assertions, not `==` assertions
+/// **Example**: `assert!(checks >= 3)` not `assert_eq!(checks, 3)`
+///
+/// **Pitfall**: Using `safety_factor` < 2.0 to "speed up tests"
+/// **Symptom**: Tests pass locally but fail intermittently in CI
+/// **Root Cause**: CI environments have higher scheduler variance
+/// **Fix**: Always use 2.0x minimum, increase for CI flakiness
+/// **Real Example**: `test_intermittent_failure_handling` (issue-flaky-test-002)
+/// - Before: No safety buffer → 80% fail rate
+/// - After: 2.0x buffer → 0% fail rate (10/10 marathon passes)
+///
+/// **Pitfall**: Calculating wait time manually instead of using helper
+/// **Symptom**: Inconsistent safety factors across test suite
+/// **Root Cause**: Copy-paste errors, forgotten multiplication
+/// **Fix**: Use `wait_for_checks()` helper (wraps this function with 2.0x)
+/// **Pattern**: `wait_for_checks(interval, 5).await` not manual calculation
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// // Example 1: Basic usage with range assertion
+/// let interval = Duration::from_millis(100);
+/// let min_checks = 3;
+/// let wait_time = calculate_safe_wait_time(interval, min_checks, 2.0);
+/// // Returns 600ms (3 × 100ms × 2.0)
+///
+/// tokio::time::sleep(wait_time).await;
+/// let status = client.get_health_status();
+/// assert!(status.total_checks() >= min_checks); // ✅ Range assertion
+///
+/// // Example 2: Higher safety factor for flaky CI
+/// let wait_time = calculate_safe_wait_time(
+///   Duration::from_millis(100),
+///   5,
+///   3.0 // Higher buffer for CI environment
+/// );
+/// // Returns 1500ms (5 × 100ms × 3.0)
+/// ```
+#[ must_use ]
+#[ allow( dead_code ) ] // Used across multiple test files
+#[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ] // Intentional - safety_factor is always positive
+pub fn calculate_safe_wait_time( check_interval : Duration, min_checks : u32, safety_factor : f64 ) -> Duration
+{
+  let nominal_time_ms = check_interval.as_millis() * u128::from( min_checks );
+  let safe_time_ms = ( nominal_time_ms as f64 * safety_factor ) as u64;
+  Duration::from_millis( safe_time_ms )
+}
+
+/// Wait for minimum number of checks to complete with safety buffer
+///
+/// Convenience wrapper for `calculate_safe_wait_time()` with hardcoded 2.0x safety factor.
+/// Preferred over manual sleep calculations for test robustness.
+///
+/// # When to Use
+///
+/// **Use this** as default for timing-dependent waits:
+/// - Health check test assertions (wait for N checks)
+/// - Background task validation (wait for N executions)
+/// - Periodic monitoring tests (wait for N iterations)
+/// - Any test waiting for repeated operations
+///
+/// **Don't use** when:
+/// - Custom safety factor needed (use `calculate_safe_wait_time()` directly)
+/// - No timing dependency (don't add unnecessary waits)
+/// - Waiting for single event (use event notification instead)
+///
+/// # Comparison with Naive Sleep
+///
+/// ```rust,ignore
+/// // ❌ BAD - Brittle exact timing (fails under load)
+/// tokio::time::sleep(Duration::from_millis(300)).await;
+/// assert_eq!(status.total_checks(), 3); // Exact assertion
+///
+/// // ✅ GOOD - Robust timing with safety buffer
+/// wait_for_checks(Duration::from_millis(100), 3).await; // 600ms (2x buffer)
+/// assert!(status.total_checks() >= 3); // Range assertion
+/// ```
+///
+/// # Known Pitfalls
+///
+/// **Pitfall**: Using exact sleep durations instead of `wait_for_checks()`
+/// **Symptom**: Tests pass locally but fail intermittently in CI
+/// **Root Cause**: Manual calculations miss safety buffer, don't account for variance
+/// **Fix**: Replace `tokio::time::sleep()` with `wait_for_checks()`
+/// **Migration**: `sleep(300ms)` → `wait_for_checks(100ms, 3)` (adds 2x buffer)
+///
+/// **Pitfall**: Pairing `wait_for_checks()` with exact assertions
+/// **Symptom**: Test expects 3 checks but gets 4 due to timing variance
+/// **Root Cause**: Safety buffer allows extra iterations beyond minimum
+/// **Fix**: Always use `>=` assertions after `wait_for_checks()`
+/// **Pattern**: `assert!(checks >= N)` never `assert_eq!(checks, N)`
+///
+/// **Pitfall**: Using `wait_for_checks()` for single-event synchronization
+/// **Symptom**: Unnecessary delays in tests, slower test suite
+/// **Root Cause**: Waiting for time instead of event notification
+/// **Fix**: Use channels, condition variables, or polling for single events
+/// **Example**: `rx.recv().await` instead of `wait_for_checks(...)`
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// // Example 1: Health check validation
+/// let interval = Duration::from_millis(100);
+/// client.start_health_monitoring().await;
+///
+/// wait_for_checks(interval, 5).await; // Waits 1000ms (5 × 100ms × 2.0)
+///
+/// let status = client.get_health_status();
+/// assert!(status.total_checks() >= 5); // ✅ Range assertion
+///
+/// // Example 2: Failure detection
+/// client.simulate_endpoint_failure();
+///
+/// wait_for_checks(interval, 3).await; // Waits 600ms (3 × 100ms × 2.0)
+///
+/// assert!(status.failed_checks() >= 3);
+/// assert_eq!(status.overall_health(), EndpointHealth::Unhealthy);
+/// ```
+#[ allow( dead_code ) ] // Used across multiple test files
+pub async fn wait_for_checks( check_interval : Duration, min_checks : u32 )
+{
+  let wait_time = calculate_safe_wait_time( check_interval, min_checks, 2.0 );
+  tokio::time::sleep( wait_time ).await;
+}
+
+/// Timing assertion macro for range-based check counts
+///
+/// Use `>=` assertions instead of exact counts to tolerate timing variance.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// // BAD (brittle - fails if 6 checks happen):
+/// assert_eq!(status.total_checks(), 5);
+///
+/// // GOOD (robust - tolerates 5, 6, 7, ... checks):
+/// assert_timing_range!(status.total_checks() >= 5,
+///   "Expected ≥5 checks after 750ms wait, got {}", status.total_checks());
+/// ```
+#[ allow( clippy::items_after_test_module ) ] // Macro placement is intentional for visibility
+#[macro_export]
+macro_rules! assert_timing_range
+{
+  ( $condition:expr, $( $arg:tt )* ) =>
+  {
+    assert!( $condition, $( $arg )* );
+  };
 }
