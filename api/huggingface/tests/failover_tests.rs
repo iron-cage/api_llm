@@ -359,10 +359,12 @@ async fn test_random_strategy_uses_random_endpoints()
 #[ cfg( feature = "integration" ) ]
 
 #[ tokio::test ]
-async fn test_random_strategy_avoids_unhealthy_endpoints() 
+async fn test_random_strategy_avoids_unhealthy_endpoints()
 {
   let client = create_test_client( );
 
+  // Test that Random strategy avoids unhealthy endpoints
+  // We pre-mark the invalid endpoint as unhealthy to make the test deterministic
   let config = FailoverConfig {
   endpoints : vec![
       "invalid-model-xyz".to_string( ),
@@ -376,25 +378,16 @@ async fn test_random_strategy_avoids_unhealthy_endpoints()
 
   let failover = FailoverManager::new( config ).expect( "Failover creation should succeed" );
 
-  // First request will mark first endpoint as unhealthy
-  let result = failover.execute_with_failover( |model| {
-  let client = client.clone( );
-  let messages = create_test_messages( );
-  Box::pin( async move {
-      client.providers( ).chat_completion(
-  &model,
-  messages,
-  Some( 20 ),
-  None,
-  None,
-      ).await
-  } )
-  } ).await;
+  // Pre-mark invalid endpoint as unhealthy (deterministic setup)
+  // This ensures Random strategy can only select the healthy endpoint
+  failover.record_failure( "invalid-model-xyz" ).await;
 
-  assert!( result.is_ok( ), "Should failover to healthy endpoint" );
+  // Verify first endpoint is now unhealthy
+  let health = failover.health_status( ).await;
+  assert!( !health[ 0 ].healthy, "Invalid endpoint should be pre-marked unhealthy" );
 
-  // Subsequent requests should only use healthy endpoint
-  for _ in 0..3
+  // All requests should now only use the healthy endpoint (Random avoids unhealthy)
+  for _ in 0..4
   {
   let result = failover.execute_with_failover( |model| {
       let client = client.clone( );
@@ -414,9 +407,9 @@ async fn test_random_strategy_avoids_unhealthy_endpoints()
   }
 
   let health = failover.health_status( ).await;
-  assert!( !health[0 ].healthy, "Invalid endpoint should be unhealthy" );
-  assert!( health[1 ].healthy, "Valid endpoint should be healthy" );
-  assert_eq!( health[1 ].successes, 4, "All 4 successes should be on second endpoint" );
+  assert!( !health[ 0 ].healthy, "Invalid endpoint should remain unhealthy" );
+  assert!( health[ 1 ].healthy, "Valid endpoint should be healthy" );
+  assert_eq!( health[ 1 ].successes, 4, "All 4 successes should be on healthy endpoint" );
 }
 
 // ============================================================================

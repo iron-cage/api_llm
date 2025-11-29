@@ -12,9 +12,15 @@
 # Per "dont tolerate silent failing" directive: Tests MUST fail loudly if
 # dependencies are unavailable, never silently skip.
 
+# Fix(issue-double-spawn-003): Removed terminate-after from workspace-level config
+# Root cause: Workspace config was overriding crate-level config fixes
+# The terminate-after = 2 retry mechanism causes double-spawn errors when nextest runs from crate dir
+# but test binaries are in workspace target dir - path resolution fails on retry attempts
+# This workspace-level config applies to ALL packages, so must match crate-level fixes
+# Pitfall: Configuration hierarchy means workspace config can override package-specific fixes
 [ profile.default ]
 # Default timeout for regular unit tests (3 minutes)
-slow-timeout = { period = "180s", terminate-after = 2 }
+slow-timeout = { period = "180s" }  # Removed: terminate-after = 2
 
 # Limit test binary parallelism to prevent resource exhaustion
 # Each integration test binary spawns an Ollama server (~1GB RAM + CPU)
@@ -23,7 +29,9 @@ test-threads = 1  # Fully serial execution to prevent resource exhaustion
 
 # Integration tests need extended timeouts for model pulling and server startup
 # Each test binary gets unique Ollama server port via binary name hash
+# Fix(issue-double-spawn-003): Removed terminate-after from integration test overrides
+# Same root cause as default profile - retry mechanism incompatible with workspace/crate directory mismatch
 [[ profile.default.overrides ]]
 filter = 'package(api_ollama) and (binary(embeddings_tests) or binary(api_comprehensive_tests) or binary(streaming_tests) or binary(tool_calling_tests) or binary(builder_patterns_tests) or binary(vision_support_tests))'
-slow-timeout = { period = "600s", terminate-after = 2 }  # 10 minutes for integration tests
+slow-timeout = { period = "600s" }  # 10 minutes for integration tests (removed: terminate-after = 2)
 threads-required = "num-test-threads"  # Tests within binary run serially (share same Ollama server)

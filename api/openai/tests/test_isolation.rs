@@ -8,6 +8,9 @@ use std::collections::HashMap;
 use api_openai::secret::Secret;
 use secrecy::ExposeSecret;
 
+#[ cfg( feature = "retry" ) ]
+use api_openai::EnhancedRetryConfig;
+
 /// Test environment isolation manager
 ///
 /// Manages test-specific environment variables and state cleanup
@@ -324,8 +327,25 @@ impl IsolatedClient
     let env = api_openai::environment::OpenaiEnvironmentImpl::build( secret, None, None, api_openai::environment::OpenAIRecommended::base_url().to_string(), api_openai::environment::OpenAIRecommended::realtime_base_url().to_string() )
       .map_err( | e | -> Box< dyn core::error::Error > { format!( "INTEGRATION TEST FAILURE: Failed to build environment with real credentials : {e}" ).into() } )?;
 
-    api_openai ::Client::build( env )
-      .map_err( | e | format!( "INTEGRATION TEST FAILURE: Failed to build client with real API environment : {e}" ).into() )
+    let mut client = api_openai ::Client::build( env )
+      .map_err( | e | -> Box< dyn core::error::Error > { format!( "INTEGRATION TEST FAILURE: Failed to build client with real API environment : {e}" ).into() } )?;
+
+    // Enable retry for integration tests to handle transient API failures (500 errors, network issues)
+    // This reflects real-world usage where production clients would enable retry
+    #[ cfg( feature = "retry" ) ]
+    {
+      client = client.with_retry_config( EnhancedRetryConfig
+      {
+        max_attempts : 5,              // Up to 5 attempts for flaky OpenAI API
+        base_delay_ms : 2000,          // Start with 2s delay
+        max_delay_ms : 30000,          // Max 30s delay between retries
+        max_elapsed_time_ms : 120_000, // Total 2min timeout for all attempts
+        jitter_ms : 500,               // Add 500ms jitter to prevent thundering herd
+        backoff_multiplier : 2.0,      // Exponential backoff (2s, 4s, 8s, 16s, 30s)
+      } );
+    }
+
+    Ok( client )
   }
 
 }

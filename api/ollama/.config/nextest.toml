@@ -21,12 +21,13 @@
 # Default timeout for regular unit tests (3 minutes)
 slow-timeout = { period = "180s" }  # Removed: terminate-after = 2
 
-# Optimization(phase1-parallelization): Selective parallelization for unit vs integration tests
-# Root cause: Only 8/48 binaries need Ollama servers, but all ran serially (test-threads=1)
-# Solution: Run unit test binaries in parallel (8 threads), limit integration tests (2 threads)
-# Impact: Expected 47% runtime reduction (59min -> 32min) - 353 fast tests run concurrently
-# Pitfall: May cause resource exhaustion on systems with <16GB RAM - reduce threads if flaky
-test-threads = 8  # Allow 8 parallel unit test binaries (no Ollama servers needed)
+# Fix(issue-double-spawn-002): Reduced global test-threads from 8 to 1
+# Root cause: High parallelism (8 threads) + crate-level current_dir causes nextest path resolution failures
+# When running from crate dir (/path/to/crate) with test binaries in workspace target (/path/to/workspace/target/debug/deps),
+# nextest's parallel execution triggers double-spawn errors: "No such file or directory (os error 2)"
+# Running from workspace root works (all 413 tests pass), but local nextest mode runs from crate dir
+# Pitfall: Parallelism >1 exposes path resolution race conditions in workspace/crate directory mismatch scenarios
+test-threads = 1  # Serialize all test binaries to avoid double-spawn errors
 
 # Integration tests need extended timeouts for model pulling and server startup
 # Each test binary gets unique Ollama server port via binary name hash
@@ -42,10 +43,15 @@ test-threads = 8  # Allow 8 parallel unit test binaries (no Ollama servers neede
 # Pitfall: Any test binary making real Ollama requests needs extended timeout to handle model loading overhead
 # Fix(issue-double-spawn-001): Removed terminate-after from integration test overrides
 # Same root cause as default profile - retry mechanism incompatible with workspace/crate path resolution
+# Fix(issue-invalid-config-001): Removed test-threads from overrides section
+# Root cause: nextest only supports test-threads at profile level, not in overrides
+# Warning: "ignoring unknown configuration keys: profile.default.overrides.N.test-threads"
+# Global test-threads = 1 already controls binary parallelism; overrides can only set timeout and threads-required
+# Pitfall: test-threads in overrides is silently ignored - use profile-level setting instead
 [[ profile.default.overrides ]]
 filter = 'package(api_ollama) and (binary(embeddings_tests) or binary(api_comprehensive_tests) or binary(streaming_tests) or binary(tool_calling_tests) or binary(vision_support_tests) or binary(example_model_validation_test) or binary(health_checks_tests) or binary(sync_api_tests) or binary(workspace_tests))'
 slow-timeout = { period = "600s" }  # 10 minutes for integration tests (removed: terminate-after = 2)
-test-threads = 1  # Max 1 Ollama server at a time (prevents resource exhaustion)
+# Note: test-threads controlled globally at profile level (line 30)
 threads-required = "num-test-threads"  # Tests within binary run serially (share same Ollama server)
 
 # Builder pattern tests use chat endpoint which is extremely slow with tinyllama (up to 12+ min per request)
@@ -60,5 +66,5 @@ threads-required = "num-test-threads"  # Tests within binary run serially (share
 [[ profile.default.overrides ]]
 filter = 'package(api_ollama) and binary(builder_patterns_tests)'
 slow-timeout = { period = "780s" }  # 13 minutes for extremely slow chat tests (removed: terminate-after = 2)
-test-threads = 1  # Max 1 Ollama server at a time (prevents resource exhaustion)
+# Note: test-threads controlled globally at profile level (line 30), not per-override
 threads-required = "num-test-threads"

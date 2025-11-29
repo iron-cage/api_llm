@@ -352,6 +352,14 @@ impl FailoverManager
   Err( e ) => {
           self.record_failure( &endpoint_clone ).await;
           last_error = Some( e );
+
+          // Exponential backoff before retry: 500ms, 1s, 2s, 4s (capped at 5s)
+          // This gives the API time to recover from rate limiting or transient issues
+          if attempts <= self.config.max_retries
+          {
+            let delay_ms = 500 * 2u64.pow( attempts - 1 );
+            tokio::time::sleep( Duration::from_millis( delay_ms.min( 5000 ) ) ).await;
+          }
   }
       }
   }

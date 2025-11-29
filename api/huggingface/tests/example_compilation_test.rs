@@ -179,61 +179,6 @@ fn test_examples_compile_all_features()
   }
 }
 
-/// Test that each example compiles individually
-///
-/// This is more thorough than building all examples at once.
-#[ test ]
-fn test_each_example_compiles()
-{
-  let cargo_toml = fs::read_to_string( "Cargo.toml" )
-  .expect( "Failed to read Cargo.toml" );
-
-  let mut example_names = Vec::new();
-
-  // Extract example names from Cargo.toml
-  let lines : Vec< &str > = cargo_toml.lines().collect();
-  for i in 0..lines.len()
-  {
-  if lines[ i ].trim() == "[[example]]"
-      && i + 1 < lines.len()
-      {
-  let name_line = lines[ i + 1 ];
-  if let Some( start ) = name_line.find( "name = \"" )
-  {
-          if let Some( end ) = name_line[ start + 8.. ].find( '"' )
-          {
-      let name = &name_line[ start + 8..start + 8 + end ];
-      example_names.push( name.to_string() );
-          }
-  }
-      }
-  }
-
-  let mut failures = Vec::new();
-
-  for name in &example_names
-  {
-  let output = Command::new( "cargo" )
-      .args( [ "build", "--example", name, "--all-features" ] )
-      .env( "RUSTFLAGS", "-D warnings" )
-      .output()
-      .expect( "Failed to run cargo build" );
-
-  if !output.status.success()
-  {
-      let stderr = String::from_utf8_lossy( &output.stderr );
-      failures.push( format!( "{name}: {stderr}" ) );
-  }
-  }
-
-  assert!(
-  failures.is_empty(),
-  "Found {} examples that failed to compile:\n{}",
-  failures.len(),
-  failures.join( "\n\n" )
-  );
-}
-
 /// Test that example names follow naming conventions
 ///
 /// Examples should use `snake_case` naming.

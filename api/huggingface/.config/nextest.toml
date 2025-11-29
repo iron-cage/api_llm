@@ -1,0 +1,41 @@
+# Nextest configuration for api_huggingface
+#
+# Defense-in-depth for integration tests hitting real HuggingFace API.
+# Primary reliability comes from FailoverManager exponential backoff.
+# This config handles remaining edge cases (network blips, rare API issues).
+#
+# CONFIGURATION RATIONALE:
+# - Sequential execution (test-threads=1): Prevents parallel API request competition
+# - Retries with backoff: Handles transient failures not caught by FailoverManager
+# - fail-fast=false: Gather complete diagnostic data on systemic issues
+
+[ profile.default ]
+# Sequential execution prevents API rate limiting from parallel requests
+# HuggingFace Inference API has stricter rate limits than other providers
+test-threads = 1
+
+# Retry transient failures (network blips, rare API issues)
+# Conservative count since FailoverManager now has exponential backoff
+retries = 2
+backoff = "exponential"
+delay = "3s"
+max-delay = "15s"
+jitter = true
+
+# Run all tests even if some fail - gather complete failure data
+fail-fast = false
+
+# Default timeout for unit tests (3 minutes)
+slow-timeout = { period = "180s" }
+
+[[ profile.default.overrides ]]
+# Integration tests making real API calls get one extra retry
+filter = 'binary(failover_tests) or binary(streaming_tests) or binary(function_calling_tests)'
+retries = 3
+slow-timeout = { period = "300s" }
+
+[[ profile.default.overrides ]]
+# Example compilation tests - no retries needed, but long timeout
+filter = 'binary(example_compilation_test)'
+retries = 0
+slow-timeout = { period = "600s" }

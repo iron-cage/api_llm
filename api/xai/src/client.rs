@@ -62,6 +62,22 @@ mod private
   {
     /// Builds a new client with the given environment configuration.
     ///
+    /// # HTTP Client Configuration
+    ///
+    /// The client is configured with resilient network settings:
+    ///
+    /// - **Total timeout**: From environment (default 30s, tests use 120s)
+    /// - **Connect timeout**: 15s for DNS resolution + TCP + TLS handshake
+    /// - **Pool idle timeout**: 90s to reuse connections efficiently
+    /// - **TCP keepalive**: 60s to detect dead connections
+    ///
+    /// The connect timeout is set to 15s to ensure sufficient time remains for
+    /// the actual API response in production (30s total - 15s connect = 15s for API).
+    /// For integration tests with 120s timeout, this leaves 105s for API processing.
+    ///
+    /// These settings prevent timeout issues on slow networks while still
+    /// catching genuine failures within reasonable time.
+    ///
     /// # Errors
     ///
     /// Returns `XaiError::Http` if the HTTP client cannot be created.
@@ -69,6 +85,9 @@ mod private
     {
       let http_client = HttpClient::builder()
         .timeout( environment.timeout() )
+        .connect_timeout( std::time::Duration::from_secs( 15 ) )
+        .pool_idle_timeout( std::time::Duration::from_secs( 90 ) )
+        .tcp_keepalive( std::time::Duration::from_secs( 60 ) )
         .build()
         .map_err( |e| XaiError::Http( format!( "Failed to create HTTP client : {e}" ) ) )?;
 
