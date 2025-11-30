@@ -74,7 +74,7 @@ missing_docs_in_private_items = "allow"
 ## api
 
 [workspace.dependencies.api_openai]
-version = "~0.2.0"
+version = "~0.3.0"
 path = "api/openai"
 default-features = false
 
@@ -84,12 +84,12 @@ path = "api/claude"
 default-features = false
 
 [workspace.dependencies.api_ollama]
-version = "~0.1.0"
+version = "~0.2.0"
 path = "api/ollama"
 default-features = false
 
 [workspace.dependencies.api_xai]
-version = "~0.2.0"
+version = "~0.3.0"
 path = "api/xai"
 default-features = false
 
