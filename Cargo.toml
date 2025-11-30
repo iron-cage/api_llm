@@ -89,7 +89,7 @@ path = "api/ollama"
 default-features = false
 
 [workspace.dependencies.api_xai]
-version = "~0.2.0"
+version = "~0.3.0"
 path = "api/xai"
 default-features = false
 
