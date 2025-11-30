@@ -169,7 +169,7 @@ Tests use `Client::new()` which relies on **workspace_tools** to load the API ke
 1. **Workspace Secrets File** (Primary): `secret/-secrets.sh`
    - Uses workspace_tools 0.6.0 to locate the workspace root
    - **Important**: workspace_tools 0.6.0 uses `secret/` (visible directory, NO dot prefix)
-   - Follows the [Secret Directory Policy](../../secret_directory_policy.md)
+   - Follows the [Secret Directory Policy](../../../secret/readme.md)
 
 2. **Environment Variable** (Fallback): `GEMINI_API_KEY`
    - Standard environment variable

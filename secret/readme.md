@@ -20,7 +20,7 @@ workspace_root/
 - **workspace_tools 0.6.0+**: Uses `secret/` directly (no symlinks needed)
 - **Secret File**: Uses hyphen prefix (`-secrets.sh`) to auto-hide from git via `-*` gitignore pattern
 
-**See [Secret Directory Policy](../secret_directory_policy.md) for complete requirements.**
+**This document defines the complete secret directory policy.**
 
 ## Usage
 

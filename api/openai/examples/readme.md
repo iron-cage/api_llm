@@ -31,31 +31,31 @@ cargo run --example responses_create
 
 | Example | Description | Key Features | API Endpoints |
 |---------|-------------|-------------|---------------|
-| [`responses_create.rs`](responses_create.rs) | Basic response creation | Simple text input, response parsing | `POST /responses` |
-| [`responses_create_image_input.rs`](responses_create_image_input.rs) | Multimodal response with image input | Image + text processing, vision capabilities | `POST /responses` |
-| [`responses_create_stream.rs`](responses_create_stream.rs) | Streaming response generation | Real-time text streaming, event handling | `POST /responses` (stream) |
-| [`responses_create_with_tools.rs`](responses_create_with_tools.rs) | Response with function calling | Tool definitions, function execution | `POST /responses` |
-| [`responses_get.rs`](responses_get.rs) | Retrieve existing response | Response retrieval by ID | `GET /responses/{id}` |
-| [`responses_list_input_items.rs`](responses_list_input_items.rs) | List response input items | Input item enumeration, pagination | `GET /responses/{id}/input_items` |
-| [`responses_delete.rs`](responses_delete.rs) | Delete a response | Response cleanup, deletion verification | `DELETE /responses/{id}` |
-| [`responses_update.rs`](responses_update.rs) | Update response metadata | Metadata modification, response updates | `PATCH /responses/{id}` |
-| [`responses_cancel.rs`](responses_cancel.rs) | Cancel in-progress response | Stream cancellation, cleanup | `POST /responses/{id}/cancel` |
+| `responses_create.rs` | Basic response creation *(planned)* | Simple text input, response parsing | `POST /responses` |
+| [`openai_responses_create_image_input.rs`](openai_responses_create_image_input.rs) | Multimodal response with image input | Image + text processing, vision capabilities | `POST /responses` |
+| `responses_create_stream.rs` | Streaming response generation *(planned)* | Real-time text streaming, event handling | `POST /responses` (stream) |
+| [`openai_responses_create_with_tools.rs`](openai_responses_create_with_tools.rs) | Response with function calling | Tool definitions, function execution | `POST /responses` |
+| [`openai_responses_get.rs`](openai_responses_get.rs) | Retrieve existing response | Response retrieval by ID | `GET /responses/{id}` |
+| [`openai_responses_list_input_items.rs`](openai_responses_list_input_items.rs) | List response input items | Input item enumeration, pagination | `GET /responses/{id}/input_items` |
+| [`openai_responses_delete.rs`](openai_responses_delete.rs) | Delete a response | Response cleanup, deletion verification | `DELETE /responses/{id}` |
+| [`openai_responses_update.rs`](openai_responses_update.rs) | Update response metadata | Metadata modification, response updates | `PATCH /responses/{id}` |
+| [`openai_responses_cancel.rs`](openai_responses_cancel.rs) | Cancel in-progress response | Stream cancellation, cleanup | `POST /responses/{id}/cancel` |
 
 ### 🔄 Realtime API
 
 | Example | Description | Key Features | API Endpoints |
 |---------|-------------|-------------|---------------|
-| [`realtime_response_create.rs`](realtime_response_create.rs) | Create realtime response | WebSocket connection, realtime communication | WebSocket `/realtime` |
-| [`realtime_response_cancel.rs`](realtime_response_cancel.rs) | Cancel realtime response | Realtime cancellation, connection cleanup | WebSocket `/realtime` |
-| [`realtime_conversation_item_create.rs`](realtime_conversation_item_create.rs) | Create conversation item | Conversation management, item creation | WebSocket `/realtime` |
-| [`realtime_conversation_item_delete.rs`](realtime_conversation_item_delete.rs) | Delete conversation item | Item cleanup, conversation management | WebSocket `/realtime` |
-| [`realtime_conversation_item_retrieve.rs`](realtime_conversation_item_retrieve.rs) | Retrieve conversation item | Item retrieval, conversation access | WebSocket `/realtime` |
-| [`realtime_conversation_item_truncate.rs`](realtime_conversation_item_truncate.rs) | Truncate conversation item | Item modification, content truncation | WebSocket `/realtime` |
-| [`realtime_input_audio_buffer_append.rs`](realtime_input_audio_buffer_append.rs) | Append audio buffer | Audio streaming, buffer management | WebSocket `/realtime` |
-| [`realtime_input_audio_buffer_clear.rs`](realtime_input_audio_buffer_clear.rs) | Clear audio buffer | Buffer cleanup, audio management | WebSocket `/realtime` |
-| [`realtime_input_audio_buffer_commit.rs`](realtime_input_audio_buffer_commit.rs) | Commit audio buffer | Buffer processing, audio finalization | WebSocket `/realtime` |
-| [`realtime_session_update.rs`](realtime_session_update.rs) | Update realtime session | Session configuration, parameter updates | WebSocket `/realtime` |
-| [`realtime_transcription_session_update.rs`](realtime_transcription_session_update.rs) | Update transcription session | Transcription settings, session management | WebSocket `/realtime` |
+| [`openai_realtime_response_create.rs`](openai_realtime_response_create.rs) | Create realtime response | WebSocket connection, realtime communication | WebSocket `/realtime` |
+| [`openai_realtime_response_cancel.rs`](openai_realtime_response_cancel.rs) | Cancel realtime response | Realtime cancellation, connection cleanup | WebSocket `/realtime` |
+| [`openai_realtime_conversation_item_create.rs`](openai_realtime_conversation_item_create.rs) | Create conversation item | Conversation management, item creation | WebSocket `/realtime` |
+| [`openai_realtime_conversation_item_delete.rs`](openai_realtime_conversation_item_delete.rs) | Delete conversation item | Item cleanup, conversation management | WebSocket `/realtime` |
+| [`openai_realtime_conversation_item_retrieve.rs`](openai_realtime_conversation_item_retrieve.rs) | Retrieve conversation item | Item retrieval, conversation access | WebSocket `/realtime` |
+| [`openai_realtime_conversation_item_truncate.rs`](openai_realtime_conversation_item_truncate.rs) | Truncate conversation item | Item modification, content truncation | WebSocket `/realtime` |
+| [`openai_realtime_input_audio_buffer_append.rs`](openai_realtime_input_audio_buffer_append.rs) | Append audio buffer | Audio streaming, buffer management | WebSocket `/realtime` |
+| [`openai_realtime_input_audio_buffer_clear.rs`](openai_realtime_input_audio_buffer_clear.rs) | Clear audio buffer | Buffer cleanup, audio management | WebSocket `/realtime` |
+| [`openai_realtime_input_audio_buffer_commit.rs`](openai_realtime_input_audio_buffer_commit.rs) | Commit audio buffer | Buffer processing, audio finalization | WebSocket `/realtime` |
+| [`openai_realtime_session_update.rs`](openai_realtime_session_update.rs) | Update realtime session | Session configuration, parameter updates | WebSocket `/realtime` |
+| [`openai_realtime_transcription_session_update.rs`](openai_realtime_transcription_session_update.rs) | Update transcription session | Transcription settings, session management | WebSocket `/realtime` |
 
 ### 💬 Chat Completions API
 
@@ -101,22 +101,22 @@ cargo run --example responses_create
 
 ### 🚀 **Beginner Examples**
 Start with these if you're new to the OpenAI API:
-- `responses_create.rs` - Basic text generation
-- `responses_get.rs` - Retrieve responses by ID
-- `realtime_response_create.rs` - Real-time communication basics
+- `responses_create.rs` - Basic text generation *(planned)*
+- `openai_responses_get.rs` - Retrieve responses by ID
+- `openai_realtime_response_create.rs` - Real-time communication basics
 
 ### 🔥 **Advanced Examples**
 These showcase more complex functionality:
-- `responses_create_with_tools.rs` - Function calling
-- `responses_create_stream.rs` - Real-time streaming
-- `responses_create_image_input.rs` - Multimodal processing
-- `realtime_input_audio_buffer_append.rs` - Audio streaming
+- `openai_responses_create_with_tools.rs` - Function calling
+- `responses_create_stream.rs` - Real-time streaming *(planned)*
+- `openai_responses_create_image_input.rs` - Multimodal processing
+- `openai_realtime_input_audio_buffer_append.rs` - Audio streaming
 
 ### 🛠️ **Management Examples**
 Learn how to manage API resources:
-- `responses_update.rs` & `responses_delete.rs` - Response management
-- `responses_cancel.rs` - Cancel in-progress operations
-- `realtime_session_update.rs` - Session configuration
+- `openai_responses_update.rs` & `openai_responses_delete.rs` - Response management
+- `openai_responses_cancel.rs` - Cancel in-progress operations
+- `openai_realtime_session_update.rs` - Session configuration
 
 ## Common Patterns
 

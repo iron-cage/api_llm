@@ -4,7 +4,7 @@
 - **Version:** 0.6
 - **Date:** 2025-09-28
 - **Status:** Production Ready
-- **System Specification:** [../../spec.md](../../spec.md)
+- **System Specification:** [../../../spec.md](../../../spec.md)
 
 ## document overview
 
@@ -14,7 +14,7 @@ This specification defines a Rust library crate (`api_ollama`) that provides HTT
 
 **Governing Principle**: "Thin Client, Rich API" - Expose all server-side functionality transparently while maintaining zero client-side intelligence or **automatic** behaviors. Enterprise reliability features (retry logic, circuit breakers, rate limiting) are explicitly **allowed and encouraged** when implemented with explicit developer configuration and transparent operation.
 
-**Note:** This specification must be implemented in accordance with the ecosystem-wide requirements defined in the [System Specification](../../spec.md).
+**Note:** This specification must be implemented in accordance with the ecosystem-wide requirements defined in the [System Specification](../../../spec.md).
 
 ## specification type: reusable rust library
 

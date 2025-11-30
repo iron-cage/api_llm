@@ -115,7 +115,7 @@ workspace_root/
 - Secret directory MUST be named `secret/` at workspace root (NO dot prefix)
 - Secrets file must be named `-secrets.sh`
 - workspace_tools 0.6.0 uses `secret/` directly (no symlinks needed)
-- See [Secret Directory Policy](../../../secret_directory_policy.md) for authoritative structure
+- See [Secret Directory Policy](../../../secret/readme.md) for authoritative structure
 
 ## Secrets File Format
 
@@ -391,10 +391,9 @@ test:
 
 ## Related Documentation
 
-- [Workspace Tools Secret Management](../../../docs/workspace_secrets.md)
-- [API Authentication](./authentication.md)
-- [Integration Testing Guide](./integration_testing.md)
-- [Examples README](../examples/README.md)
+- [Secret Directory Policy](../../../secret/readme.md)
+- [Examples README](../examples/readme.md)
+- [Tests README](../../tests/readme.md)
 
 ## Support
 

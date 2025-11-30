@@ -427,7 +427,7 @@ tests/
   - Environment variable status (e.g., "not set or empty")
   - Setup instructions with exact commands to fix the issue
 
-- **Secret Loading via workspace_tools**: Uses workspace_tools 0.6.0 to properly locate and load secrets from workspace root's `secret/` directory following the [Secret Directory Policy](../../secret_directory_policy.md)
+- **Secret Loading via workspace_tools**: Uses workspace_tools 0.6.0 to properly locate and load secrets from workspace root's `secret/` directory following the [Secret Directory Policy](../../secret/readme.md)
 
 - **No Silent Skipping**: Tests NEVER skip silently - missing API keys result in test failures with detailed path information
 

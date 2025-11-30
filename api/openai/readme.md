@@ -151,19 +151,19 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
 See the [`examples/`](examples/) directory for comprehensive examples of all API endpoints:
 
 ### Responses API
-- [`responses_create.rs`](examples/responses_create.rs) - Basic response creation
-- [`responses_create_stream.rs`](examples/responses_create_stream.rs) - Streaming responses
-- [`responses_create_with_tools.rs`](examples/responses_create_with_tools.rs) - Function calling
-- [`responses_create_image_input.rs`](examples/responses_create_image_input.rs) - Multimodal input
-- [`responses_get.rs`](examples/responses_get.rs) - Retrieve responses
-- [`responses_update.rs`](examples/responses_update.rs) - Update responses
-- [`responses_delete.rs`](examples/responses_delete.rs) - Delete responses
-- [`responses_cancel.rs`](examples/responses_cancel.rs) - Cancel responses
+- `responses_create.rs` - Basic response creation *(planned)*
+- `responses_create_stream.rs` - Streaming responses *(planned)*
+- [`openai_responses_create_with_tools.rs`](examples/openai_responses_create_with_tools.rs) - Function calling
+- [`openai_responses_create_image_input.rs`](examples/openai_responses_create_image_input.rs) - Multimodal input
+- [`openai_responses_get.rs`](examples/openai_responses_get.rs) - Retrieve responses
+- [`openai_responses_update.rs`](examples/openai_responses_update.rs) - Update responses
+- [`openai_responses_delete.rs`](examples/openai_responses_delete.rs) - Delete responses
+- [`openai_responses_cancel.rs`](examples/openai_responses_cancel.rs) - Cancel responses
 
 ### Realtime API
-- [`realtime_response_create.rs`](examples/realtime_response_create.rs) - Real-time responses
-- [`realtime_input_audio_buffer_append.rs`](examples/realtime_input_audio_buffer_append.rs) - Audio streaming
-- [`realtime_session_update.rs`](examples/realtime_session_update.rs) - Session management
+- [`openai_realtime_response_create.rs`](examples/openai_realtime_response_create.rs) - Real-time responses
+- [`openai_realtime_input_audio_buffer_append.rs`](examples/openai_realtime_input_audio_buffer_append.rs) - Audio streaming
+- [`openai_realtime_session_update.rs`](examples/openai_realtime_session_update.rs) - Session management
 
 Run any example with:
 ```bash
@@ -278,4 +278,4 @@ The crate follows a layered architecture using the `mod_interface` pattern:
 
 ## License
 
-See the [License](License) file for details.
+See the [license](license) file for details.

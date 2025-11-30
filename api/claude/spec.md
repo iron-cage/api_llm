@@ -401,7 +401,7 @@ client.execute_with_enterprise_features(request).await?;
 - Never log or expose actual secret values
 - Use `secrecy::SecretString` for in-memory protection
 - Support multiple credential sources with priority order:
-  1. **Workspace secrets**: `workspace_root/secret/-secrets.sh` (Primary location - see [Secret Directory Policy](../../secret_directory_policy.md))
+  1. **Workspace secrets**: `workspace_root/secret/-secrets.sh` (Primary location - see [Secret Directory Policy](../../secret/readme.md))
   2. **Environment variables**: `ANTHROPIC_API_KEY` (Fallback)
   3. **Runtime**: programmatic setting (Direct)
 
@@ -745,7 +745,7 @@ let client = Client::new(secret)?;
 let client = Client::from_env()?;
 
 // Load from workspace secrets (workspace_root/secret/-secrets.sh with fallback to env)
-// See Secret Directory Policy: ../../secret_directory_policy.md
+// See Secret Directory Policy: ../../secret/readme.md
 let client = Client::from_workspace()?;
 ```
 

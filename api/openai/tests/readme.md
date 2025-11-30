@@ -29,7 +29,7 @@ Tests use `Secret::load_with_fallbacks()` which relies on **workspace_tools** to
 2. **Workspace Secrets File** (Primary): `<workspace_root>/secret/-secrets.sh`
    - Uses workspace_tools 0.6.0 to auto-discover workspace root (searches for `Cargo.toml`)
    - Looks for `secret/-secrets.sh` at workspace root (NO dot prefix)
-   - Follows the [Secret Directory Policy](../../secret_directory_policy.md)
+   - Follows the [Secret Directory Policy](../../../secret/readme.md)
 3. **Alternative Secret Files** (Compatibility): `secrets.sh`, `.env`
 
 **All paths attempted are listed in error messages when credentials are missing.**

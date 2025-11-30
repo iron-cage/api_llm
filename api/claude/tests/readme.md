@@ -105,7 +105,7 @@ Tests use `Client::from_workspace()` which relies on **workspace_tools** to load
 1. **Workspace Secrets File** (Primary): `<workspace_root>/secret/-secrets.sh`
    - Uses workspace_tools 0.6.0 to auto-discover workspace root (searches for `Cargo.toml`)
    - Looks for `secret/-secrets.sh` at workspace root (NO dot prefix)
-   - Follows the [Secret Directory Policy](../../secret_directory_policy.md)
+   - Follows the [Secret Directory Policy](../../../secret/readme.md)
 
 2. **Environment Variable** (Fallback): `ANTHROPIC_API_KEY`
    - Standard environment variable
