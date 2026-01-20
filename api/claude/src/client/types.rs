@@ -406,8 +406,10 @@ mod private
     {
       self.content
         .iter()
-        .find( | content | content.r#type == "text" )
-        .and_then( | content | content.text.as_deref() )
+        .find_map( | content | match content {
+            ResponseContent::Text { text } => Some(text.as_str()),
+            _ => None,
+        })
     }
 
     /// Check if the response was truncated due to `max_tokens`
@@ -419,13 +421,30 @@ mod private
 
   /// Content in response
   #[ derive( Debug, Clone, Serialize, Deserialize, PartialEq ) ]
-  pub struct ResponseContent
+  #[serde(tag = "type")]
+  pub enum ResponseContent
   {
-    /// Type of content
-    pub r#type : String,
-    /// Text content (only present for text content)
-    #[ serde( skip_serializing_if = "Option::is_none" ) ]
-    pub text : Option< String >,
+    /// Text response type.
+    #[serde(rename = "text")]
+    Text {
+        /// Text response content.
+        text: String
+    },
+
+    /// Tool use response type.
+    #[serde(rename = "tool_use")]
+    ToolUse {
+        /// Tool use ID.
+        id: String,
+        /// Name of tool called.
+        name: String,
+        /// Tool use content, corresponding to user-provided schema.
+        input: serde_json::Value,
+    },
+
+    /// Other response types without present support.
+    #[serde(other)]
+    Unsupported,
   }
 
   /// Usage statistics
