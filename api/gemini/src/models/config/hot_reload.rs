@@ -4,6 +4,7 @@
 //! with debouncing, conflict resolution, and health monitoring.
 
 use super::DynamicConfig;
+#[ cfg( feature = "dynamic_configuration" ) ]
 use super::sources::{ ConfigSource, ConfigSourceEvent };
 use core::time::Duration;
 use core::sync::atomic::{ AtomicBool, AtomicU64, Ordering };
