@@ -51,6 +51,8 @@ full = [
 
 # 'enabled' is the master switch for the crate's core functionality
 enabled = [
+  "dep:api_openai_compatible",
+  "api_openai_compatible/enabled",
   "dep:mod_interface",
   "dep:error_tools",
   "dep:workspace_tools",
@@ -69,7 +71,7 @@ enabled = [
 integration = []
 
 # Feature for Server-Sent Events streaming support
-streaming = [ "dep:eventsource-stream", "dep:bytes" ]
+streaming = [ "dep:eventsource-stream", "dep:bytes", "api_openai_compatible/streaming" ]
 
 # Feature for tool calling functionality
 tool_calling = []
@@ -117,6 +119,10 @@ performance_metrics = [ "dep:prometheus" ]
 sync_api = [ "tokio/rt-multi-thread" ]
 
 [dependencies]
+
+## Shared OpenAI wire-protocol layer
+
+api_openai_compatible = { workspace = true, optional = true }
 
 ## wTools ecosystem dependencies
 

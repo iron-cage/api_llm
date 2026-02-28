@@ -6,6 +6,7 @@ members = [
   "api/huggingface",
   "api/ollama",
   "api/openai",
+  "api/openai_compatible",
   "api/xai",
 ]
 
@@ -72,6 +73,11 @@ mod_module_files = "allow"
 missing_docs_in_private_items = "allow"
 
 ## api
+
+[workspace.dependencies.api_openai_compatible]
+version = "~0.1.0"
+path = "api/openai_compatible"
+default-features = false
 
 [workspace.dependencies.api_openai]
 version = "~0.3.0"

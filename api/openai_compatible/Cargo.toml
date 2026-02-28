@@ -1,0 +1,38 @@
+[package]
+name        = "api_openai_compatible"
+version     = "0.1.0"
+edition     = "2021"
+description = "Shared OpenAI wire-protocol HTTP layer for OpenAI-compatible APIs"
+
+[lints]
+workspace = true
+
+[features]
+default     = [ "full" ]
+full        = [ "enabled", "streaming", "sync_api" ]
+enabled     = [
+  "dep:error_tools",
+  "dep:mod_interface",
+  "dep:serde",
+  "dep:serde_json",
+  "dep:reqwest",
+  "dep:url",
+  "dep:former",
+]
+streaming   = []
+sync_api    = [ "dep:tokio" ]
+integration = []
+
+[dependencies]
+error_tools   = { workspace = true, optional = true }
+mod_interface = { workspace = true, optional = true }
+serde         = { workspace = true, features = [ "derive" ], optional = true }
+serde_json    = { workspace = true, optional = true }
+reqwest       = { workspace = true, features = [ "json" ], optional = true }
+url           = { workspace = true, optional = true }
+former        = { workspace = true, optional = true }
+tokio         = { workspace = true, features = [ "rt", "rt-multi-thread" ], optional = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+reqwest    = { workspace = true, features = [ "json" ] }
