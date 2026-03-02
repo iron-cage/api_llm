@@ -182,6 +182,32 @@ OpenAI API client with support for:
 - `count_tokens` - Token counting
 - `sync_api` - Blocking API wrappers
 
+### api_openai_compatible
+
+Shared OpenAI wire-protocol HTTP layer consumed by any OpenAI-compatible API endpoint.
+Extracted from `api_xai` and available for reuse by other crates targeting OpenAI-compatible
+providers (KIE.ai, xAI, etc.).
+
+Provides:
+- Chat completion request/response wire types
+- SSE streaming wire types
+- Async HTTP client generic over environment
+- Synchronous blocking wrapper
+- Environment configuration trait and default implementation
+
+**Features:**
+- `enabled` — activates all public types and the HTTP client
+- `streaming` — Server-Sent Events streaming support
+- `sync_api` — blocking wrappers around the async client
+- `integration` — real-API integration tests (requires live credentials)
+- `full` — enables `enabled`, `streaming`, and `sync_api`
+
+**Architecture Notes:**
+- Thin-client: every method maps to exactly one API endpoint
+- Generic over `OpenAiCompatEnvironment` to support multiple providers
+- `api_openai` wire types structurally differ (i32 vs u32, Role enum vs String, multimodal content)
+  and are explicitly NOT consolidated; each crate retains its own type system
+
 ### api_xai
 
 X.AI Grok API client with support for:

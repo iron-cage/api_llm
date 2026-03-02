@@ -2,8 +2,13 @@
 //!
 //! Unit tests verify that `SyncClient::new()` succeeds when a tokio runtime
 //! can be created — the only hard requirement before any request is made.
-//! Live HTTP tests are gated behind the `integration` feature and require the
-//! `KIE_API_KEY` environment variable; they are excluded from CI by default.
+//!
+//! ## Test Matrix
+//!
+//! | Test | Scenario | Status |
+//! |------|----------|--------|
+//! | `sync_client_new_succeeds` | Runtime creation with valid env | ✅ |
+//! | `sync_client_new_with_custom_base_url_succeeds` | Custom base URL accepted | ✅ |
 
 #![ cfg( feature = "enabled" ) ]
 
@@ -32,19 +37,24 @@ fn sync_client_new_succeeds()
     .expect( "SyncClient::new() must succeed when a tokio runtime is available" );
 }
 
-// ------------------------------------------------------------------ //
-//  Integration tests (feature = "integration", requires KIE_API_KEY)
-// ------------------------------------------------------------------ //
-
-/// Stub for future live chat round-trip test against the KIE.ai API.
+/// `SyncClient` built with a custom base URL must preserve the URL in the environment.
 ///
-/// This test body will be populated in Phase 6 (`iron_creator_kie` integration).
-/// It is compiled only when the `integration` feature is enabled, keeping it
-/// out of every standard test run.
-#[ cfg( feature = "integration" ) ]
+/// The `with_base_url()` builder modifies the environment before client construction.
+/// The `SyncClient` wraps the resulting client, so the custom URL propagates through
+/// the entire construction chain.
+#[ cfg( feature = "sync_api" ) ]
 #[ test ]
-fn live_chat_roundtrip()
+fn sync_client_new_with_custom_base_url_succeeds()
 {
-  // Phase 6: implement live API integration test.
-  // Requires: `KIE_API_KEY` environment variable and `integration` feature.
+  use api_openai_compatible::{ Client, SyncClient, OpenAiCompatEnvironmentImpl };
+
+  let env = OpenAiCompatEnvironmentImpl::new( "sk-test-key" )
+    .expect( "environment construction must succeed" )
+    .with_base_url( "https://api.kie.ai/my-model/v1/" );
+
+  let client = Client::build( env )
+    .expect( "Client::build() must succeed with custom base URL" );
+
+  let _sync_client = SyncClient::new( client )
+    .expect( "SyncClient::new() must succeed with custom base URL client" );
 }

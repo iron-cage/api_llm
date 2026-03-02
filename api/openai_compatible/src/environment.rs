@@ -121,11 +121,18 @@ mod private
     pub fn new( api_key : impl Into< String > ) -> Result< Self >
     {
       let api_key = api_key.into();
-      if api_key.is_empty()
+      // Fix(issue-001)
+      // Root cause: is_empty() only rejects zero-length strings; whitespace-only
+      // keys like "   " pass the guard and produce "Authorization: Bearer    "
+      // which every API server rejects with HTTP 401, creating a confusing
+      // failure deep in network stack rather than at construction time.
+      // Pitfall: Always use trim().is_empty() when validating string credentials
+      // to prevent whitespace-only values from being treated as valid keys.
+      if api_key.trim().is_empty()
       {
         return Err
         (
-          OpenAiCompatError::InvalidApiKey( "API key must not be empty".to_owned() ).into()
+          OpenAiCompatError::InvalidApiKey( "API key must not be empty or whitespace-only".to_owned() ).into()
         );
       }
       Ok( Self

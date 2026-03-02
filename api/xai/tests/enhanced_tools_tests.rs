@@ -42,7 +42,7 @@ fn create_test_tool_call( id : &str, function_name : &str ) -> ToolCall
 }
 
 #[ tokio::test ]
-async fn test_parallel_execution_success()
+async fn parallel_execution_all_tools_succeed()
 {
   let tool_calls = vec![
     create_test_tool_call( "call_1", "func_a" ),
@@ -69,7 +69,7 @@ async fn test_parallel_execution_success()
 }
 
 #[ tokio::test ]
-async fn test_parallel_execution_with_errors()
+async fn parallel_execution_individual_errors_dont_stop_batch()
 {
   let tool_calls = vec![
     create_test_tool_call( "call_1", "func_success" ),
@@ -102,7 +102,7 @@ async fn test_parallel_execution_with_errors()
 }
 
 #[ tokio::test ]
-async fn test_sequential_execution()
+async fn sequential_execution_processes_all_tools_in_order()
 {
   let tool_calls = vec![
     create_test_tool_call( "call_1", "step_1" ),
@@ -137,7 +137,7 @@ async fn test_sequential_execution()
 }
 
 #[ tokio::test ]
-async fn test_tool_result_creation()
+async fn tool_result_constructors_produce_correct_fields()
 {
   // Test new() with JSON value
   let result1 = ToolResult::new(
@@ -170,7 +170,7 @@ async fn test_tool_result_creation()
 }
 
 #[ tokio::test ]
-async fn test_parallel_execution_empty_list()
+async fn parallel_execution_empty_list_returns_empty()
 {
   let tool_calls : Vec< ToolCall > = vec![];
 
@@ -183,7 +183,7 @@ async fn test_parallel_execution_empty_list()
 }
 
 #[ tokio::test ]
-async fn test_sequential_execution_empty_list()
+async fn sequential_execution_empty_list_returns_empty()
 {
   let tool_calls : Vec< ToolCall > = vec![];
 

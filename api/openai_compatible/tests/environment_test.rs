@@ -1,8 +1,19 @@
 //! Tests for `OpenAiCompatEnvironment` trait and `OpenAiCompatEnvironmentImpl`.
 //!
-//! Covers construction defaults, builder overrides, and header generation.
+//! Covers construction defaults, builder overrides, header generation, and
+//! validation (empty key rejection).
 //! These tests define the authoritative contract for environment types;
 //! the implementation in Phase 3 must satisfy them without modifying this file.
+//!
+//! # Test Matrix
+//!
+//! | Test | Validates |
+//! |------|-----------|
+//! | new_has_default_base_url_and_timeout | Default URL + timeout values |
+//! | new_fails_with_empty_key | Empty string key returns Err, not panic |
+//! | with_base_url_overrides | Builder replaces base URL |
+//! | with_timeout_overrides | Builder replaces timeout |
+//! | headers_returns_bearer_and_content_type | Authorization + Content-Type headers |
 
 #![ cfg( feature = "enabled" ) ]
 
@@ -32,6 +43,24 @@ fn new_has_default_base_url_and_timeout()
     env.timeout().as_secs(),
     30,
     "default timeout must be 30 seconds",
+  );
+}
+
+// ------------------------------------------------------------------ //
+
+/// `new()` with an empty key string must return `Err`, not panic or silently succeed.
+///
+/// An empty API key would produce an `Authorization: Bearer ` header with no
+/// credential, causing every request to fail with HTTP 401. Catching this at
+/// construction time gives callers a clear error instead of a cryptic 401 deep
+/// inside a network call.
+#[ test ]
+fn new_fails_with_empty_key()
+{
+  let result = OpenAiCompatEnvironmentImpl::new( "" );
+  assert!(
+    result.is_err(),
+    "new() must return Err when given an empty API key, not Ok",
   );
 }
 
@@ -120,5 +149,53 @@ fn headers_returns_bearer_and_content_type()
     ct,
     "application/json",
     "Content-Type must be application/json",
+  );
+}
+
+// ------------------------------------------------------------------ //
+
+/// `new()` with a whitespace-only key (e.g. `"   "`) must return `Err`.
+///
+/// A whitespace-only key passes the `is_empty()` guard but would still produce
+/// a useless `Authorization: Bearer    ` header that every API server rejects
+/// with HTTP 401. Accepting whitespace-only keys creates a confusing failure
+/// mode deep in the network stack instead of a clear construction-time error.
+///
+/// The implementation must treat whitespace-only as invalid (reject eagerly).
+#[ test ]
+fn new_fails_with_whitespace_only_key()
+{
+  let result = OpenAiCompatEnvironmentImpl::new( "   " );
+  assert!(
+    result.is_err(),
+    "new() must return Err for a whitespace-only API key, not Ok",
+  );
+}
+
+// ------------------------------------------------------------------ //
+
+/// `new()` with a key containing printable special characters must succeed.
+///
+/// Real API keys from providers sometimes contain hyphens, underscores, and
+/// alphanumeric characters. The implementation must not over-restrict key
+/// characters beyond what the HTTP `Authorization` header value actually
+/// forbids (control characters and a small set of non-ASCII bytes).
+#[ test ]
+fn new_succeeds_with_key_containing_printable_special_chars()
+{
+  // ASCII printable characters that are valid in HTTP header values.
+  let key = "sk-test_key-ABCD1234.special+chars";
+  let result = OpenAiCompatEnvironmentImpl::new( key );
+  assert!(
+    result.is_ok(),
+    "new() must succeed with a key containing printable ASCII special characters; got: {:?}",
+    result.err(),
+  );
+
+  let env = result.unwrap();
+  assert_eq!(
+    env.api_key(),
+    key,
+    "api_key() must return the exact key passed to new()",
   );
 }

@@ -4,7 +4,7 @@ version = "0.3.0"
 edition = "2021"
 rust-version = "1.70.0"
 authors = [
-  "Kostiantyn Wandalen <wandalen@obox.systems>",
+  "Kostiantyn Mysnyk <wandalen@obox.systems>",
 ]
 license = "MIT"
 readme = "readme.md"

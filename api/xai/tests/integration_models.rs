@@ -8,7 +8,7 @@ use inc::test_helpers::create_test_client;
 use api_xai::ClientApiAccessors;
 
 #[ tokio::test ]
-async fn test_list_models()
+async fn models_list_returns_valid_structure()
 {
   let client = create_test_client();
 
@@ -45,27 +45,27 @@ async fn test_list_models()
 }
 
 #[ tokio::test ]
-async fn test_get_specific_model_grok_beta()
+async fn model_get_grok_3_returns_details()
 {
   let client = create_test_client();
 
-  let model = client.models().get( "grok-2-1212" ).await
-    .expect( "Get grok-2-1212 model should succeed" );
+  let model = client.models().get( "grok-3" ).await
+    .expect( "Get grok-3 model should succeed" );
 
   // Verify model details
-  assert_eq!( model.id, "grok-2-1212", "Model ID should be grok-2-1212" );
+  assert_eq!( model.id, "grok-3", "Model ID should be grok-3" );
   assert_eq!( model.object, "model", "Object type should be 'model'" );
   assert!( model.created > 0, "Should have creation timestamp" );
   assert!( !model.owned_by.is_empty(), "Should have owner" );
 
-  println!( "✅ Get grok-2-1212 model test passed" );
+  println!( "✅ Get grok-3 model test passed" );
   println!( "Model : {}", model.id );
   println!( "Created : {}", model.created );
   println!( "Owned by : {}", model.owned_by );
 }
 
 #[ tokio::test ]
-async fn test_get_nonexistent_model()
+async fn model_get_nonexistent_returns_error()
 {
   let client = create_test_client();
 
@@ -90,7 +90,7 @@ async fn test_get_nonexistent_model()
 }
 
 #[ tokio::test ]
-async fn test_list_models_contains_expected_models()
+async fn models_list_contains_grok_3()
 {
   let client = create_test_client();
 
@@ -102,7 +102,7 @@ async fn test_list_models_contains_expected_models()
     .collect();
 
   // Check for common Grok model IDs
-  let expected_models = vec![ "grok-2-1212" ];
+  let expected_models = vec![ "grok-3" ];
 
   for expected in &expected_models {
     let found = model_ids.iter().any( |id| id.contains( expected ) );
@@ -114,7 +114,7 @@ async fn test_list_models_contains_expected_models()
 }
 
 #[ tokio::test ]
-async fn test_model_fields_are_valid()
+async fn model_fields_are_non_empty_and_valid()
 {
   let client = create_test_client();
 
@@ -140,7 +140,7 @@ async fn test_model_fields_are_valid()
 }
 
 #[ tokio::test ]
-async fn test_list_models_response_is_consistent()
+async fn models_list_is_consistent_across_calls()
 {
   let client = create_test_client();
 

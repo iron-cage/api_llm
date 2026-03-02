@@ -7,7 +7,8 @@
 //!
 //! # Key Insights
 //!
-//! - **Model Selection**: Using `grok-3` (current stable). Previous `grok-beta`
+//! - **Model Selection**: Using `grok-3` (current stable). Previous `grok-2-1212`
+//!   was removed from the API (HTTP 400 "Model not found"). Before that, `grok-beta`
 //!   was deprecated 2025-09-15. Always check XAI docs for latest models.
 //!
 //! - **URL Construction**: Base URL must have trailing slash (`https://api.x.ai/v1/`)
@@ -31,12 +32,12 @@ use inc::test_helpers::create_test_client;
 use api_xai::{ ChatCompletionRequest, Message, ClientApiAccessors };
 
 #[ tokio::test ]
-async fn test_chat_completion_basic()
+async fn chat_completion_basic_request_succeeds()
 {
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![ Message::user( "Say hello" ) ] )
     .max_tokens( 20u32 )
     .form();
@@ -76,12 +77,12 @@ async fn test_chat_completion_basic()
 }
 
 #[ tokio::test ]
-async fn test_chat_completion_with_system_message()
+async fn chat_completion_with_system_message_succeeds()
 {
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![
       Message::system( "You are a helpful assistant that speaks like a pirate" ),
       Message::user( "Say hello" ),
@@ -101,12 +102,12 @@ async fn test_chat_completion_with_system_message()
 }
 
 #[ tokio::test ]
-async fn test_chat_completion_with_temperature()
+async fn chat_completion_with_temperature_succeeds()
 {
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![ Message::user( "Count from 1 to 3" ) ] )
     .temperature( 0.2 ) // Low temperature for deterministic output
     .max_tokens( 20u32 )
@@ -124,12 +125,12 @@ async fn test_chat_completion_with_temperature()
 }
 
 #[ tokio::test ]
-async fn test_chat_completion_with_max_tokens()
+async fn chat_completion_with_max_tokens_respects_limit()
 {
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![ Message::user( "Write a long story" ) ] )
     .max_tokens( 10u32 ) // Very limited
     .form();
@@ -158,12 +159,12 @@ async fn test_chat_completion_with_max_tokens()
 }
 
 #[ tokio::test ]
-async fn test_chat_completion_with_multiple_messages()
+async fn chat_completion_with_conversation_history_succeeds()
 {
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![
       Message::user( "My name is Alice" ),
       Message::assistant( "Hello Alice! Nice to meet you." ),
@@ -187,12 +188,12 @@ async fn test_chat_completion_with_multiple_messages()
 }
 
 #[ tokio::test ]
-async fn test_chat_completion_model_grok_beta()
+async fn chat_completion_grok_3_model_responds()
 {
   let client = create_test_client();
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![ Message::user( "Hello" ) ] )
     .max_tokens( 10u32 )
     .form();
@@ -207,12 +208,12 @@ async fn test_chat_completion_model_grok_beta()
     response.model
   );
 
-  println!( "✅ Grok-beta model test passed" );
+  println!( "✅ Grok-3 model test passed" );
   println!( "Model used : {}", response.model );
 }
 
 #[ tokio::test ]
-async fn test_chat_completion_error_handling_invalid_model()
+async fn chat_completion_invalid_model_returns_error()
 {
   let client = create_test_client();
 
@@ -234,13 +235,13 @@ async fn test_chat_completion_error_handling_invalid_model()
 }
 
 #[ tokio::test ]
-async fn test_chat_completion_empty_message_handling()
+async fn chat_completion_empty_message_handled_gracefully()
 {
   let client = create_test_client();
 
   // XAI might accept empty messages unlike some other APIs
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![ Message::user( "" ) ] )
     .max_tokens( 10u32 )
     .form();

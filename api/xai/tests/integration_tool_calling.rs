@@ -43,7 +43,7 @@ use api_xai::{ ChatCompletionRequest, Message, Tool, ClientApiAccessors };
 use serde_json::json;
 
 #[ tokio::test ]
-async fn test_tool_calling_basic()
+async fn tool_calling_basic_request_succeeds()
 {
   let client = create_test_client();
 
@@ -69,7 +69,7 @@ async fn test_tool_calling_basic()
   );
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![
       Message::user( "What's the weather like in San Francisco?" )
     ] )
@@ -125,7 +125,7 @@ async fn test_tool_calling_basic()
 }
 
 #[ tokio::test ]
-async fn test_tool_calling_with_execution()
+async fn tool_calling_with_result_submission_succeeds()
 {
   let client = create_test_client();
 
@@ -156,7 +156,7 @@ async fn test_tool_calling_with_execution()
 
   // Step 1: Initial request with tool
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![
       Message::user( "What is 15 multiplied by 7?" )
     ] )
@@ -197,7 +197,7 @@ async fn test_tool_calling_with_execution()
       ];
 
       let followup_request = ChatCompletionRequest::former()
-        .model( "grok-2-1212".to_string() )
+        .model( "grok-3".to_string() )
         .messages( messages.clone() )
         .tools( vec![ calculator_tool ] )
         .form();
@@ -232,7 +232,7 @@ async fn test_tool_calling_with_execution()
 }
 
 #[ tokio::test ]
-async fn test_tool_calling_multiple_tools()
+async fn tool_calling_multiple_tools_accepted()
 {
   let client = create_test_client();
 
@@ -262,7 +262,7 @@ async fn test_tool_calling_multiple_tools()
   );
 
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![
       Message::user( "What's the weather and time in Tokyo?" )
     ] )
@@ -292,13 +292,13 @@ async fn test_tool_calling_multiple_tools()
 }
 
 #[ tokio::test ]
-async fn test_tool_calling_no_tools_works()
+async fn tool_calling_request_without_tools_succeeds()
 {
   let client = create_test_client();
 
   // Request without tools should still work
   let request = ChatCompletionRequest::former()
-    .model( "grok-2-1212".to_string() )
+    .model( "grok-3".to_string() )
     .messages( vec![
       Message::user( "Say hello" )
     ] )
@@ -317,7 +317,7 @@ async fn test_tool_calling_no_tools_works()
 }
 
 #[ tokio::test ]
-async fn test_tool_message_creation()
+async fn tool_message_helper_creates_correct_structure()
 {
   // Test the Message::tool() helper
   let tool_message = Message::tool(
