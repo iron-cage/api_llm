@@ -11,9 +11,11 @@ pub mod hot_reload;
 pub mod propagation;
 
 // Re-exports from submodules
+#[ cfg( feature = "dynamic_configuration" ) ]
 pub use sources::*;
 pub use rollback::*;
 pub use versioning::*;
+#[ cfg( feature = "dynamic_configuration" ) ]
 pub use hot_reload::*;
 pub use propagation::*;
 

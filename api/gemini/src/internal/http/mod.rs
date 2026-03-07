@@ -383,7 +383,7 @@ where
     };
 
     #[ cfg( not( feature = "compression" ) ) ]
-    let ( final_body, is_compressed ) = ( json_body.into_bytes(), false );
+    let ( final_body, _is_compressed ) = ( json_body.into_bytes(), false );
 
     // Add compression headers if body was compressed
     #[ cfg( feature = "compression" ) ]

@@ -1,5 +1,6 @@
 //! Chat completion types for the Gemini API.
 
+#[ cfg( feature = "chat" ) ]
 use serde::{ Deserialize, Serialize };
 
 /// Request for chat completion functionality.

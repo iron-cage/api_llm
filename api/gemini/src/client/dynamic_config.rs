@@ -6,6 +6,7 @@
 #[ cfg( not( feature = "retry" ) ) ]
 use core::time::Duration;
 use super::Client;
+#[ cfg( feature = "dynamic_configuration" ) ]
 use super::config::ConfigWatchHandle;
 
 impl Client

@@ -47,6 +47,7 @@ mod private
   pub use super::types::cache::*;
   pub use super::types::content::*;
   pub use super::types::streaming::*;
+  #[ cfg( feature = "chat" ) ]
   pub use super::types::chat::*;
   pub use super::types::comparison::*;
   pub use super::types::search::*;

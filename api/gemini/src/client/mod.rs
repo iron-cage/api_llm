@@ -18,7 +18,7 @@ mod private
   pub use super::core::Client;
   pub use super::builder::ClientBuilder;
   pub use super::config::ClientConfig;
-  #[ allow( unused_imports ) ]  // Used as return type but not re-exported
+  #[ cfg( feature = "dynamic_configuration" ) ]
   pub use super::config::ConfigWatchHandle;
   pub use super::api_interfaces::ModelsApi;
   #[ allow( unused_imports ) ]  // Used as return types but not re-exported

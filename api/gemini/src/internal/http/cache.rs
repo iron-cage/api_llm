@@ -221,9 +221,9 @@ impl RequestCache
     let response_json = match serde_json::to_string( response )
     {
       Ok( json ) => json,
-      Err( e ) => {
+      Err( _e ) => {
         #[ cfg( feature = "logging" ) ]
-        debug!( "Failed to serialize response for caching : {}", e );
+        debug!( "Failed to serialize response for caching : {}", _e );
         return;
       }
     };
@@ -262,12 +262,12 @@ impl RequestCache
     let mut entries = self.entries.lock().unwrap();
     let mut metrics = self.metrics.lock().unwrap();
 
-    let cleared_count = entries.len();
+    let _cleared_count = entries.len();
     entries.clear();
     metrics.current_size = 0;
 
     #[ cfg( feature = "logging" ) ]
-    debug!( "Cleared {} cache entries", cleared_count );
+    debug!( "Cleared {} cache entries", _cleared_count );
   }
 
   /// Get current cache metrics
@@ -282,7 +282,7 @@ impl RequestCache
     let mut entries = self.entries.lock().unwrap();
     let mut metrics = self.metrics.lock().unwrap();
 
-    let initial_size = entries.len();
+    let _initial_size = entries.len();
 
     // Collect expired keys
     let expired_keys : Vec< CacheKey > = entries
@@ -304,7 +304,7 @@ impl RequestCache
       metrics.current_size = entries.len();
 
       #[ cfg( feature = "logging" ) ]
-      debug!( "Cleaned up {} expired cache entries ({} -> {})", expired_count, initial_size, entries.len() );
+      debug!( "Cleaned up {} expired cache entries ({} -> {})", expired_count, _initial_size, entries.len() );
     }
 
     expired_count

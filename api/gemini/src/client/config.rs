@@ -251,6 +251,7 @@ use super::Client;
   }
 
 
+  #[ cfg( feature = "dynamic_configuration" ) ]
   #[ derive( Debug ) ]
   pub struct ConfigWatchHandle
   {

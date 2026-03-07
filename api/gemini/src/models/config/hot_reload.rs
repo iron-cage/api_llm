@@ -3,11 +3,15 @@
 //! This module coordinates automatic configuration reloading from multiple sources
 //! with debouncing, conflict resolution, and health monitoring.
 
+#[ cfg( feature = "dynamic_configuration" ) ]
 use super::DynamicConfig;
 #[ cfg( feature = "dynamic_configuration" ) ]
 use super::sources::{ ConfigSource, ConfigSourceEvent };
+#[ cfg( feature = "dynamic_configuration" ) ]
 use core::time::Duration;
+#[ cfg( feature = "dynamic_configuration" ) ]
 use core::sync::atomic::{ AtomicBool, AtomicU64, Ordering };
+#[ cfg( feature = "dynamic_configuration" ) ]
 use std::sync::{ Arc, Mutex };
 
 /// Hot-reloading configuration manager that coordinates multiple sources

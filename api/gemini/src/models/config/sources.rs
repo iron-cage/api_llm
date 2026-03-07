@@ -3,9 +3,13 @@
 //! This module provides configuration sources that can load from files, environment
 //! variables, and remote HTTP endpoints with automatic change watching.
 
+#[ cfg( feature = "dynamic_configuration" ) ]
 use super::DynamicConfig;
+#[ cfg( feature = "dynamic_configuration" ) ]
 use core::time::Duration;
+#[ cfg( feature = "dynamic_configuration" ) ]
 use std::collections::HashMap;
+#[ cfg( feature = "dynamic_configuration" ) ]
 use tokio::sync::mpsc::Sender;
 
 #[ cfg( feature = "dynamic_configuration" ) ]
