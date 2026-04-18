@@ -9,6 +9,8 @@ members = [
   "api/openai_compatible",
   "api/xai",
 ]
+dev-dependencies = {}
+build-dependencies = {}
 
 [workspace.metadata]
 branches = [ "master", "alpha" ]
@@ -75,7 +77,7 @@ missing_docs_in_private_items = "allow"
 ## api
 
 [workspace.dependencies.api_openai_compatible]
-version = "~0.1.0"
+version = "~0.2.0"
 path = "api/openai_compatible"
 default-features = false
 

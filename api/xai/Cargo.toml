@@ -15,6 +15,9 @@ X.AI Grok API client for accessing large language models (LLMs).
 """
 categories = [ "algorithms", "development-tools" ]
 keywords = [ "fundamental", "general-purpose", "xai", "grok", "ai" ]
+dependencies = {}
+dev-dependencies = {}
+build-dependencies = {}
 
 [lints]
 workspace = true
