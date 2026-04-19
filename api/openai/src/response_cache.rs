@@ -156,7 +156,13 @@ mod private
         hasher.update( query_hash );
       }
 
-      format!( "{:x}", hasher.finalize() )
+      {
+        use ::core::fmt::Write as _;
+        hasher.finalize().iter().fold(
+          String::with_capacity( 64 ),
+          |mut s, b| { let _ = write!( s, "{b:02x}" ); s },
+        )
+      }
     }
 
     /// Hash bytes using SHA256
@@ -164,7 +170,13 @@ mod private
     {
       let mut hasher = Sha256::new();
       hasher.update( data );
-      format!( "{:x}", hasher.finalize() )
+      {
+        use ::core::fmt::Write as _;
+        hasher.finalize().iter().fold(
+          String::with_capacity( 64 ),
+          |mut s, b| { let _ = write!( s, "{b:02x}" ); s },
+        )
+      }
     }
 
     /// Hash string using SHA256

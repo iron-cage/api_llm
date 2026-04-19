@@ -12,6 +12,7 @@
 //! - Interactive CLI interface for translation workflows
 
 #![allow(clippy::pedantic)]
+#![allow(clippy::missing_inline_in_public_items)]
 
 use std::collections::HashMap;
 use std::io::{self, Write};

@@ -10,7 +10,7 @@ use crate::error::Error;
 
 #[ cfg( feature = "logging" ) ]
 use tracing::{ warn, debug };
-use rand::Rng;
+use rand::RngExt;
 
 /// Retry configuration extracted from client for HTTP layer usage
 #[ derive( Debug, Clone ) ]

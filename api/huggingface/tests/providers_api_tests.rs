@@ -71,6 +71,7 @@
 #![ allow( clippy::vec_init_then_push ) ]
 #![ allow( clippy::needless_borrow ) ]
 #![ allow( clippy::useless_vec ) ]
+#![allow(clippy::missing_inline_in_public_items)]
 
 #[ cfg( test ) ]
 mod tests

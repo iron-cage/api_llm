@@ -12,6 +12,8 @@
 //! | Environment Variables | Loading, precedence, validation | Env var handling |
 //! | Timeout Configuration | Valid ranges, defaults, edge cases | Timeout logic |
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use std::collections::HashMap;
 use core::time::Duration;
 

@@ -40,6 +40,8 @@ mod private
   exposed use private::Client;
   exposed use private::ClientBuilder;
   exposed use private::ClientConfig;
+  #[ cfg( feature = "dynamic_configuration" ) ]
+  exposed use private::ConfigWatchHandle;
   exposed use private::ModelsApi;
   exposed use private::CachedContentApi;
   exposed use private::SyncClientBuilder;

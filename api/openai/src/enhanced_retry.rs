@@ -23,7 +23,7 @@ mod private
 
   use serde::{ Serialize, Deserialize };
   use tokio::time::sleep;
-  use rand::Rng;
+  use rand::RngExt;
 
   /// Enhanced retry configuration for HTTP requests
   #[ derive( Debug, Clone, Serialize, Deserialize ) ]

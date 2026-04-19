@@ -22,7 +22,7 @@
 #![ allow( clippy::unused_self ) ]
 #![ allow( clippy::unreadable_literal ) ]
 #![ allow( clippy::unnecessary_map_or ) ]
-#![ allow( clippy::unchecked_duration_subtraction ) ]
+#![ allow( clippy::unchecked_time_subtraction ) ]
 #![ allow( clippy::too_many_lines ) ]
 #![ allow( clippy::single_match ) ]
 #![ allow( clippy::should_implement_trait ) ]

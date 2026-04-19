@@ -17,6 +17,7 @@
 #![ allow( clippy::new_without_default ) ]
 #![ allow( clippy::if_not_else ) ]
 #![ allow( clippy::cast_possible_truncation ) ]
+#![allow(clippy::missing_inline_in_public_items)]
 
 use api_openai::ClientApiAccessors;
 use api_openai::

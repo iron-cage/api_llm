@@ -3,6 +3,8 @@
 //! Provides utilities to ensure proper test isolation by managing shared state,
 //! environment variables, and cleanup procedures.
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use std::sync::{ Mutex, Arc };
 use std::collections::HashMap;
 use api_openai::secret::Secret;

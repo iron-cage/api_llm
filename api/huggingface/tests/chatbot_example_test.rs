@@ -3,6 +3,8 @@
 //! This test suite verifies the functionality of an AI chatbot system that provides
 //! intelligent conversational capabilities using the `HuggingFace` API.
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use api_huggingface::
 {
   Client,

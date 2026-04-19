@@ -39,7 +39,7 @@ authentication = []
 # Feature for advanced production features
 advanced = [ "dep:tokio-util" ]
 # Feature for workspace integration
-workspace = [ "dep:serde_yaml", "dep:toml", "dep:workspace_tools" ]
+workspace = [ "dep:serde_yml", "dep:toml", "dep:workspace_tools" ]
 # Feature for secure secret management
 secret_management = []
 # Feature for embeddings API
@@ -73,9 +73,9 @@ streaming_control = [ "dep:tokio-util" ]
 # Feature for WebSocket-based streaming with real-time bidirectional communication
 websocket_streaming = [ "dep:tokio-tungstenite", "dep:futures-channel" ]
 # Feature for model fine-tuning and custom training capabilities
-model_tuning = [ "dep:serde_yaml" ]
+model_tuning = [ "dep:serde_yml" ]
 # Feature for model deployment and hosting capabilities
-model_deployment = [ "dep:serde_yaml", "dep:url" ]
+model_deployment = [ "dep:serde_yml", "dep:url" ]
 # Feature for enhanced retry logic with exponential backoff and jitter
 retry = [ "dep:fastrand" ]
 # Feature for rate limiting with token bucket and sliding window algorithms
@@ -122,7 +122,7 @@ futures-util = { workspace = true, optional = true }
 error_tools = { workspace = true, optional = true }
 mod_interface = { workspace = true, optional = true }
 tokio-util = { workspace = true, optional = true }
-serde_yaml = { workspace = true, optional = true }
+serde_yml = { workspace = true, optional = true }
 toml = { workspace = true, optional = true }
 fastrand = { workspace = true, optional = true }
 base64 = { workspace = true, optional = true }
@@ -132,7 +132,7 @@ tempfile = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
 tokio-tungstenite = { workspace = true, optional = true }
 futures-channel = { workspace = true, optional = true }
-flate2 = { version = "1.0", optional = true }
+flate2 = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = [ "macros", "rt-multi-thread" ] }

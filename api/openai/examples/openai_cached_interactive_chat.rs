@@ -29,6 +29,7 @@
 //! ```
 
 #![ allow( missing_docs, missing_debug_implementations ) ]
+#![allow(clippy::missing_inline_in_public_items)]
 
 use api_openai::ClientApiAccessors;
 use api_openai::{

@@ -122,7 +122,7 @@ reqwest = { workspace = true, features = [
   "json",
   "stream",
   "multipart",
-  "rustls-tls",
+  "rustls",
 ], default-features = false, optional = true }
 
 # Environment and configuration
@@ -148,7 +148,7 @@ rand = { workspace = true, optional = true }
 chrono = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
 serde_with = { workspace = true, optional = true }
-serde_yaml = { workspace = true, optional = true }
+serde_yml = { workspace = true, optional = true }
 base64 = { workspace = true, optional = true }
 tokio-tungstenite = { workspace = true, optional = true }
 
@@ -157,7 +157,7 @@ tokio-tungstenite = { workspace = true, optional = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }
-wiremock = "0.6"
+wiremock = { workspace = true }
 
 [[example]]
 name = "chat"

@@ -26,6 +26,7 @@
 #![ allow( clippy::doc_markdown ) ]
 #![ allow( clippy::single_component_path_imports ) ]
 #![ allow( clippy::ignore_without_reason ) ]
+#![allow(clippy::missing_inline_in_public_items)]
 
 use api_openai::ClientApiAccessors;
 use api_openai::exposed::

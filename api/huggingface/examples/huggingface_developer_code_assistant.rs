@@ -23,6 +23,7 @@
 //! - `/quit` - Exit the code assistant
 
 #![allow( missing_docs ) ]
+#![allow(clippy::missing_inline_in_public_items)]
 
 use api_huggingface::
 {

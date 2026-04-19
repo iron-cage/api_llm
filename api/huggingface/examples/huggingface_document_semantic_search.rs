@@ -21,6 +21,8 @@
 //! - `/help` - Show available commands
 //! - `/quit` - Exit the search engine
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use api_huggingface::
 {
   Client,

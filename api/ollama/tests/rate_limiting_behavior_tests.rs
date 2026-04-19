@@ -301,9 +301,9 @@ async fn test_rate_limiting_multiple_http_methods()
   let result3 = client.model_info( "test-model".to_string() ).await;
   let elapsed = start_time.elapsed();
 
-  if result3.is_err()
+  if let Err( error ) = result3
   {
-    let error_msg = result3.unwrap_err().to_string();
+    let error_msg = error.to_string();
     if error_msg.contains( "Rate limit exceeded" )
     {
       // Should be blocked quickly by rate limiter

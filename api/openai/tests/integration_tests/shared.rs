@@ -13,7 +13,7 @@
 //! This ensures integration test failures indicate real issues that need resolution.
 
 #![ cfg( feature = "integration" ) ]
-#![ allow( unused_imports, dead_code, clippy::missing_panics_doc, clippy::missing_errors_doc ) ]
+#![ allow( unused_imports, dead_code, clippy::missing_panics_doc, clippy::missing_errors_doc, clippy::missing_inline_in_public_items ) ]
 
 // Re-export the main module for easy access
 use api_openai::ClientApiAccessors;

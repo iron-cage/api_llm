@@ -37,7 +37,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use core::time::Duration;
 use tokio::sync::RwLock;
-use rand::Rng;
+use rand::RngExt;
 
 /// Failover strategy
 #[ derive( Debug, Clone, Copy, PartialEq, Eq ) ]

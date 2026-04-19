@@ -9,8 +9,6 @@ members = [
   "api/openai_compatible",
   "api/xai",
 ]
-dev-dependencies = {}
-build-dependencies = {}
 
 [workspace.metadata]
 branches = [ "master", "alpha" ]
@@ -74,184 +72,161 @@ mod_module_files = "allow"
 # Allow missing docs for private items
 missing_docs_in_private_items = "allow"
 
-## api
+## api — workspace members (WD-4: all members must be declared here)
 
 [workspace.dependencies.api_openai_compatible]
-version = "~0.2.0"
+version = "=0.2.0"
 path = "api/openai_compatible"
 default-features = false
 
 [workspace.dependencies.api_openai]
-version = "~0.3.0"
+version = "=0.3.0"
 path = "api/openai"
 default-features = false
 
 [workspace.dependencies.api_claude]
-version = "~0.4.0"
+version = "=0.4.0"
 path = "api/claude"
 default-features = false
 
 [workspace.dependencies.api_ollama]
-version = "~0.2.0"
+version = "=0.2.0"
 path = "api/ollama"
 default-features = false
 
 [workspace.dependencies.api_xai]
-version = "~0.3.0"
+version = "=0.3.0"
 path = "api/xai"
 default-features = false
 
 ## Peer
 
 [workspace.dependencies.mod_interface]
-version = "0.52.0"
+version = "^0.61"
 
 [workspace.dependencies.former]
-version = "2.37.0"
-
-[workspace.dependencies.format_tools]
-version = "0.6.0"
-
-[workspace.dependencies.reflect_tools]
-version = "0.7.0"
+version = "^2.45"
 
 [workspace.dependencies.derive_tools]
-version = "0.50.0"
+version = "^0.65"
 
 [workspace.dependencies.error_tools]
-version = "0.35.0"
-
-[workspace.dependencies.asbytes]
-version = "=0.2.0"
-
-[workspace.dependencies.pth]
-version = "0.25.0"
+version = "^0.39"
 
 [workspace.dependencies.async_tools]
-version = "=0.1.0"
+version = "^0.1"
 
-[workspace.dependencies.macro_tools]
-version = "0.69.0"
+[workspace.dependencies.workspace_tools]
+version = "^0.12"
 
 ## External
 
 [workspace.dependencies.rand]
-version = "0.9.2"
+version = "^0.10"
 
 [workspace.dependencies.fastrand]
-version = "2.3.0"
+version = "^2.4"
 
 [workspace.dependencies.dotenv]
-version = "0.15"
+version = "^0.15"
 
 [workspace.dependencies.async-trait]
-version = "0.1.89"
+version = "^0.1"
 
 [workspace.dependencies.regex]
-version = "1.12.2"
+version = "^1.12"
 
 [workspace.dependencies.url]
-version = "2.5.7"
+version = "^2.5"
 
 ## serialization
 
 [workspace.dependencies.serde]
-version = "1.0.228"
+version = "^1.0"
 
 [workspace.dependencies.serde_with]
-version = "3.15.1"
+version = "^3.15"
 
 [workspace.dependencies.serde_json]
-version = "1.0.145"
+version = "^1.0"
 
-[workspace.dependencies.serde_yaml]
-version = "0.9.34"
+[workspace.dependencies.serde_yml]
+version = "^0.0"
 
 [workspace.dependencies.base64]
-version = "0.22.1"
+version = "^0.22"
 
 [workspace.dependencies.secrecy]
-version = "0.10.3"
+version = "^0.10"
 
 [workspace.dependencies.urlencoding]
-version = "2.1.3"
+version = "^2.1"
 
 ## crypto and compression
 
 [workspace.dependencies.blake3]
-version = "1.8.2"
+version = "^1.8"
 
 [workspace.dependencies.sha2]
-version = "0.10"
+version = "^0.11"
 
 [workspace.dependencies.flate2]
-version = "1.1.5"
+version = "^1.1"
 
 [workspace.dependencies.brotli]
-version = "8.0.2"
+version = "^8.0"
 
 [workspace.dependencies.async-compression]
-version = "0.4.33"
-
-## system
-
-[workspace.dependencies.ctrlc]
-version = "3.5.1"
+version = "^0.4"
 
 ## sync primitives
 
 [workspace.dependencies.parking_lot]
-version = "0.12.5"
+version = "^0.12"
 
 ## async
 
 [workspace.dependencies.futures]
-version = "0.3.31"
+version = "^0.3"
 
 [workspace.dependencies.futures-core]
-version = "0.3.31"
+version = "^0.3"
 
 [workspace.dependencies.futures-util]
-version = "0.3.31"
+version = "^0.3"
 
 [workspace.dependencies.futures-channel]
-version = "0.3.31"
-
-[workspace.dependencies.openai-api-rs]
-version = "=6.0.8"
+version = "^0.3"
 
 [workspace.dependencies.backoff]
-version = "0.4.0"
+version = "^0.4"
 
 [workspace.dependencies.tokio]
-version = "1.48.0"
+version = "^1.48"
 
 [workspace.dependencies.tokio-stream]
-version = "0.1.17"
+version = "^0.1"
 
 [workspace.dependencies.tokio-util]
-version = "0.7.17"
-
-[workspace.dependencies.tokio-test]
-version = "0.4.4"
+version = "^0.7"
 
 [workspace.dependencies.async-stream]
-version = "0.3.6"
+version = "^0.3"
 
 [workspace.dependencies.bytes]
-version = "1.10.1"
+version = "^1.10"
 
 [workspace.dependencies.eventsource-stream]
-version = "0.2.3"
+version = "^0.2"
 
 ## web
 
 [workspace.dependencies.reqwest]
-version = "0.12.24"
+version = "^0.13"
 default-features = false
 
 [workspace.dependencies.reqwest-eventsource]
-version = "0.6.0"
+version = "^0.6"
 
 [workspace.dependencies.tracing]
 version = "^0.1"
@@ -260,64 +235,38 @@ version = "^0.1"
 version = "^0.3"
 
 [workspace.dependencies.tokio-tungstenite]
-version = "0.28.0"
+version = "^0.29"
 
 [workspace.dependencies.chrono]
-version = "0.4.42"
+version = "^0.4"
 
 [workspace.dependencies.toml]
-version = "0.9.8"
+version = "^1.0"
 
 [workspace.dependencies.tempfile]
-version = "3.23.0"
-
-[workspace.dependencies.workspace_tools]
-version = "0.10.0"
-
-[workspace.dependencies.glob]
-version = "0.3.3"
-
-[workspace.dependencies.unilang]
-version = "0.39.0"
-features = ["enabled"]
-default-features = false
-
-[workspace.dependencies.inventory]
-version = "0.3.21"
-
-[workspace.dependencies.walkdir]
-version = "2.5.0"
+version = "^3.23"
 
 [workspace.dependencies.notify]
-version = "8.2.0"
+version = "^8.2"
 
 [workspace.dependencies.uuid]
-version = "1.18.1"
-features = ["v4"]
-
-[workspace.dependencies.memmap2]
-version = "0.9.8"
-
-[workspace.dependencies.tokei]
-version = "12.1"
-default-features = false
-
-[workspace.dependencies.content_inspector]
-version = "0.2.4"
-
-[workspace.dependencies.ratatui]
-version = "0.29.0"
-
-[workspace.dependencies.crossterm]
-version = "0.29.0"
+version = "^1.18"
 
 ## XAI-specific dependencies
 
 [workspace.dependencies.tiktoken-rs]
-version = "0.5"
+version = "^0.11"
 
 [workspace.dependencies.lru]
-version = "0.12"
+version = "^0.17"
 
 [workspace.dependencies.prometheus]
-version = "0.13"
+version = "^0.14"
+
+## dev / test dependencies
+
+[workspace.dependencies.criterion]
+version = "^0.8"
+
+[workspace.dependencies.wiremock]
+version = "^0.6"

@@ -13,6 +13,7 @@
 //! - Support for various question types and domains
 
 #![allow(missing_docs)]
+#![allow(clippy::missing_inline_in_public_items)]
 #![allow(clippy::pedantic)]
 
 use std::collections::HashMap;

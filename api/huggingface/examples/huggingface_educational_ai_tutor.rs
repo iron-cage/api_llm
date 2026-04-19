@@ -1,4 +1,5 @@
 #![ allow( clippy::pedantic ) ]
+#![allow(clippy::missing_inline_in_public_items)]
 
 //! Educational AI Tutor Example
 //!

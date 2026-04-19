@@ -7,6 +7,8 @@
 //! - `EnhancedRetryExecutor` for retry coordination
 //! - Helper functions for retry testing
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 #[ cfg( feature = "retry" ) ]
 #[ allow( missing_docs ) ]
 pub mod helpers
@@ -25,7 +27,7 @@ pub mod helpers
 
   use serde::{ Serialize, Deserialize };
   use tokio::time::sleep;
-  use rand::{ rng, Rng };
+  use rand::{ rng, RngExt };
 
   /// Enhanced retry configuration for HTTP requests
   #[ derive( Debug, Clone, Serialize, Deserialize ) ]

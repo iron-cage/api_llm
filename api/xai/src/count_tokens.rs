@@ -36,7 +36,7 @@ mod private
   use crate::error::{ XaiError, Result };
 
   #[ cfg( feature = "count_tokens" ) ]
-  use tiktoken_rs::{ get_bpe_from_model, CoreBPE };
+  use tiktoken_rs::{ bpe_for_model, CoreBPE };
 
   /// Counts tokens in a text string for a specific model.
   ///
@@ -212,8 +212,9 @@ mod private
       "grok-2-1212" | "grok-2" =>
       {
         // Map to gpt-4 for tiktoken
-        get_bpe_from_model( "gpt-4" )
+        bpe_for_model( "gpt-4" )
           .map_err( | e | XaiError::InvalidModel( format!( "Tokenizer error : {e}" ) ).into() )
+          .cloned()
       }
       _ =>
       {

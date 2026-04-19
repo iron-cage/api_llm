@@ -3,6 +3,8 @@
 //! This test suite verifies the functionality of a semantic search system that uses
 //! `HuggingFace` embeddings to find relevant documents based on meaning rather than keywords.
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use api_huggingface::
 {
   Client,

@@ -12,6 +12,7 @@
 //! - Real-time sentiment monitoring capabilities
 
 #![allow(clippy::pedantic)]
+#![allow(clippy::missing_inline_in_public_items)]
 
 use std::collections::HashMap;
 use std::io::{self, Write};

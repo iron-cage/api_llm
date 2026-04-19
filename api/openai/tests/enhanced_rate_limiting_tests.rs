@@ -29,6 +29,8 @@
 //! The `MockHttpClient` is a **test harness** that provides predictable responses
 //! to validate rate limiting algorithms (token bucket, sliding window), not an API mock.
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 #[ cfg( feature = "rate_limiting" ) ]
 mod rate_limiting_tests
 {

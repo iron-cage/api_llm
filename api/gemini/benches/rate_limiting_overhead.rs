@@ -66,6 +66,8 @@ fn benchmark_token_consumption( c: &mut Criterion )
       if bucket.tokens >= 1.0
       {
         bucket.tokens -= 1.0;
+        // black_box prevents the compiler from treating the modification as dead code
+        ::std::hint::black_box( bucket.tokens );
         true
       } else {
         false

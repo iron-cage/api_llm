@@ -48,7 +48,7 @@ enabled = [
   "dep:regex",
   "dep:serde",
   "dep:serde_json",
-  "dep:serde_yaml",
+  "dep:serde_yml",
   "dep:base64",
   "dep:secrecy",
   "dep:futures-core",
@@ -145,7 +145,7 @@ uuid = { workspace = true, features = ["v4"], optional = true }
 regex = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_json = { workspace = true, optional = true }
-serde_yaml = { workspace = true, optional = true }
+serde_yml = { workspace = true, optional = true }
 base64 = { workspace = true, optional = true }
 secrecy = { workspace = true, optional = true }
 
@@ -169,9 +169,10 @@ eventsource-stream = { workspace = true, optional = true }
 
 reqwest = { workspace = true, features = [
   "json",
+  "query",
   "stream",
   "multipart",
-  "rustls-tls",
+  "rustls",
 ], default-features = false, optional = true }
 tracing = { workspace = true, optional = true }
 tokio-tungstenite = { workspace = true, optional = true }

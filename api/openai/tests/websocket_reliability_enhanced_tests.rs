@@ -20,6 +20,7 @@
 #![ allow( clippy::doc_markdown ) ]
 #![ allow( clippy::needless_continue ) ]
 #![ allow( clippy::redundant_else ) ]
+#![allow(clippy::missing_inline_in_public_items)]
 
 use api_openai::
 {

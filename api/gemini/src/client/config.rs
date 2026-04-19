@@ -251,6 +251,7 @@ use super::Client;
   }
 
 
+  /// Handle for the dynamic configuration watcher, keeping it alive for the client's lifetime.
   #[ cfg( feature = "dynamic_configuration" ) ]
   #[ derive( Debug ) ]
   pub struct ConfigWatchHandle

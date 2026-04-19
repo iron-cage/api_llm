@@ -23,6 +23,8 @@
 //! - `/help` - Show available commands
 //! - `/quit` - Exit the content generator
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use api_huggingface::
 {
   Client,

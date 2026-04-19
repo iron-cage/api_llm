@@ -10,7 +10,7 @@ use crate::error::{ Error, ApiErrorResponse };
 #[ cfg( feature = "logging" ) ]
 use tracing::{ debug, error, info, instrument, warn };
 #[ cfg( feature = "logging" ) ]
-use rand::Rng;
+use rand::RngExt;
 
 // Module declarations
 #[ cfg( feature = "retry" ) ]

@@ -167,6 +167,8 @@
 //!
 //! **When to use**: After fixing flaky tests or adding timing-dependent logic.
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use std::process::{ Command, Stdio, Child };
 use std::sync::{ Arc, Mutex, OnceLock };
 use core::time::Duration;

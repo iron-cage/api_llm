@@ -423,13 +423,12 @@ async fn test_model_lifecycle_information()
           assert!(model.lifecycle.deprecation_date.is_some(),
                   "Deprecated model {} should have deprecation date", model.id);
 
-          if model.lifecycle.sunset_date.is_some()
+          if let Some( sun_date ) = model.lifecycle.sunset_date.as_ref()
           {
             // If sunset date exists, it should be after deprecation date
             let dep_date = model.lifecycle.deprecation_date.as_ref().unwrap();
-            let sun_date = model.lifecycle.sunset_date.as_ref().unwrap();
-            assert!(sun_date >= dep_date,
-                    "Sunset date should be after deprecation date for model {}", model.id);
+            assert!( sun_date >= dep_date,
+                    "Sunset date should be after deprecation date for model {}", model.id );
           }
         }
       }

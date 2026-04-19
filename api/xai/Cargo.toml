@@ -15,9 +15,6 @@ X.AI Grok API client for accessing large language models (LLMs).
 """
 categories = [ "algorithms", "development-tools" ]
 keywords = [ "fundamental", "general-purpose", "xai", "grok", "ai" ]
-dependencies = {}
-dev-dependencies = {}
-build-dependencies = {}
 
 [lints]
 workspace = true
@@ -151,7 +148,7 @@ tokio = { workspace = true, features = [ "macros" ], optional = true }
 
 ## HTTP dependencies
 
-reqwest = { workspace = true, features = [ "json", "rustls-tls", "stream" ], default-features = false, optional = true }
+reqwest = { workspace = true, features = [ "json", "rustls", "stream" ], default-features = false, optional = true }
 url = { workspace = true, optional = true }
 
 ## Streaming dependencies (optional)

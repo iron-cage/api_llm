@@ -122,7 +122,7 @@ tokio-stream = { workspace = true, optional = true }
 futures = { workspace = true, optional = true }
 
 ## web
-reqwest = { workspace = true, features = ["json", "rustls-tls"], default-features = false, optional = true }
+reqwest = { workspace = true, features = ["json", "rustls"], default-features = false, optional = true }
 
 ## time handling (optional for error-handling feature)
 chrono = { workspace = true, features = ["serde"], optional = true }

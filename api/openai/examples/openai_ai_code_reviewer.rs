@@ -13,6 +13,8 @@
 //! cargo run --example ai_code_reviewer
 //! ```
 
+#![allow(clippy::missing_inline_in_public_items)]
+
 use api_openai::ClientApiAccessors;
 use api_openai::
 {
