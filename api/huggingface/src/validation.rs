@@ -39,13 +39,16 @@ pub fn validate_input_text( input : &str ) -> Result< () >
   ) );
   }
 
-  if input.len() > MAX_INPUT_LENGTH
+  // Fix(BUG-010): count Unicode code points, not bytes, to honour the "characters" limit.
+  // Root cause: `input.len()` returns UTF-8 byte count; for multibyte chars (e.g. 'é' = 2
+  //   bytes) the byte count exceeds MAX_INPUT_LENGTH even when the character count does not.
+  // Pitfall: in Rust str::len() is always bytes — use .chars().count() for character limits.
+  let char_count = input.chars().count();
+  if char_count > MAX_INPUT_LENGTH
   {
   return Err( HuggingFaceError::Validation(
       format!(
-  "Input text is too long ({} characters). Maximum allowed : {} characters",
-  input.len(),
-  MAX_INPUT_LENGTH
+  "Input text is too long ({char_count} characters). Maximum allowed : {MAX_INPUT_LENGTH} characters"
       )
   ) );
   }
@@ -176,7 +179,7 @@ pub fn validate_batch_inputs( inputs : &[ String ] ) -> Result< () >
 #[ inline ]
 pub fn validate_temperature( temperature : f32 ) -> Result< () >
 {
-  // Fix(bug-va-01): check NaN/Inf before range check to avoid dead code and wrong message.
+  // Fix(BUG-003): check NaN/Inf before range check to avoid dead code and wrong message.
   // Root cause: `contains()` on a float range catches NaN accidentally (NaN comparisons
   //   always false → not in range → fires first), making the subsequent is_nan/is_infinite
   //   check unreachable. NaN got "between 0.0 and 2.0" error instead of "valid number".
@@ -235,7 +238,7 @@ pub fn validate_max_new_tokens( max_tokens : u32 ) -> Result< () >
 #[ inline ]
 pub fn validate_top_p( top_p : f32 ) -> Result< () >
 {
-  // Fix(bug-va-02): check NaN/Inf before range check (same dead-code pattern as bug-va-01).
+  // Fix(BUG-004): check NaN/Inf before range check (same dead-code pattern as BUG-003).
   // Root cause: NaN not in `0.0..=1.0` range → range check fires first with wrong message.
   // Pitfall: see validate_temperature.
   if top_p.is_nan() || top_p.is_infinite()
@@ -265,7 +268,7 @@ pub fn validate_top_p( top_p : f32 ) -> Result< () >
 #[ inline ]
 pub fn validate_repetition_penalty( penalty : f32 ) -> Result< () >
 {
-  // Fix(bug-va-05): check NaN/Inf first to eliminate dead is_infinite() branch.
+  // Fix(BUG-007): check NaN/Inf first to eliminate dead is_infinite() branch.
   // Root cause: +Inf caught by `> 10.0` ("too high"), -Inf by `<= 0.0` ("positive"),
   //   making `|| is_infinite()` unreachable. Only `is_nan()` was live because NaN
   //   falsifies all comparisons. Moving guard first gives correct "valid number" message
@@ -377,7 +380,7 @@ pub fn validate_top_k( top_k : u32 ) -> Result< () >
 #[ inline ]
 pub fn validate_frequency_penalty( penalty : f32 ) -> Result< () >
 {
-  // Fix(bug-va-03): check NaN/Inf before range check (same dead-code pattern as bug-va-01).
+  // Fix(BUG-005): check NaN/Inf before range check (same dead-code pattern as BUG-003).
   // Root cause: NaN not in `-2.0..=2.0` → range check fires first with wrong message.
   // Pitfall: see validate_temperature.
   if penalty.is_nan() || penalty.is_infinite()
@@ -407,7 +410,7 @@ pub fn validate_frequency_penalty( penalty : f32 ) -> Result< () >
 #[ inline ]
 pub fn validate_presence_penalty( penalty : f32 ) -> Result< () >
 {
-  // Fix(bug-va-04): check NaN/Inf before range check (same dead-code pattern as bug-va-01).
+  // Fix(BUG-006): check NaN/Inf before range check (same dead-code pattern as BUG-003).
   // Root cause: NaN not in `-2.0..=2.0` → range check fires first with wrong message.
   // Pitfall: see validate_temperature.
   if penalty.is_nan() || penalty.is_infinite()
@@ -463,13 +466,13 @@ pub fn validate_message_content( content : &str ) -> Result< () >
   ) );
   }
 
-  if content.len() > MAX_INPUT_LENGTH
+  // Fix(BUG-010): count Unicode code points, not bytes (same root cause as validate_input_text).
+  let char_count = content.chars().count();
+  if char_count > MAX_INPUT_LENGTH
   {
   return Err( HuggingFaceError::Validation(
       format!(
-  "Message content is too long ({} characters). Maximum allowed : {} characters",
-  content.len(),
-  MAX_INPUT_LENGTH
+  "Message content is too long ({char_count} characters). Maximum allowed : {MAX_INPUT_LENGTH} characters"
       )
   ) );
   }
@@ -596,6 +599,22 @@ pub fn validate_url( url : &str ) -> Result< () >
   {
   return Err( HuggingFaceError::Validation(
       format!( "URL must start with http:// or https://, got : {url}" )
+  ) );
+  }
+
+  // Fix(BUG-008): require at least one character after the scheme — "http://" alone
+  //   has no hostname and was incorrectly accepted.
+  // Root cause: only checked prefix + length; "http://" satisfies both with no host.
+  // Pitfall: starts_with("http://") is necessary but not sufficient for a valid URL.
+  let after_scheme = url
+  .strip_prefix( "https://" )
+  .or_else( || url.strip_prefix( "http://" ) )
+  .unwrap_or( "" ); // protocol prefix already verified above; unwrap_or is unreachable
+
+  if after_scheme.is_empty()
+  {
+  return Err( HuggingFaceError::Validation(
+      format!( "URL must contain a hostname after the protocol, got : {url}" )
   ) );
   }
 

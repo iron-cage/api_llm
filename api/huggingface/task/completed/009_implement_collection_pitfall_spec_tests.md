@@ -15,11 +15,11 @@
 
 ## Goal
 
-9 GWT spec scenarios across two doc entities added during the 2026-06-13 normalization session — CL-01..CL-05 (`tests/docs/collection/01_features.md`) and PF-01..PF-04 (`tests/docs/pitfall/01_url_join_absolute_path.md`) — have zero implementing test functions. Extend `tests/doc_spec_tests.rs` with 9 named functions (`test_cl_01`..`test_cl_05`, `test_pf_01`..`test_pf_04`) so that `grep -cE "^(async )?fn test_" tests/doc_spec_tests.rs` returns 37 and `cargo check --all-features` exits 0. PF-01, PF-02, and PF-04 use `todo!( "Pending task 003 completion" )` bodies — they become real assertions after task 003 (Fix URL path inconsistency) is executed.
+9 GWT spec scenarios across two doc entities added during the 2026-06-13 normalization session — CL-01..CL-05 (`tests/docs/catalog/01_features.md`) and PF-01..PF-04 (`tests/docs/pitfall/01_url_join_absolute_path.md`) — have zero implementing test functions. Extend `tests/doc_spec_tests.rs` with 9 named functions (`test_cl_01`..`test_cl_05`, `test_pf_01`..`test_pf_04`) so that `grep -cE "^(async )?fn test_" tests/doc_spec_tests.rs` returns 37 and `cargo check --all-features` exits 0. PF-01, PF-02, and PF-04 use `todo!( "Pending task 003 completion" )` bodies — they become real assertions after task 003 (Fix URL path inconsistency) is executed.
 
 ## In Scope
 
-- `tests/doc_spec_tests.rs` — add 9 functions after the existing PT section, before the `collect_rs_files` helper: `test_cl_01`..`test_cl_05` (doc content analysis of `docs/collection/001_features.md`) and `test_pf_01`..`test_pf_04` (URL path avoidance pattern verification); PF-01/PF-02/PF-04 bodies use `todo!( "Pending task 003 completion" )`
+- `tests/doc_spec_tests.rs` — add 9 functions after the existing PT section, before the `collect_rs_files` helper: `test_cl_01`..`test_cl_05` (doc content analysis of `docs/catalog/001_features.md`) and `test_pf_01`..`test_pf_04` (URL path avoidance pattern verification); PF-01/PF-02/PF-04 bodies use `todo!( "Pending task 003 completion" )`
 - No other files changed
 
 ## Out of Scope
@@ -46,9 +46,9 @@ Execute in order. Do not skip or reorder steps.
 
 1. **Read rulebooks** — `kbase .rulebooks`; confirm codestyle conventions and `mod private` requirements.
 
-2. **Read spec files** — read `tests/docs/collection/01_features.md` (CL-01..CL-05) and `tests/docs/pitfall/01_url_join_absolute_path.md` (PF-01..PF-04) to confirm exact assertion targets.
+2. **Read spec files** — read `tests/docs/catalog/01_features.md` (CL-01..CL-05) and `tests/docs/pitfall/01_url_join_absolute_path.md` (PF-01..PF-04) to confirm exact assertion targets.
 
-3. **Read target doc** — read `docs/collection/001_features.md` to confirm the exact strings present in the Convenience Bundles table, Tier 1 table, Tier 2 table, Testing Features table, and Classification section. The assertions must target text that is provably present.
+3. **Read target doc** — read `docs/catalog/001_features.md` to confirm the exact strings present in the Convenience Bundles table, Tier 1 table, Tier 2 table, Testing Features table, and Classification section. The assertions must target text that is provably present.
 
 4. **Locate base URL** — read `src/environment/mod.rs` to find the constant or builder that defines the HuggingFace base URL containing `/v1/`; this is the assertion target for PF-03.
 
@@ -57,7 +57,7 @@ Execute in order. Do not skip or reorder steps.
 6. **Add CL section** — append a section comment block followed by `test_cl_01`..`test_cl_05`. Each function:
    - Opens with `/// CL-NN: <scenario summary from spec>`
    - Uses `#[ test ]`
-   - Reads `docs/collection/001_features.md` via `std::fs::read_to_string( format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) ) ).expect( "Should read docs/collection/001_features.md" )`
+   - Reads `docs/catalog/001_features.md` via `std::fs::read_to_string( format!( "{}/docs/catalog/001_features.md", env!( "CARGO_MANIFEST_DIR" ) ) ).expect( "Should read docs/catalog/001_features.md" )`
    - Asserts specific string patterns. Implementation guidance:
      - `test_cl_01`: assert `doc.contains( "integration" )` and `doc.contains( "HUGGINGFACE_API_KEY" )`
      - `test_cl_02`: assert `doc.contains( "full" )` and that the `full` row's includes text contains both `"basic"` and `"integration"`
@@ -83,7 +83,7 @@ Execute in order. Do not skip or reorder steps.
 
 | # | Scenario ID | Input | Config Under Test | Expected Behavior |
 |---|------------|-------|-------------------|-------------------|
-| T01 | CL-01 | `docs/collection/001_features.md` Testing Features table | `std::fs::read_to_string` | File contains `"integration"` and `"HUGGINGFACE_API_KEY"` |
+| T01 | CL-01 | `docs/catalog/001_features.md` Testing Features table | `std::fs::read_to_string` | File contains `"integration"` and `"HUGGINGFACE_API_KEY"` |
 | T02 | CL-02 | Convenience Bundles table, `full` row | `std::fs::read_to_string` | `full` row includes text with both `"basic"` and `"integration"` |
 | T03 | CL-03 | Tier 1 section (before Tier 2 header) | `std::fs::read_to_string` + slice | `circuit-breaker`, `rate-limiting`, `failover`, `health-checks`, `caching`, `performance-metrics`, `token-counting`, `dynamic-config` absent from Tier 1 slice |
 | T04 | CL-04 | Convenience Bundles table, `enabled` row | `std::fs::read_to_string` | File contains `"enabled"` and `"core serialization dependencies only"` |
@@ -114,7 +114,7 @@ Execute in order. Do not skip or reorder steps.
 - [ ] C2 — Are all 9 exact new function names present (`test_cl_01`..`test_cl_05`, `test_pf_01`..`test_pf_04`)?
 
 **CL functions — doc content analysis**
-- [ ] C3 — Do `test_cl_01`..`test_cl_05` each read `docs/collection/001_features.md` via `std::fs::read_to_string`?
+- [ ] C3 — Do `test_cl_01`..`test_cl_05` each read `docs/catalog/001_features.md` via `std::fs::read_to_string`?
 - [ ] C4 — Do all 5 CL functions pass under `cargo nextest run --test doc_spec_tests --all-features -E 'test(test_cl)'` → 0 failures?
 - [ ] C5 — Does `test_cl_03` use a positional slice technique (e.g. `find( "Tier 1" )` / `find( "Tier 2" )` slicing) rather than a global `contains` check on the full document?
 - [ ] C6 — Does `test_cl_05` assert both `"no runtime state"` (Tier 1 semantics) and `"explicit construction"` (Tier 2 semantics)?
@@ -144,17 +144,17 @@ Execute in order. Do not skip or reorder steps.
 
 ### Anti-faking checks
 
-- [ ] AF1 — CL functions are NOT trivially `assert!( true )` — each asserts a specific string pattern present in `docs/collection/001_features.md`
+- [ ] AF1 — CL functions are NOT trivially `assert!( true )` — each asserts a specific string pattern present in `docs/catalog/001_features.md`
 - [ ] AF2 — `test_cl_03` uses positional slicing to check Tier 1 section specifically — not a global `!contains` call on the full doc that could spuriously pass
 - [ ] AF3 — `test_pf_03` asserts a specific `/v1/` prefix string in an actual source file path, not `assert!( true )`
 - [ ] AF4 — `test_cl_05` asserts both Tier 1 and Tier 2 semantics strings (two distinct `assert!` calls), not a single combined check
 
 ## Related Documentation
 
-- `docs/collection/001_features.md` — document verified by CL-01..CL-05 scenarios
+- `docs/catalog/001_features.md` — document verified by CL-01..CL-05 scenarios
 - `docs/pitfall/001_url_join_absolute_path.md` — pitfall; avoidance pattern verified by PF-01..PF-04
-- `docs/collection/procedure.md` — procedure governing collection/ entity instances
-- `tests/docs/collection/01_features.md` — CL-01..CL-05 GWT scenarios this task implements
+- `docs/catalog/procedure.md` — procedure governing collection/ entity instances
+- `tests/docs/catalog/01_features.md` — CL-01..CL-05 GWT scenarios this task implements
 - `tests/docs/pitfall/01_url_join_absolute_path.md` — PF-01..PF-04 GWT scenarios this task implements
 - `task/verified/003_fix_url_path_inconsistency.md` — source fix that PF-01/PF-02/PF-04 depend on; todo! bodies convert to real assertions after task 003 executes
 - `task/verified/008_implement_doc_spec_test_coverage.md` — Related: 008 — same target file (`tests/doc_spec_tests.rs`); task 008 scope explicitly excludes new spec scenarios beyond the original 28; this task covers the 9 new CL/PF scenarios
@@ -164,14 +164,14 @@ Execute in order. Do not skip or reorder steps.
 | Entity Dir | Entity Type | Change |
 |------------|-------------|--------|
 | `tests/` | Test suite | 9 new functions added to existing `doc_spec_tests.rs` |
-| `tests/docs/collection/` | Test spec docs | Unchanged — defines CL-01..CL-05 scenarios this task implements |
+| `tests/docs/catalog/` | Test spec docs | Unchanged — defines CL-01..CL-05 scenarios this task implements |
 | `tests/docs/pitfall/` | Test spec docs | Unchanged — defines PF-01..PF-04 scenarios this task implements |
 
 ## History
 
 *(append-only — newest entry last; never edit or remove past entries)*
 
-- **2026-06-13** `CREATED` — Task filed after normalization session added `docs/collection/` and `docs/pitfall/` entities with spec files containing CL-01..CL-05 and PF-01..PF-04. These 9 scenarios are excluded from task 008's explicit Out of Scope ("Adding new tests/docs/ spec scenarios beyond the 28 defined") — Case E deduplication; Related: 008.
+- **2026-06-13** `CREATED` — Task filed after normalization session added `docs/catalog/` and `docs/pitfall/` entities with spec files containing CL-01..CL-05 and PF-01..PF-04. These 9 scenarios are excluded from task 008's explicit Out of Scope ("Adding new tests/docs/ spec scenarios beyond the 28 defined") — Case E deduplication; Related: 008.
 - **2026-06-13** `REVISED` — First MAAV (4 agents) returned 1 FAIL (Implementation Readiness): (1) Step 4 said "likely src/environment.rs" — ambiguous; actual path is `src/environment/mod.rs`; (2) `grep -c "^fn test_"` excludes `async fn test_*` prefixes, returning 21 not 28 for the current file; fixed to `grep -cE "^(async )?fn test_"` which returns 28 now and 37 after adding 9 sync functions. Applied fixes to Goal, Work Procedure step 4 and step 8, Acceptance Criteria, Checklist C1, and Measurement M1.
 - **2026-06-13** `VERIFIED` — Second MAAV gate passed (4 independent subagents). State → 🎯 (Verified).
 - **2026-06-13** `COMPLETED` — All 9 functions added to `tests/doc_spec_tests.rs`: CL-01..CL-05 PASS ✅, PF-01..PF-04 PASS ✅. Function count confirmed at 37. M2 deviation: PF-01/PF-02/PF-04 use real assertions (not `todo!()`) because `src/providers.rs` and `src/inference.rs` already use relative paths — no pending task 003 work needed for these files. M3: 6 lines reference `collection/001_features.md` (5 format!() paths + 1 doc comment). `cargo nextest run --test doc_spec_tests --all-features` passes all new functions. Pre-existing AP-02/AP-03/AP-04 failures (HTTP 404 on embeddings endpoints) are unrelated to this task's scope.

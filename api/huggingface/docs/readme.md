@@ -2,7 +2,7 @@
 
 ### Purpose
 
-This directory contains technical documentation for the `api_huggingface` crate, organized into design collections following doc.rulebook.md standards. Documentation is structured by design dimension (invariant/, api/, collection/, feature/, operation/, pattern/, pitfall/) with each entity directory containing a master file (`readme.md`) and NNN-prefixed instance files.
+This directory contains technical documentation for the `api_huggingface` crate, organized into design collections following doc.rulebook.md standards. Documentation is structured by design dimension (invariant/, api/, catalog/, feature/, operation/, pattern/, pitfall/) with each entity directory containing a master file (`readme.md`) and NNN-prefixed instance files.
 
 ### Responsibility
 
@@ -11,7 +11,7 @@ This directory contains technical documentation for the `api_huggingface` crate,
 | `readme.md` | Master documentation index with navigation and Complete Entity Coverage |
 | `invariant/` | Non-negotiable behavioral constraints — thin client principle, testing standards |
 | `api/` | API contract reference — endpoint mapping, operations, error conditions |
-| `collection/` | Enumerated item catalogs — feature flag tables, tier classifications |
+| `catalog/` | Enumerated item catalogs — feature flag tables, tier classifications |
 | `operation/` | Operational procedures — feature selection, build verification, rollback |
 | `pattern/` | Design pattern specifications — module organization (mod_interface) |
 | `feature/` | Feature specification collection — capability groups, enterprise feature contracts |
@@ -39,11 +39,11 @@ API contract reference — endpoint mapping, operations, and versioning.
 **Instances**:
 - `001_reference.md` — Complete public API contract: operations, error conditions, compatibility guarantees
 
-#### collection/
+#### catalog/
 
 Enumerated item catalogs — feature flag tables and tier classifications.
 
-**Master File**: `collection/readme.md`
+**Master File**: `catalog/readme.md`
 
 **Instances**:
 - `001_features.md` — Cargo feature flag catalog: convenience bundles, Tier 1 core features, Tier 2 enterprise features
@@ -89,7 +89,7 @@ Confirmed design pitfalls discovered through task investigations and code review
 - Behavioral constraints: see `invariant/`
 - API usage and reference: see `api/001_reference.md`
 - Feature capability specs: see `feature/001_enterprise_reliability.md`
-- Feature flag catalog: see `collection/001_features.md`
+- Feature flag catalog: see `catalog/001_features.md`
 - Feature selection procedure: see `operation/001_features.md`
 - Design patterns: see `pattern/`
 - Confirmed design pitfalls: see `pitfall/`

@@ -142,8 +142,7 @@ impl fmt::Display for ApiErrorWrap
 #[ cfg( feature = "client" ) ]
 #[ inline ]
 #[ must_use ]
-#[ allow( clippy::needless_pass_by_value ) ]
-pub fn map_deserialization_error( e : reqwest::Error ) -> HuggingFaceError
+pub fn map_deserialization_error( e : &reqwest::Error ) -> HuggingFaceError
 {
   HuggingFaceError::Serialization( e.to_string() )
 }

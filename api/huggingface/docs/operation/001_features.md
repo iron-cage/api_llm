@@ -5,7 +5,7 @@
 - **Purpose**: Document the step-by-step procedure for selecting, combining, and verifying Cargo feature flags when integrating or building `api_huggingface`.
 - **Responsibility**: Cargo feature selection procedure — identification, verification, and rollback steps.
 - **In Scope**: Feature selection steps, combination rules, verification commands, rollback procedure.
-- **Out of Scope**: Feature flag catalog and tier classification (see `collection/001_features.md`), source-level implementation, API method signatures.
+- **Out of Scope**: Feature flag catalog and tier classification (see `catalog/001_features.md`), source-level implementation, API method signatures.
 
 ### Trigger
 
@@ -16,12 +16,12 @@ Adding, removing, or changing any Cargo feature flag in `Cargo.toml`; or selecti
 | Condition | Verification |
 |-----------|--------------|
 | Cargo workspace with `api_huggingface` dependency configured | `Cargo.toml` or `Cargo.lock` present in workspace |
-| Feature catalog reviewed — Tier 1 vs. Tier 2 distinction understood | `collection/001_features.md` read and available |
+| Feature catalog reviewed — Tier 1 vs. Tier 2 distinction understood | `catalog/001_features.md` read and available |
 | HuggingFace API key available if `integration` feature is selected | `HUGGINGFACE_API_KEY` set in environment or `-secrets.sh` |
 
 ### Procedure Steps
 
-1. Identify required capability tier: Tier 1 (core APIs) or Tier 2 (enterprise features) — see `collection/001_features.md` for the full catalog.
+1. Identify required capability tier: Tier 1 (core APIs) or Tier 2 (enterprise features) — see `catalog/001_features.md` for the full catalog.
 2. Select the minimum feature set: use `enabled` for types-only, `basic` for core API access, `full` for all features.
 3. Add optional capability features as needed from the catalog.
 4. Verify `integration` feature is present if running integration tests.
@@ -40,7 +40,7 @@ Remove the newly added feature flag from `Cargo.toml`. Revert any capability-spe
 
 | File | Relationship |
 |------|--------------|
-| `collection/001_features.md` | Feature flag catalog referenced in Steps 1–3 |
+| `catalog/001_features.md` | Feature flag catalog referenced in Steps 1–3 |
 
 ### Features
 

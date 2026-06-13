@@ -148,29 +148,26 @@ impl TokenCounter
 
   /// Estimate tokens ( fast, rough )
   #[ inline ]
-  #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
-  fn estimate_tokens( text : &str ) -> usize 
+  fn estimate_tokens( text : &str ) -> usize
   {
   let chars = text.chars( ).count( );
-  ( chars as f64 / 4.0 ).ceil( ) as usize
+  ( chars + 3 ) / 4 // ceiling of chars/4 in integer arithmetic
   }
 
   /// Word-based count
   #[ inline ]
-  #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
-  fn word_based_count( text : &str ) -> usize 
+  fn word_based_count( text : &str ) -> usize
   {
   let words = text.split_whitespace( ).count( );
-  ( words as f64 * 1.3 ).ceil( ) as usize
+  ( words * 13 + 9 ) / 10 // ceiling of words*1.3 in integer arithmetic
   }
 
   /// Character-based count ( more accurate )
   #[ inline ]
-  #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
-  fn character_based_count( text : &str ) -> usize 
+  fn character_based_count( text : &str ) -> usize
   {
   let chars = text.chars( ).count( );
-  ( chars as f64 / 3.5 ).ceil( ) as usize
+  ( chars * 2 + 6 ) / 7 // ceiling of chars/3.5 = ceiling of 2*chars/7 in integer arithmetic
   }
 
   /// Get current strategy

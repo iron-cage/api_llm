@@ -661,21 +661,21 @@ fn test_pt_04()
 }
 
 // ============================================================================
-// CL: Collection Spec — Features (tests/docs/collection/)
+// CL: Catalog Spec — Features (tests/docs/catalog/)
 // ============================================================================
 
 /// CL-01: integration feature exists in the catalog.
-/// Verifies `docs/collection/001_features.md` documents integration with `HUGGINGFACE_API_KEY`.
+/// Verifies `docs/catalog/001_features.md` documents integration with `HUGGINGFACE_API_KEY`.
 #[ test ]
 fn test_cl_01()
 {
   let doc = std::fs::read_to_string(
-    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
-  ).expect( "CL-01: Should read docs/collection/001_features.md" );
+    format!( "{}/docs/catalog/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-01: Should read docs/catalog/001_features.md" );
 
   assert!(
     doc.contains( "integration" ),
-    "CL-01: docs/collection/001_features.md must document the integration feature"
+    "CL-01: docs/catalog/001_features.md must document the integration feature"
   );
   assert!(
     doc.contains( "HUGGINGFACE_API_KEY" ),
@@ -689,12 +689,12 @@ fn test_cl_01()
 fn test_cl_02()
 {
   let doc = std::fs::read_to_string(
-    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
-  ).expect( "CL-02: Should read docs/collection/001_features.md" );
+    format!( "{}/docs/catalog/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-02: Should read docs/catalog/001_features.md" );
 
   assert!(
     doc.contains( "`full`" ) || doc.contains( "| full |" ),
-    "CL-02: docs/collection/001_features.md must have a full feature row"
+    "CL-02: docs/catalog/001_features.md must have a full feature row"
   );
   assert!(
     doc.contains( "enterprise" ) || doc.contains( "Tier 2" ),
@@ -712,8 +712,8 @@ fn test_cl_02()
 fn test_cl_03()
 {
   let doc = std::fs::read_to_string(
-    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
-  ).expect( "CL-03: Should read docs/collection/001_features.md" );
+    format!( "{}/docs/catalog/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-03: Should read docs/catalog/001_features.md" );
 
   let tier1_pos = doc.find( "Tier 1" ).expect( "CL-03: Tier 1 section must exist" );
   let tier2_pos = doc.find( "Tier 2" ).expect( "CL-03: Tier 2 section must exist" );
@@ -743,12 +743,12 @@ fn test_cl_03()
 fn test_cl_04()
 {
   let doc = std::fs::read_to_string(
-    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
-  ).expect( "CL-04: Should read docs/collection/001_features.md" );
+    format!( "{}/docs/catalog/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-04: Should read docs/catalog/001_features.md" );
 
   assert!(
     doc.contains( "enabled" ),
-    "CL-04: docs/collection/001_features.md must document the enabled feature"
+    "CL-04: docs/catalog/001_features.md must document the enabled feature"
   );
   assert!(
     doc.contains( "serde" ) || doc.contains( "serialization" ) || doc.contains( "no HTTP" ),
@@ -762,12 +762,12 @@ fn test_cl_04()
 fn test_cl_05()
 {
   let doc = std::fs::read_to_string(
-    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
-  ).expect( "CL-05: Should read docs/collection/001_features.md" );
+    format!( "{}/docs/catalog/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-05: Should read docs/catalog/001_features.md" );
 
   assert!(
     doc.contains( "Classification" ),
-    "CL-05: docs/collection/001_features.md must have a Classification section"
+    "CL-05: docs/catalog/001_features.md must have a Classification section"
   );
   assert!(
     doc.contains( "endpoint" ) || doc.contains( "HTTP" ),

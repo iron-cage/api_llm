@@ -67,24 +67,7 @@ impl Models
   "meta-llama/Llama-3.3-70B-Instruct"
   }
 
-  /// Llama 3.1 8B Instruct model (deprecated - use `llama_3_3_70b_instruct`)
-  #[ inline ]
-  #[ must_use ]
-  #[ deprecated( since = "0.3.0", note = "Use llama_3_3_70b_instruct() instead" ) ]
-  pub const fn llama_3_1_8b_instruct() -> &'static str
-  {
-  "meta-llama/Meta-Llama-3.1-8B-Instruct"
-  }
 
-  /// Llama 3.1 70B Instruct model (deprecated - use `llama_3_3_70b_instruct`)
-  #[ inline ]
-  #[ must_use ]
-  #[ deprecated( since = "0.3.0", note = "Use llama_3_3_70b_instruct() instead" ) ]
-  pub const fn llama_3_1_70b_instruct() -> &'static str
-  {
-  "meta-llama/Meta-Llama-3.1-70B-Instruct"
-  }
-  
   /// Mistral 7B Instruct model
   #[ inline ]
   #[ must_use ]

@@ -401,7 +401,7 @@ mod private
       response
   .json::< R >()
   .await
-  .map_err( map_deserialization_error )
+  .map_err( |e| map_deserialization_error( &e ) )
   }
 
   // get_with_retry method removed per governing principle - use explicit retry methods
@@ -445,7 +445,7 @@ mod private
 
       tokio::time::sleep( tokio::time::Duration::from_millis( total_delay ) ).await;
 
-      // Update delay for next iteration with exponential backoff
+      // Update delay: multiply by f64 multiplier then clamp; truncation is intentional
       #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
       {
               delay = ( ( delay as f64 ) * retry_config.multiplier ) as u64;
@@ -494,7 +494,7 @@ mod private
 
       tokio::time::sleep( tokio::time::Duration::from_millis( total_delay ) ).await;
 
-      // Update delay for next iteration with exponential backoff
+      // Update delay: multiply by f64 multiplier then clamp; truncation is intentional
       #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
       {
               delay = ( ( delay as f64 ) * retry_config.multiplier ) as u64;

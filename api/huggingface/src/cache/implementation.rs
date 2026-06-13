@@ -38,8 +38,6 @@ use tokio::sync::RwLock;
 struct CacheEntry< V > 
 {
   value : V,
-  #[ allow( dead_code ) ] // Reserved for future entry age tracking
-  inserted_at : Instant,
   expires_at : Option< Instant >,
   last_accessed : Instant,
 }
@@ -53,7 +51,6 @@ impl< V > CacheEntry< V >
   let now = Instant::now( );
   Self {
       value,
-      inserted_at : now,
       expires_at : ttl.map( |d| now + d ),
       last_accessed : now,
   }

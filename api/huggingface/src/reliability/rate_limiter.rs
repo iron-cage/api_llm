@@ -118,11 +118,12 @@ impl TokenBucket
 
   /// Get current token count
   #[ inline ]
-  #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
-  fn available_tokens( &mut self ) -> u32 
+  fn available_tokens( &mut self ) -> u32
   {
   self.refill( );
-  self.tokens.floor( ) as u32
+  // tokens is always non-negative and ≤ capacity (u32); floor → u32 is safe
+  #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
+  { self.tokens.floor( ) as u32 }
   }
 
   /// Time until next token is available
@@ -137,7 +138,7 @@ impl TokenBucket
   } else {
       let tokens_needed = 1.0 - self.tokens;
       let seconds = tokens_needed / self.refill_rate;
-      // Fix(bug-rl-01): guard against refill_rate=0.0 (capacity=0) producing +Infinity.
+      // Fix(BUG-001): guard against refill_rate=0.0 (capacity=0) producing +Infinity.
       // Root cause: f64 divides by 0.0 silently to +Inf; Duration::from_secs_f64(+Inf) panics.
       // Pitfall: always call is_finite() before passing float seconds to Duration conversion.
       if seconds.is_finite( )
@@ -152,12 +153,12 @@ impl TokenBucket
 
 /// Rate limiter for controlling request rates
 #[ derive( Debug, Clone ) ]
-#[ allow( clippy::struct_field_names ) ]
+#[ allow( clippy::struct_field_names ) ] // shared `_bucket` postfix is semantically meaningful
 pub struct RateLimiter
 {
-  per_second : Option< Arc< RwLock< TokenBucket > > >,
-  per_minute : Option< Arc< RwLock< TokenBucket > > >,
-  per_hour : Option< Arc< RwLock< TokenBucket > > >,
+  second_bucket : Option< Arc< RwLock< TokenBucket > > >,
+  minute_bucket : Option< Arc< RwLock< TokenBucket > > >,
+  hour_bucket : Option< Arc< RwLock< TokenBucket > > >,
 }
 
 impl RateLimiter 
@@ -168,13 +169,13 @@ impl RateLimiter
   pub fn new( config : RateLimiterConfig ) -> Self 
   {
   Self {
-      per_second : config.requests_per_second.map( |capacity| {
+      second_bucket : config.requests_per_second.map( |capacity| {
   Arc::new( RwLock::new( TokenBucket::new( capacity, Duration::from_secs( 1 )) ))
       } ),
-      per_minute : config.requests_per_minute.map( |capacity| {
+      minute_bucket : config.requests_per_minute.map( |capacity| {
   Arc::new( RwLock::new( TokenBucket::new( capacity, Duration::from_secs( 60 )) ))
       } ),
-      per_hour : config.requests_per_hour.map( |capacity| {
+      hour_bucket : config.requests_per_hour.map( |capacity| {
   Arc::new( RwLock::new( TokenBucket::new( capacity, Duration::from_secs( 3600 )) ))
       } ),
   }
@@ -195,7 +196,7 @@ impl RateLimiter
       // Try to acquire from all buckets
       let mut max_wait : Option< Duration > = None;
 
-      if let Some( ref bucket ) = self.per_second
+      if let Some( ref bucket ) = self.second_bucket
       {
   let mut b = bucket.write( ).await;
   if !b.try_consume( )
@@ -207,7 +208,7 @@ impl RateLimiter
   }
       }
 
-      if let Some( ref bucket ) = self.per_minute
+      if let Some( ref bucket ) = self.minute_bucket
       {
   let mut b = bucket.write( ).await;
   if !b.try_consume( )
@@ -219,7 +220,7 @@ impl RateLimiter
   }
       }
 
-      if let Some( ref bucket ) = self.per_hour
+      if let Some( ref bucket ) = self.hour_bucket
       {
   let mut b = bucket.write( ).await;
   if !b.try_consume( )
@@ -256,7 +257,7 @@ impl RateLimiter
   pub async fn try_acquire( &self ) -> Result< ( ), RateLimitError > 
   {
   // Try per-second bucket
-  if let Some( ref bucket ) = self.per_second
+  if let Some( ref bucket ) = self.second_bucket
   {
       let mut b = bucket.write( ).await;
       if !b.try_consume( )
@@ -269,7 +270,7 @@ impl RateLimiter
   }
 
   // Try per-minute bucket
-  if let Some( ref bucket ) = self.per_minute
+  if let Some( ref bucket ) = self.minute_bucket
   {
       let mut b = bucket.write( ).await;
       if !b.try_consume( )
@@ -282,7 +283,7 @@ impl RateLimiter
   }
 
   // Try per-hour bucket
-  if let Some( ref bucket ) = self.per_hour
+  if let Some( ref bucket ) = self.hour_bucket
   {
       let mut b = bucket.write( ).await;
       if !b.try_consume( )
@@ -302,19 +303,19 @@ impl RateLimiter
   pub async fn available_tokens( &self ) -> AvailableTokens 
   {
   AvailableTokens {
-      per_second : if let Some( ref bucket ) = self.per_second
+      per_second : if let Some( ref bucket ) = self.second_bucket
       {
   Some( bucket.write( ).await.available_tokens( ))
       } else {
   None
       },
-      per_minute : if let Some( ref bucket ) = self.per_minute
+      per_minute : if let Some( ref bucket ) = self.minute_bucket
       {
   Some( bucket.write( ).await.available_tokens( ))
       } else {
   None
       },
-      per_hour : if let Some( ref bucket ) = self.per_hour
+      per_hour : if let Some( ref bucket ) = self.hour_bucket
       {
   Some( bucket.write( ).await.available_tokens( ))
       } else {
@@ -327,21 +328,21 @@ impl RateLimiter
   #[ inline ]
   pub async fn reset( &self ) 
   {
-  if let Some( ref bucket ) = self.per_second
+  if let Some( ref bucket ) = self.second_bucket
   {
       let mut b = bucket.write( ).await;
       b.tokens = f64::from( b.capacity );
       b.last_refill = Instant::now( );
   }
 
-  if let Some( ref bucket ) = self.per_minute
+  if let Some( ref bucket ) = self.minute_bucket
   {
       let mut b = bucket.write( ).await;
       b.tokens = f64::from( b.capacity );
       b.last_refill = Instant::now( );
   }
 
-  if let Some( ref bucket ) = self.per_hour
+  if let Some( ref bucket ) = self.hour_bucket
   {
       let mut b = bucket.write( ).await;
       b.tokens = f64::from( b.capacity );

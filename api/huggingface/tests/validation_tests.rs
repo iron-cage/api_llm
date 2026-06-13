@@ -1,5 +1,7 @@
 //! Tests for request validation functionality
 
+mod inc;
+
 use api_huggingface::
 {
   components::input::InferenceParameters,
@@ -904,6 +906,44 @@ fn test_validate_url()
   }
 }
 
+/// Reproducing test: `validate_url` accepted protocol-only strings with no hostname.
+///
+/// Root Cause: `validate_url` checked only (1) non-empty, (2) starts with http(s)://,
+///   (3) <= 2048 chars. "http://" satisfies all three — 7 chars, starts with "http://",
+///   not empty — so it was incorrectly accepted.
+/// Why Not Caught: Tests covered wrong-protocol and too-long cases but no hostname-missing case.
+/// Fix Applied: After the protocol check, verify the portion after "http(s)://" is non-empty.
+/// Prevention: URL validators must check structural components (scheme, host), not just prefix.
+/// Pitfall: `starts_with("http://")` is a necessary but not sufficient condition for a valid URL.
+/// bug_reproducer(BUG-008)
+#[ test ]
+fn test_validate_url_protocol_only_rejected()
+{
+  use api_huggingface::validation::validate_url;
+
+  // Protocol-only strings with no hostname must be rejected
+  let result = validate_url( "http://" );
+  assert!( result.is_err(), "http:// with no hostname must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.to_lowercase().contains( "host" ) || msg.to_lowercase().contains( "empty" ),
+      "Error should mention missing host, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for http:// with no hostname" );
+  }
+
+  let result = validate_url( "https://" );
+  assert!( result.is_err(), "https:// with no hostname must be rejected" );
+
+  // Minimum valid URLs (scheme + at least one char) must pass
+  assert!( validate_url( "http://a" ).is_ok(), "http://a must be valid (minimal http URL)" );
+  assert!( validate_url( "https://a" ).is_ok(), "https://a must be valid (minimal https URL)" );
+}
+
 /// Boundary-value tests for `validate_stop_sequences`.
 #[ test ]
 fn test_validate_stop_sequences_boundary()
@@ -1007,6 +1047,7 @@ fn test_inference_provider_api()
 ///   NaN breaks range comparisons silently (NaN `<=`/`>=` always returns false).
 /// Pitfall: `contains()` on a float range catches NaN "accidentally" (NaN comparison
 ///   always false → not contained → error returned), but with the wrong message.
+/// bug_reproducer(BUG-003)
 #[ test ]
 fn test_validate_temperature_nan_gives_valid_number_error()
 {
@@ -1048,6 +1089,7 @@ fn test_validate_temperature_nan_gives_valid_number_error()
 /// Why Not Caught: Prior tests only assert `is_err()`.
 /// Fix Applied: NaN/Inf check moved before range check.
 /// Prevention/Pitfall: See `test_validate_temperature_nan_gives_valid_number_error`.
+/// bug_reproducer(BUG-004)
 #[ test ]
 fn test_validate_top_p_nan_gives_valid_number_error()
 {
@@ -1074,6 +1116,7 @@ fn test_validate_top_p_nan_gives_valid_number_error()
 /// Why Not Caught: Prior tests only assert `is_err()`.
 /// Fix Applied: NaN/Inf check moved before range check.
 /// Prevention/Pitfall: See `test_validate_temperature_nan_gives_valid_number_error`.
+/// bug_reproducer(BUG-005)
 #[ test ]
 fn test_validate_frequency_penalty_nan_gives_valid_number_error()
 {
@@ -1100,6 +1143,7 @@ fn test_validate_frequency_penalty_nan_gives_valid_number_error()
 /// Why Not Caught: Prior tests only assert `is_err()`.
 /// Fix Applied: NaN/Inf check moved before range check.
 /// Prevention/Pitfall: See `test_validate_temperature_nan_gives_valid_number_error`.
+/// bug_reproducer(BUG-006)
 #[ test ]
 fn test_validate_presence_penalty_nan_gives_valid_number_error()
 {
@@ -1131,6 +1175,7 @@ fn test_validate_presence_penalty_nan_gives_valid_number_error()
 /// Fix Applied: NaN/Inf check moved before all other checks.
 /// Prevention: Always validate NaN/Inf before applying numeric comparisons.
 /// Pitfall: `penalty > 10.0` is true for `+Inf`, silently "catching" it with wrong message.
+/// bug_reproducer(BUG-007)
 #[ test ]
 fn test_validate_repetition_penalty_infinity_gives_valid_number_error()
 {
@@ -1164,5 +1209,189 @@ fn test_validate_repetition_penalty_infinity_gives_valid_number_error()
   else
   {
   panic!( "Expected Validation error for NEG_INFINITY repetition_penalty" );
+  }
+}
+
+/// Reproducing test: `validate_input_text` rejects multibyte-character strings whose
+/// **byte** length exceeds MAX_INPUT_LENGTH even though their **character** (code point)
+/// count is well within the limit.
+///
+/// Root Cause: The length check uses `input.len()` which returns bytes in Rust, not Unicode
+///   code points. A 2-byte character like 'é' (U+00E9) counts as 2 toward the byte limit
+///   even though it is one "character" by any common definition. The constant
+///   MAX_INPUT_LENGTH is documented as "characters" and the error message says "characters",
+///   so the correct implementation must count code points, not bytes.
+///
+/// Why Not Caught: All existing tests use ASCII-only strings where `.len() == .chars().count()`.
+///   No test exercised multibyte Unicode text near the boundary.
+///
+/// Fix Applied: Changed `input.len()` to `input.chars().count()` (and matching error format
+///   args) in `validate_input_text` and `validate_message_content`.
+///
+/// Prevention: When a limit is described as "characters", always count with `.chars().count()`.
+///   Reserve `.len()` for byte-length limits.
+///
+/// Pitfall: In Rust, `str::len()` returns UTF-8 byte count, never Unicode code-point count.
+///   These are equal only for ASCII (code points < 128).
+///
+/// bug_reproducer(BUG-010)
+#[ test ]
+fn test_validate_input_text_multibyte_character_boundary()
+{
+  use api_huggingface::validation::{ validate_input_text, MAX_INPUT_LENGTH };
+
+  // Half of MAX_INPUT_LENGTH 2-byte characters: char count = MAX_INPUT_LENGTH/2,
+  // byte length = MAX_INPUT_LENGTH.  Char count is well under the limit → must PASS.
+  let two_byte_char = 'é'; // U+00E9, encoded as 2 UTF-8 bytes
+  let half_limit_multibyte = two_byte_char.to_string().repeat( MAX_INPUT_LENGTH / 2 );
+  assert_eq!( half_limit_multibyte.len(), MAX_INPUT_LENGTH, "sanity: byte length is at the limit" );
+  assert_eq!(
+  half_limit_multibyte.chars().count(),
+  MAX_INPUT_LENGTH / 2,
+  "sanity: char count is half the limit"
+  );
+  assert!(
+  validate_input_text( &half_limit_multibyte ).is_ok(),
+  "String with {} 2-byte chars (byte len={}) must be valid; MAX chars={}",
+  MAX_INPUT_LENGTH / 2,
+  half_limit_multibyte.len(),
+  MAX_INPUT_LENGTH,
+  );
+
+  // MAX_INPUT_LENGTH 2-byte characters: char count exactly at limit → must PASS.
+  let at_char_limit_multibyte = two_byte_char.to_string().repeat( MAX_INPUT_LENGTH );
+  assert_eq!( at_char_limit_multibyte.chars().count(), MAX_INPUT_LENGTH );
+  assert!(
+  validate_input_text( &at_char_limit_multibyte ).is_ok(),
+  "String at exactly MAX_INPUT_LENGTH 2-byte chars must be valid"
+  );
+
+  // MAX_INPUT_LENGTH + 1 chars of any size → must FAIL.
+  let over_char_limit = "a".repeat( MAX_INPUT_LENGTH + 1 );
+  assert!(
+  validate_input_text( &over_char_limit ).is_err(),
+  "String with MAX_INPUT_LENGTH+1 chars must be rejected"
+  );
+
+  // Error message reports character count, not byte count.
+  let two_byte_over = two_byte_char.to_string().repeat( MAX_INPUT_LENGTH + 1 );
+  let result = validate_input_text( &two_byte_over );
+  assert!( result.is_err() );
+  if let Err( api_huggingface::error::HuggingFaceError::Validation( msg ) ) = result
+  {
+  // The count in the error should equal chars().count(), not the byte length
+  let char_count = ( MAX_INPUT_LENGTH + 1 ).to_string();
+  assert!(
+      msg.contains( &char_count ),
+      "Error message must report char count {char_count}, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for text over char limit" );
+  }
+}
+
+// ============================================================================
+// Integration tests — require feature = "integration"
+// ============================================================================
+
+#[ cfg( feature = "integration" ) ]
+use api_huggingface::
+{
+  Client,
+  environment::HuggingFaceEnvironmentImpl,
+  secret::Secret,
+  validation::{ validate_model_identifier, validate_batch_inputs },
+};
+
+/// Verify validation rejects invalid parameters before any real API call.
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_validation_with_real_api_calls()
+{
+  let api_key_string = crate::inc::get_api_key_for_integration();
+
+  let api_key = Secret::new( api_key_string );
+  let env = HuggingFaceEnvironmentImpl::build( api_key, None )
+      .expect( "Environment build should succeed" );
+  let client = Client::build( env )
+      .expect( "Client build should succeed" );
+
+  let invalid_params = InferenceParameters::new()
+      .with_temperature( -1.0 )
+      .with_max_new_tokens( 0 );
+
+  let validation_result = invalid_params.validate();
+  assert!( validation_result.is_err(), "Invalid parameters should fail validation" );
+
+  let api_result = client.inference()
+      .create_with_parameters( "test", "microsoft/DialoGPT-medium", invalid_params )
+      .await;
+
+  assert!( api_result.is_err(), "Invalid parameters should cause API call to fail" );
+}
+
+/// Verify model identifier validation rejects invalid names before real API calls.
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_model_validation_with_real_api()
+{
+  let api_key_string = crate::inc::get_api_key_for_integration();
+
+  let api_key = Secret::new( api_key_string );
+  let env = HuggingFaceEnvironmentImpl::build( api_key, None )
+      .expect( "Environment build should succeed" );
+  let client = Client::build( env )
+      .expect( "Client build should succeed" );
+
+  assert!( validate_model_identifier( "" ).is_err(), "Empty model should be invalid" );
+  assert!( validate_model_identifier( "invalid model name with spaces" ).is_err(), "Spaces should be invalid" );
+  assert!( validate_model_identifier( "valid/model-name" ).is_ok(), "Valid format should pass" );
+
+  let result = client.embeddings()
+      .create( "test", "invalid_model_name" )
+      .await;
+
+  assert!( result.is_err(), "Invalid model name should cause API failure : {result:?}" );
+}
+
+/// Verify batch validation rejects oversized batches and accepts valid batches.
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_batch_validation_with_real_api()
+{
+  let api_key_string = crate::inc::get_api_key_for_integration();
+
+  let api_key = Secret::new( api_key_string );
+  let env = HuggingFaceEnvironmentImpl::build( api_key, None )
+      .expect( "Environment build should succeed" );
+  let client = Client::build( env )
+      .expect( "Client build should succeed" );
+
+  let large_batch : Vec< String > = ( 0..1001 ).map( |i| format!( "input_{i}" ) ).collect();
+  assert!( validate_batch_inputs( &large_batch ).is_err(), "Large batch should be invalid" );
+
+  let small_batch = vec![ "test1".to_string(), "test2".to_string() ];
+  assert!( validate_batch_inputs( &small_batch ).is_ok(), "Small batch should be valid" );
+
+  let response = client.embeddings()
+      .create_batch( small_batch.clone(), "BAAI/bge-large-en-v1.5" )
+      .await;
+
+  match response
+  {
+      Ok( embeddings ) =>
+      {
+  match embeddings
+  {
+          api_huggingface::components::embeddings::EmbeddingResponse::Batch( batch_embeddings ) =>
+  {
+      assert_eq!( batch_embeddings.len(), small_batch.len(), "Should get embedding for each input" );
+          },
+          api_huggingface::components::embeddings::EmbeddingResponse::Single( _ ) => {},
+  }
+      },
+      Err( e ) => panic!( "Integration embedding batch should succeed with valid credentials: {e}" ),
   }
 }

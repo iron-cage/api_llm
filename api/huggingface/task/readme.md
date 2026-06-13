@@ -43,3 +43,4 @@ workspace: api_llm
 | `cancelled/` | Cancelled task files |
 | `actors/` | Actor registry (Promoted Entity Format) |
 | `action_plan/` | Per-actor action plans combining task list + conditional actions + watch items |
+| `bug/` | Bug reports index; all resolved bugs archived in `bug/closed/` |

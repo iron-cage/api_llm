@@ -33,6 +33,7 @@ mod tests
   {
   Client,
   environment::HuggingFaceEnvironmentImpl,
+  providers::ChatCompletionOptions,
   components::
   {
       tools::{ Tool, ToolParameters, ParameterProperty },
@@ -135,10 +136,7 @@ mod tests
           }
   ],
   vec![ tool ],
-  None, // tool_choice : auto (default)
-  None, // max_tokens
-  None, // temperature
-  None, // top_p
+  ChatCompletionOptions::default(), // tool_choice : auto (default)
       )
       .await;
 
@@ -201,10 +199,7 @@ mod tests
           }
   ],
   vec![ tool ],
-  Some( "none".to_string() ), // tool_choice : none - should not call tools
-  None,
-  None,
-  None,
+  ChatCompletionOptions { tool_choice : Some( "none".to_string() ), ..Default::default() },
       )
       .await;
 
@@ -246,10 +241,7 @@ mod tests
           }
   ],
   vec![ tool ],
-  Some( "required".to_string() ), // tool_choice : required - must call a tool
-  None,
-  None,
-  None,
+  ChatCompletionOptions { tool_choice : Some( "required".to_string() ), ..Default::default() },
       )
       .await;
 
@@ -295,10 +287,7 @@ mod tests
           }
   ],
   vec![ weather_tool, calc_tool ],
-  None, // auto - model chooses appropriate tool
-  None,
-  None,
-  None,
+  ChatCompletionOptions::default(), // auto - model chooses appropriate tool
       )
       .await;
 
@@ -337,10 +326,7 @@ mod tests
           }
   ],
   vec![ tool.clone() ],
-  None,
-  None,
-  None,
-  None,
+  ChatCompletionOptions::default(),
       )
       .await
       .expect( "First request failed" );
@@ -375,10 +361,7 @@ mod tests
           }
   ],
   vec![ tool ],
-  None,
-  None,
-  None,
-  None,
+  ChatCompletionOptions::default(),
       )
       .await
       .expect( "Second request failed" );

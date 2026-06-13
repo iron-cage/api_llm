@@ -714,13 +714,18 @@ async fn integration_similarity_calculation()
 /// Root Cause: the implementation returned `dot / (|a| * |b|)` without clamping.
 /// Floating-point rounding can produce values like 1.0000001 for nearly-identical vectors,
 /// violating the invariant documented in AP-03.
-/// Fix: added `.clamp(-1.0, 1.0)` to the return expression in `src/embeddings.rs`.
 ///
 /// Why Not Caught: the test helper in this file already added clamping, masking the gap
 /// between test behavior and production behavior.
 ///
+/// Fix Applied: added `.clamp(-1.0, 1.0)` to the return expression in `src/embeddings.rs`.
+///
+/// Prevention: when implementing mathematical operations with invariant bounds,
+/// apply clamping at the production site, not only in test helpers.
+///
 /// Pitfall: cosine similarity is mathematically bounded to [-1.0, 1.0], but IEEE 754
 /// floating-point arithmetic can violate this for nearly-collinear vectors.
+/// bug_reproducer(BUG-009)
 #[ test ]
 fn test_cosine_similarity_clamping()
 {

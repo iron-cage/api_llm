@@ -546,6 +546,7 @@ async fn test_rate_limiter_concurrent_try_acquire()
 // Bug Reproducer Tests
 // ============================================================================
 
+/// bug_reproducer(BUG-001)
 #[ tokio::test ]
 async fn test_rate_limiter_zero_capacity_try_acquire_no_panic()
 {

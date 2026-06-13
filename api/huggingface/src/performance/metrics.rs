@@ -247,8 +247,8 @@ impl MetricsState
   let max = latencies.last( ).copied( ).unwrap_or_default( );
 
   let sum : Duration = latencies.iter( ).sum( );
-  #[ allow( clippy::cast_possible_truncation ) ]
-  let mean = sum / latencies.len( ) as u32;
+  let count = u32::try_from( latencies.len( ) ).unwrap_or( u32::MAX );
+  let mean = sum / count;
 
   let p50 = Self::percentile( &latencies, 0.50 );
   let p95 = Self::percentile( &latencies, 0.95 );
@@ -273,6 +273,7 @@ impl MetricsState
       return Duration::default( );
   }
 
+  // percentile ∈ [0.0, 1.0] → product ∈ [0.0, len]; always non-negative and within usize range
   #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
   let index = ( sorted_latencies.len( ) as f64 * percentile ) as usize;
   let index = index.min( sorted_latencies.len( ) - 1 );
@@ -396,8 +397,8 @@ impl PerformanceMetrics
       let min = latencies.first( ).copied( ).unwrap_or_default( );
       let max = latencies.last( ).copied( ).unwrap_or_default( );
       let sum : Duration = latencies.iter( ).sum( );
-      #[ allow( clippy::cast_possible_truncation ) ]
-      let mean = sum / latencies.len( ) as u32;
+      let count = u32::try_from( latencies.len( ) ).unwrap_or( u32::MAX );
+      let mean = sum / count;
       let p50 = MetricsState::percentile( &latencies, 0.50 );
       let p95 = MetricsState::percentile( &latencies, 0.95 );
       let p99 = MetricsState::percentile( &latencies, 0.99 );

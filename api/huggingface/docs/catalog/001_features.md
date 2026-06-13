@@ -1,9 +1,9 @@
-# Collection: Features
+# Catalog: Features
 
 ### Scope
 
 - **Purpose**: Enumerate all Cargo feature flags for `api_huggingface`, their grouping by convenience bundle or capability tier, and their stated capabilities.
-- **Responsibility**: This collection/ instance — the authoritative feature flag catalog for `api_huggingface`.
+- **Responsibility**: This catalog/ instance — the authoritative feature flag catalog for `api_huggingface`.
 - **In Scope**: All Cargo feature flags defined in `Cargo.toml`, grouped by tier; convenience bundle descriptions.
 - **Out of Scope**: Procedural steps for selecting features, source-level implementation, API method signatures.
 
@@ -89,4 +89,4 @@ The `integration` testing feature gates real-API integration tests. The `integra
 
 | File | Relationship |
 |------|--------------|
-| `tests/docs/collection/01_features.md` | GWT spec scenarios covering feature flag catalog, tier classification, and bundle composition |
+| `tests/docs/catalog/01_features.md` | GWT spec scenarios covering feature flag catalog, tier classification, and bundle composition |

@@ -117,6 +117,20 @@ mod private
   }
   }
 
+  /// Optional parameters for `chat_completion_with_tools`
+  #[ derive( Debug, Default, Clone ) ]
+  pub struct ChatCompletionOptions
+  {
+    /// Controls tool usage: "auto", "none", "required", or specific function name
+    pub tool_choice : Option< String >,
+    /// Maximum tokens to generate
+    pub max_tokens : Option< u32 >,
+    /// Sampling temperature (0.0 – 2.0)
+    pub temperature : Option< f32 >,
+    /// Top-p sampling parameter (0.0 – 1.0)
+    pub top_p : Option< f32 >,
+  }
+
   /// API group for `HuggingFace` Inference Providers operations
   #[ derive( Debug ) ]
   pub struct Providers< E >
@@ -286,24 +300,17 @@ mod private
   /// - `model`: Model identifier (e.g., "moonshotai/Kimi-K2-Instruct-0905:groq")
   /// - `messages`: Conversation messages
   /// - `tools`: List of tools the model may call
-  /// - `tool_choice`: Controls tool usage ("auto", "none", "required", or specific function)
-  /// - `max_tokens`: Maximum tokens to generate (optional)
-  /// - `temperature`: Sampling temperature (optional)
-  /// - `top_p`: Top-p sampling parameter (optional)
+  /// - `options`: Optional parameters — `tool_choice`, `max_tokens`, `temperature`, `top_p`
   ///
   /// # Errors
   /// Returns error if the request fails or response is invalid
   #[ inline ]
-  #[ allow( clippy::too_many_arguments ) ]
   pub async fn chat_completion_with_tools(
       &self,
       model : impl AsRef< str >,
       messages : Vec< ChatMessage >,
       tools : Vec< Tool >,
-      tool_choice : Option< String >,
-      max_tokens : Option< u32 >,
-      temperature : Option< f32 >,
-      top_p : Option< f32 >,
+      options : ChatCompletionOptions,
   ) -> Result< ChatCompletionResponse >
   {
       let model_id = model.as_ref();
@@ -339,12 +346,12 @@ mod private
       {
   model : model_id.to_string(),
   messages,
-  max_tokens,
-  temperature,
-  top_p,
+  max_tokens : options.max_tokens,
+  temperature : options.temperature,
+  top_p : options.top_p,
   stream : Some( false ), // Non-streaming for now
   tools : Some( tool_definitions ),
-  tool_choice,
+  tool_choice : options.tool_choice,
       };
 
       let url = self.client.environment.endpoint_url( "chat/completions" )?;
@@ -377,6 +384,7 @@ crate::mod_interface!
   exposed use private::
   {
   Providers,
+  ChatCompletionOptions,
   ChatCompletionRequest,
   ChatCompletionResponse,
   ChatMessage,

@@ -1,5 +1,12 @@
 # Manual Testing Plan - api_huggingface
 
+## Responsibility Table
+
+| File | Responsibility |
+|------|----------------|
+| `readme.md` | Manual testing plan and troubleshooting reference |
+| `run_math_test.sh` | Automated script verifying multi-turn math context retention |
+
 ## Overview
 
 This crate has **comprehensive automated test coverage** (221 tests passing). Manual testing is **optional** and primarily useful for:

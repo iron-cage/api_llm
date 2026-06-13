@@ -15,7 +15,7 @@
 
 ## Goal
 
-4 GWT spec scenarios added during the 2026-06-13 doc_tsk normalization session — AP-07 (`tests/docs/api/01_reference.md`), FE-06 (`tests/docs/feature/01_enterprise_reliability.md`), CL-06 and CL-07 (`tests/docs/collection/01_features.md`) — have zero implementing test functions. Extend `tests/doc_spec_tests.rs` with 4 named functions (`test_ap_07`, `test_fe_06`, `test_cl_06`, `test_cl_07`) so that `grep -cE "^(async )?fn test_" tests/doc_spec_tests.rs` returns 42 and `cargo check --all-features` exits 0.
+4 GWT spec scenarios added during the 2026-06-13 doc_tsk normalization session — AP-07 (`tests/docs/api/01_reference.md`), FE-06 (`tests/docs/feature/01_enterprise_reliability.md`), CL-06 and CL-07 (`tests/docs/catalog/01_features.md`) — have zero implementing test functions. Extend `tests/doc_spec_tests.rs` with 4 named functions (`test_ap_07`, `test_fe_06`, `test_cl_06`, `test_cl_07`) so that `grep -cE "^(async )?fn test_" tests/doc_spec_tests.rs` returns 42 and `cargo check --all-features` exits 0.
 
 ## In Scope
 
@@ -46,7 +46,7 @@ Execute in order. Do not skip or reorder steps.
 
 1. **Read rulebooks** — `kbase .rulebooks`; confirm codestyle conventions and `#[ cfg ]` ordering requirements.
 
-2. **Read spec files** — read `tests/docs/api/01_reference.md` (AP-07), `tests/docs/feature/01_enterprise_reliability.md` (FE-06), `tests/docs/collection/01_features.md` (CL-06, CL-07) to confirm exact assertion targets for each function.
+2. **Read spec files** — read `tests/docs/api/01_reference.md` (AP-07), `tests/docs/feature/01_enterprise_reliability.md` (FE-06), `tests/docs/catalog/01_features.md` (CL-06, CL-07) to confirm exact assertion targets for each function.
 
 3. **Confirm providers chat API** — the method is `chat_completion` (not `chat`). Confirmed signature: `pub async fn chat_completion(&self, model: impl AsRef<str>, messages: Vec<ChatMessage>, max_tokens: Option<u32>, temperature: Option<f32>, top_p: Option<f32>) -> Result<ChatCompletionResponse>`. Read `src/providers.rs` to confirm the `ChatMessage` struct fields (`role: String`, `content: String`) and the exact path through `ChatCompletionResponse.choices[0].message.content` to the reply content field.
 
@@ -161,10 +161,10 @@ Execute in order. Do not skip or reorder steps.
 
 - `docs/api/001_reference.md` — API reference; AP-07 verifies `providers().chat_completion()` contract
 - `docs/feature/001_enterprise_reliability.md` — enterprise reliability feature group; FE-06 verifies module isolation
-- `docs/collection/001_features.md` — feature flag catalog; CL-06 and CL-07 verify bundle and alias entries
+- `docs/catalog/001_features.md` — feature flag catalog; CL-06 and CL-07 verify bundle and alias entries
 - `tests/docs/api/01_reference.md` — AP-07 GWT scenario this task implements
 - `tests/docs/feature/01_enterprise_reliability.md` — FE-06 GWT scenario this task implements
-- `tests/docs/collection/01_features.md` — CL-06 and CL-07 GWT scenarios this task implements
+- `tests/docs/catalog/01_features.md` — CL-06 and CL-07 GWT scenarios this task implements
 - `task/completed/008_implement_doc_spec_test_coverage.md` — Related: 008 — original 28-function doc_spec_tests.rs creation
 - `task/completed/009_implement_collection_pitfall_spec_tests.md` — Related: 009 — added CL-01..05 and PF-01..04 (same target file)
 
@@ -175,7 +175,7 @@ Execute in order. Do not skip or reorder steps.
 | `tests/` | Test suite | 4 new functions added to existing `doc_spec_tests.rs` |
 | `tests/docs/api/` | Test spec docs | Unchanged — AP-07 scenario already defined in `01_reference.md` |
 | `tests/docs/feature/` | Test spec docs | Unchanged — FE-06 scenario already defined in `01_enterprise_reliability.md` |
-| `tests/docs/collection/` | Test spec docs | Unchanged — CL-06, CL-07 scenarios already defined in `01_features.md` |
+| `tests/docs/catalog/` | Test spec docs | Unchanged — CL-06, CL-07 scenarios already defined in `01_features.md` |
 
 ## Verification Findings
 

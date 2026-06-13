@@ -804,6 +804,7 @@ async fn test_concurrent_requests_with_failover()
 // Bug Reproducer Tests
 // ============================================================================
 
+/// bug_reproducer(BUG-002)
 #[ test ]
 fn test_failover_backoff_delay_no_overflow_for_high_attempt_counts()
 {

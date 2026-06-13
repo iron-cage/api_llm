@@ -1,9 +1,9 @@
-# Collection Doc Entity
+# Catalog Doc Entity
 
 ### Scope
 
 - **Purpose**: Document enumerated item catalogs for `api_huggingface` — feature lists, tier classifications, and reference tables.
-- **Responsibility**: Each collection/ instance covers one enumerated catalog of items.
+- **Responsibility**: Each catalog/ instance covers one enumerated catalog of items.
 - **In Scope**: Feature flag catalogs, tier classifications, status tables, reference item lists.
 - **Out of Scope**: Procedural steps, implementation details, API method signatures.
 

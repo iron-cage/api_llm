@@ -100,7 +100,7 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
     .create_with_parameters
     (
       "What is the capital of France?",
-      Models::llama_3_1_8b_instruct(),
+      Models::llama_3_3_70b_instruct(),
       params
     )
     .await?;
@@ -208,7 +208,7 @@ Get your API key from [huggingface.co/settings/tokens](https://huggingface.co/se
 
 ## Documentation
 
-- **[Features Overview](docs/collection/001_features.md)** - Feature flag catalog
+- **[Features Overview](docs/catalog/001_features.md)** - Feature flag catalog
 - **[API Reference](docs/api/001_reference.md)** - Comprehensive API documentation
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/huggingface/examples)** - Working code examples
 

@@ -14,7 +14,6 @@ Automated tests for the `api_huggingface` crate. All integration tests use real 
 | `components_tests.rs` | Shared component type serialization tests |
 | `content_generator_example_test.rs` | Content generation end-to-end workflow |
 | `curl_diagnostics_tests.rs` | CURL diagnostics command generation tests |
-| `debug_validation.rs` | Debugging utilities for test validation |
 | `doc_spec_tests.rs` | GWT scenario tests for all docs/ entity spec files |
 | `document_search_example_test.rs` | Semantic search end-to-end workflow |
 | `dynamic_config_tests.rs` | Runtime dynamic configuration tests |

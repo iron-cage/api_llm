@@ -31,7 +31,7 @@ Enterprise features are independent — each can be enabled in isolation without
 
 | File | Relationship |
 |------|--------------|
-| `collection/001_features.md` | Authoritative catalog of all Tier 2 enterprise feature flags governed by this instance |
+| `catalog/001_features.md` | Authoritative catalog of all Tier 2 enterprise feature flags governed by this instance |
 
 ### Invariants
 

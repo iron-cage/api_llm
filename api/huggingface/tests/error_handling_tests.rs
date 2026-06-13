@@ -6,7 +6,7 @@ use api_huggingface::
 {
   environment::{ HuggingFaceEnvironmentImpl, HuggingFaceEnvironment, EnvironmentInterface },
   secret::Secret,
-  error::{ HuggingFaceError, Result },
+  error::{ HuggingFaceError, ApiErrorWrap, Result },
 };
 
 #[ tokio::test ]
@@ -116,6 +116,85 @@ async fn error_chain_propagation()
   },
   other => panic!( "Expected InvalidArgument error, got : {other:?}" ),
   }
+}
+
+/// All ten `HuggingFaceError` variants must produce a non-empty Display string that
+/// contains the inner message.  The previous test only covered four variants, leaving
+/// six silently untested.
+///
+/// Root Cause: N/A (coverage gap, not a bug).
+/// Why Not Caught: `error_display_formatting` only included four of ten variants.
+/// Fix Applied: N/A — tests added here to close the gap.
+/// Prevention: When a `Display` impl has N arms, test all N arms explicitly.
+/// Pitfall: Checking `!is_empty()` is not enough — a wrong arm can produce a non-empty
+///   string (e.g. "Authentication error : ..." for an Http variant) and still look valid.
+#[ test ]
+fn test_all_error_variants_display_content()
+{
+  let cases : Vec< ( HuggingFaceError, &str ) > = vec!
+  [
+  ( HuggingFaceError::Api( ApiErrorWrap::new( "api msg" ) ), "api msg" ),
+  ( HuggingFaceError::Http( "http msg".into() ), "http msg" ),
+  ( HuggingFaceError::Authentication( "auth msg".into() ), "auth msg" ),
+  ( HuggingFaceError::Validation( "val msg".into() ), "val msg" ),
+  ( HuggingFaceError::RateLimit( "rate msg".into() ), "rate msg" ),
+  ( HuggingFaceError::ModelUnavailable( "model msg".into() ), "model msg" ),
+  ( HuggingFaceError::Stream( "stream msg".into() ), "stream msg" ),
+  ( HuggingFaceError::Serialization( "serial msg".into() ), "serial msg" ),
+  ( HuggingFaceError::InvalidArgument( "arg msg".into() ), "arg msg" ),
+  ( HuggingFaceError::Generic( "generic msg".into() ), "generic msg" ),
+  ];
+
+  for ( error, expected_fragment ) in cases
+  {
+  let display = format!( "{error}" );
+  assert!( !display.is_empty(), "Display must not be empty for {error:?}" );
+  assert!(
+      display.contains( expected_fragment ),
+      "Display must contain inner message. Got: {display:?}, expected fragment: {expected_fragment:?}"
+  );
+  }
+}
+
+/// `ApiErrorWrap::Display` has four distinct rendering paths based on whether
+/// `error_type` and `status_code` are `Some` or `None`.  All four must be covered.
+///
+/// Root Cause: N/A (coverage gap).
+/// Why Not Caught: No existing test exercised `ApiErrorWrap` formatting directly.
+/// Fix Applied: N/A — tests added to cover all four branches.
+/// Prevention: When a Display impl has conditional branches, test each branch.
+/// Pitfall: Testing only the "no error_type, no status_code" path leaves "[type]" and
+///   "(HTTP NNN)" formatting branches silent.
+#[ test ]
+fn test_api_error_wrap_display_combinations()
+{
+  // No error_type, no status_code → just the message
+  let wrap = ApiErrorWrap::new( "something went wrong" );
+  let s = format!( "{wrap}" );
+  assert_eq!( s, "something went wrong", "bare message only" );
+
+  // With error_type, no status_code → "[type] message"
+  let wrap = ApiErrorWrap::new( "model failed" ).with_error_type( "ModelError" );
+  let s = format!( "{wrap}" );
+  assert!( s.contains( "[ModelError]" ), "should contain bracketed error type; got: {s:?}" );
+  assert!( s.contains( "model failed" ), "should contain message; got: {s:?}" );
+  assert!( !s.contains( "HTTP" ), "no HTTP status when status_code absent; got: {s:?}" );
+
+  // No error_type, with status_code → "message (HTTP NNN)"
+  let wrap = ApiErrorWrap::new( "not found" ).with_status_code( 404 );
+  let s = format!( "{wrap}" );
+  assert!( s.contains( "not found" ), "should contain message; got: {s:?}" );
+  assert!( s.contains( "(HTTP 404)" ), "should contain HTTP status; got: {s:?}" );
+  assert!( !s.contains( '[' ), "no bracket when error_type absent; got: {s:?}" );
+
+  // With error_type and status_code → "[type] message (HTTP NNN)"
+  let wrap = ApiErrorWrap::new( "internal error" )
+  .with_error_type( "ServerError" )
+  .with_status_code( 500 );
+  let s = format!( "{wrap}" );
+  assert!( s.contains( "[ServerError]" ), "should contain error type; got: {s:?}" );
+  assert!( s.contains( "internal error" ), "should contain message; got: {s:?}" );
+  assert!( s.contains( "(HTTP 500)" ), "should contain HTTP status; got: {s:?}" );
 }
 
 #[ cfg( feature = "integration" ) ]

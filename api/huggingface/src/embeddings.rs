@@ -253,8 +253,9 @@ fn cosine_similarity( a : &[ f32 ], b : &[ f32 ] ) -> Result< f32 >
   ) );
   }
   
-  // Clamp to [-1.0, 1.0]: floating-point rounding can yield values slightly outside
-  // this range for nearly-identical vectors, violating the cosine similarity invariant.
+  // Fix(BUG-009): clamp to [-1.0, 1.0] — IEEE 754 rounding can yield values like 1.0000001
+  // Root cause: accumulated rounding in high-dim dot products violates the cosine invariant.
+  // Pitfall: test helper added clamping locally, masking the gap vs. production code.
   Ok( ( dot_product / ( magnitude_a * magnitude_b ) ).clamp( -1.0, 1.0 ) )
 }
 
