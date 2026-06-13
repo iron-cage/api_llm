@@ -57,7 +57,7 @@ fn test_sync_message_operations()
     // Test basic message request construction
     let request = CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ Message::user( "Hello, world!" ) ],
       system : None,
@@ -98,7 +98,7 @@ fn test_sync_message_with_system_prompt()
 
     let request = CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 50,
       messages : vec![ Message::user( "What is 2+2?" ) ],
       system : Some( vec![ the_module::SystemContent::text( "You are a helpful assistant that responds concisely." ) ] ),
@@ -130,7 +130,7 @@ fn test_sync_conversation_flow()
     let client = SyncClient::from_workspace().expect( "Client should be available for testing" );
 
     // First message
-    let mut request1 = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+    let mut request1 = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
     request1.add_user_message( "My name is Alice." );
     request1.set_max_tokens( 50 );
 
@@ -142,7 +142,7 @@ fn test_sync_conversation_flow()
       .expect( "First message must succeed for conversation flow test" );
 
     // Second message in conversation
-    let mut request2 = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+    let mut request2 = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
 
     // Add conversation history
     request2.add_message( Message::user( "My name is Alice." ) );
@@ -171,7 +171,7 @@ fn test_sync_client_multiple_models()
     let client = SyncClient::from_workspace().expect( "Client should be available for testing" );
 
     let models = vec![
-      "claude-3-5-haiku-20241022",
+      "claude-haiku-4-5-20251001",
       "claude-sonnet-4-5-20250929",
     ];
 
@@ -218,7 +218,7 @@ fn test_sync_client_timeout_configuration()
       .build_from_env()
       .expect( "Client builder with short timeout must succeed for timeout behavior test" );
 
-    let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+    let mut request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
     request.add_user_message( "Hello!" );
     request.set_max_tokens( 10 );
 
@@ -233,9 +233,13 @@ fn test_sync_client_timeout_configuration()
     {
       // Timeout error expected
       let error_msg = err.to_string();
-      assert!( error_msg.to_lowercase().contains( "timeout" ) ||
-               error_msg.to_lowercase().contains( "deadline" ),
-               "Error should indicate timeout" );
+      assert!(
+        error_msg.to_lowercase().contains( "timeout" )
+          || error_msg.to_lowercase().contains( "timed out" )
+          || error_msg.to_lowercase().contains( "deadline" )
+          || error_msg.to_lowercase().contains( "operation timed" ),
+        "Error should indicate timeout, got: {error_msg}"
+      );
     }
   }
 }
@@ -268,7 +272,7 @@ mod sync_api_runtime_tests
       let handle = thread::spawn( move || {
         use the_module::CreateMessageRequest;
 
-        let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+        let mut request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
         request.add_user_message( &format!( "Thread {i} says hello!" ) );
         request.set_max_tokens( 20 );
 
@@ -326,7 +330,7 @@ mod sync_api_runtime_tests
     let client = SyncClient::from_env()
       .expect( "INTEGRATION: API key must be available for blocking behavior test" );
 
-    let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+    let mut request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
     request.add_user_message( "Count to 3" );
     request.set_max_tokens( 30 );
 
@@ -367,7 +371,7 @@ mod sync_api_integration_tests
              "Both clients should have same API key status" );
 
     // Verify sync client can make a request while async client exists
-    let mut sync_request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+    let mut sync_request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
     sync_request.add_user_message( "Hello from sync!" );
     sync_request.set_max_tokens( 20 );
 
@@ -393,7 +397,7 @@ mod sync_api_integration_tests
     // Measure multiple sync requests
     for _ in 0..3
     {
-      let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+      let mut request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
       request.add_user_message( "Hi" );
       request.set_max_tokens( 10 );
 
@@ -439,7 +443,7 @@ fn test_sync_error_handling()
       Err( _ ) => { /* invalid key correctly rejected at construction */ }
       Ok( client ) =>
       {
-        let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+        let mut request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
         request.add_user_message( "Hello!" );
         request.set_max_tokens( 10 );
 

@@ -1,5 +1,7 @@
 //! Tests for `HuggingFace` API components
 
+mod inc;
+
 use api_huggingface::components::
 {
   input::InferenceParameters,
@@ -131,10 +133,10 @@ fn inference_parameters_consistency()
   assert_eq!( params3.temperature, Some( 0.8 ) );
 }
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;
-  use workspace_tools as workspace;
   use api_huggingface::
   {
   Client,
@@ -142,19 +144,10 @@ mod integration_tests
   secret::Secret,
   };
 
-  fn get_api_key_for_integration() -> Option< String >
-  {
-  let workspace = workspace::workspace().ok()?;
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" ).ok()?;
-  secrets.get( "HUGGINGFACE_API_KEY" ).cloned()
-  }
-
   #[ tokio::test ]
   async fn integration_inference_parameters_with_real_api()
   {
-  // INTEGRATION TEST - STRICT FAILURE POLICY: Must have valid API key
-  let api_key_string = get_api_key_for_integration()
-      .expect( "INTEGRATION TEST : Must have valid HUGGINGFACE_API_KEY in secret/-secrets.sh" );
+  let api_key_string = crate::inc::get_api_key_for_integration();
   
   // Build client with real credentials
   let api_key = Secret::new( api_key_string );
@@ -223,10 +216,8 @@ Integration tests require real API access to validate functionality." );
   #[ tokio::test ]
   async fn integration_model_constants_with_real_api()
   {
-  // Get real API key - skip test if not available
-  let api_key_string = get_api_key_for_integration()
-      .expect( "INTEGRATION TEST : Must have valid HUGGINGFACE_API_KEY in secret/-secrets.sh" );
-  
+  let api_key_string = crate::inc::get_api_key_for_integration();
+
   // Build client with real credentials
   let api_key = Secret::new( api_key_string );
   let env = HuggingFaceEnvironmentImpl::build( api_key, None )
@@ -260,24 +251,16 @@ Integration tests require real API access to validate functionality." );
           }
   }
       },
-      Ok( Err( e ) ) =>
-      {
-  println!( "Integration test failed (expected in CI or when API unavailable): {e}" );
-      },
-      Err( e ) =>
-      {
-  println!( "Integration test timeout (expected in CI or when network unavailable): {e:?}" );
-      }
+      Ok( Err( e ) ) => panic!( "Integration test failed: {e}" ),
+      Err( e ) => panic!( "Integration test timeout: {e:?}" ),
   }
   }
 
   #[ tokio::test ]
   async fn integration_inference_output_with_real_response()
   {
-  // Get real API key - skip test if not available
-  let api_key_string = get_api_key_for_integration()
-      .expect( "INTEGRATION TEST : Must have valid HUGGINGFACE_API_KEY in secret/-secrets.sh" );
-  
+  let api_key_string = crate::inc::get_api_key_for_integration();
+
   // Build client with real credentials
   let api_key = Secret::new( api_key_string );
   let env = HuggingFaceEnvironmentImpl::build( api_key, None )

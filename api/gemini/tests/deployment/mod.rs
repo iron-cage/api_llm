@@ -12,11 +12,13 @@
 
 // Import shared test utilities from common module
 mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 
 use api_gemini::models::model_deployment::*;
 use std::time::Duration;
 use std::collections::HashMap;
 
+#[ cfg( feature = "integration" ) ]
 mod integration;
 mod unit;

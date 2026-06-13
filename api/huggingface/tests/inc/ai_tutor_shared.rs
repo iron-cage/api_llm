@@ -3,6 +3,8 @@
 //! This test suite verifies the functionality of an intelligent tutoring system
 //! that provides personalized learning assistance, concept explanations, and adaptive content generation.
 
+#![ allow( clippy::trivially_copy_pass_by_ref, clippy::unused_self, clippy::struct_field_names ) ]
+
 use api_huggingface::
 {
   Client,
@@ -948,16 +950,10 @@ impl AITutorPlatform
   }
 }
 
-// Helper function to get API key for testing
-fn get_api_key_for_testing() -> Option< String >
-{
-  std::env::var( "HUGGINGFACE_API_KEY" ).ok()
-}
-
 // Helper function to create test client
 fn create_test_client() -> Option< Client< HuggingFaceEnvironmentImpl > >
 {
-  let api_key = get_api_key_for_testing()?;
+  let api_key = super::get_api_key_for_testing()?;
   let secret = Secret::new( api_key );
   let env = HuggingFaceEnvironmentImpl::build( secret, None ).ok()?;
   Client::build( env ).ok()

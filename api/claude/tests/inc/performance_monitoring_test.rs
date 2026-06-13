@@ -243,7 +243,7 @@ async fn integration_performance_monitoring_api_request()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 20,
     messages : vec![ the_module::Message::user( "Hello!".to_string() ) ],
     system : None,
@@ -299,7 +299,7 @@ async fn integration_performance_monitoring_multiple_requests()
 
     let request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 15,
       messages : vec![ the_module::Message::user( format!( "Test {i}" ) ) ],
       system : None,
@@ -363,7 +363,7 @@ async fn integration_performance_monitoring_throughput_measurement()
 
     let request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 10,
       messages : vec![ the_module::Message::user( format!( "Throughput test {i}" ) ) ],
       system : None,

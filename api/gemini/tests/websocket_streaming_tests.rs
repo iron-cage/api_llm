@@ -6,6 +6,7 @@ use api_gemini::models::websocket_streaming::*;
 use std::time::Duration;
 use tokio::time::timeout;
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;

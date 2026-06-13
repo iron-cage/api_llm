@@ -7,6 +7,7 @@ use std::time::Duration;
 use tokio::time::timeout;
 use futures::stream;
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;

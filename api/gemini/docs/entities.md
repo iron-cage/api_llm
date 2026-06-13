@@ -7,6 +7,7 @@
 | feature | 001 | Core API | Core Gemini endpoints — content generation, embeddings, models, streaming, multimodal | Active |
 | feature | 002 | Enterprise Reliability | Enterprise reliability modules — retry, circuit breaker, rate limiting, failover | Active |
 | api | 001 | Coverage | API endpoint coverage and implementation status | Active |
+| operation | 001 | Secret Loading | Gemini API key loading procedure for development and tests | Active |
 | operation | 002 | Usage Examples | Common API usage operation procedures | Active |
 | pattern | 001 | Quick Response | Single-call generation; errors propagate to caller as Result | Active |
 | pattern | 002 | Error-Resilient | Generation with error-variant-to-fallback-string mapping | Active |

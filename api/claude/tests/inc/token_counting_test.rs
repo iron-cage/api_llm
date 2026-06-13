@@ -352,7 +352,7 @@ async fn integration_token_count_different_models()
   // Test with Haiku model
   let request_haiku = the_module::CountMessageTokensRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     messages : messages.clone(),
     system : None,
     tools : None,

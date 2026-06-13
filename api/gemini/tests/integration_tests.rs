@@ -54,6 +54,8 @@
 //! 4. Compare with faster tests (e.g., `test_generate_content_simple`) to isolate issue
 
 
+#![ cfg( feature = "integration" ) ]
+
 #[ allow( clippy::duplicate_mod ) ]
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;

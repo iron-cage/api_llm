@@ -1,5 +1,7 @@
 //! Comprehensive tests for `HuggingFace` Models API functionality
 
+mod inc;
+
 use api_huggingface::
 {
   models::{ Models, ModelStatus },
@@ -367,26 +369,11 @@ fn test_models_client_creation_no_env_config()
 mod integration_tests
 {
   use super::*;
-  use workspace_tools as workspace;
-
-  /// Helper to get API key for integration tests - panics if not found
-  fn get_api_key_for_integration() -> String
-  {
-  let workspace = workspace::workspace()
-      .expect( "Failed to access workspace - required for integration tests" );
-  
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" )
-      .expect( "Failed to load secret/-secrets.sh - required for integration tests" );
-  
-  secrets.get( "HUGGINGFACE_API_KEY" )
-      .expect( "HUGGINGFACE_API_KEY not found in secret/-secrets.sh - required for integration tests. Get your token from https://huggingface.co/settings/tokens" )
-      .clone()
-  }
 
   /// Create client with real API key for integration tests
   fn create_integration_test_models() -> api_huggingface::error::Result< Models< HuggingFaceEnvironmentImpl > >
   {
-  let api_key = Secret::new( get_api_key_for_integration() );
+  let api_key = Secret::new( crate::inc::get_api_key_for_integration() );
   let env = HuggingFaceEnvironmentImpl::build( api_key, None )?;
   let client = Client::build( env )?;
   Ok( Models::new( &client ) )

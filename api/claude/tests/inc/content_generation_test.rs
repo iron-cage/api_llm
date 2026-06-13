@@ -42,8 +42,8 @@ async fn test_request_structure_with_different_models()
   // Test request structure with different Claude models
   let models = vec![
     "claude-sonnet-4-5-20250929",
-    "claude-3-5-haiku-20241022",
-    "claude-3-opus-20240229",
+    "claude-haiku-4-5-20251001",
+    "claude-opus-4-6",
   ];
 
   for model in models
@@ -297,7 +297,7 @@ async fn integration_content_generation_temperature_control()
   // Test different temperature settings with real API
   let low_temp_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 30,
     messages : vec![ the_module::Message::user( "Generate a creative story about a robot".to_string() ) ],
     system : None,
@@ -309,7 +309,7 @@ async fn integration_content_generation_temperature_control()
 
   let high_temp_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 30,
     messages : vec![ the_module::Message::user( "Generate a creative story about a robot".to_string() ) ],
     system : None,
@@ -369,7 +369,7 @@ async fn integration_content_generation_max_tokens_control()
   // Test different max_tokens settings
   let short_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 10, // Very short
     messages : vec![ the_module::Message::user( "Write a long essay about artificial intelligence".to_string() ) ],
     system : None,
@@ -381,7 +381,7 @@ async fn integration_content_generation_max_tokens_control()
 
   let long_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100, // Longer
     messages : vec![ the_module::Message::user( "Write a long essay about artificial intelligence".to_string() ) ],
     system : None,

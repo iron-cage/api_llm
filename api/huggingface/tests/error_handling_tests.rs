@@ -1,5 +1,7 @@
 //! Tests for error handling robustness and safety
 
+mod inc;
+
 use api_huggingface::
 {
   environment::{ HuggingFaceEnvironmentImpl, HuggingFaceEnvironment, EnvironmentInterface },
@@ -116,28 +118,15 @@ async fn error_chain_propagation()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;
-  use workspace_tools as workspace;
   use api_huggingface::
   {
   Client,
   components::input::InferenceParameters,
   };
-
-  fn get_api_key_for_integration() -> String
-  {
-  let workspace = workspace::workspace()
-      .expect( "Failed to access workspace - required for integration tests" );
-  
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" )
-      .expect( "Failed to load secret/-secrets.sh - required for integration tests" );
-  
-  secrets.get( "HUGGINGFACE_API_KEY" )
-      .expect( "HUGGINGFACE_API_KEY not found in secret/-secrets.sh - required for integration tests. Get your token from https://huggingface.co/settings/tokens" )
-      .clone()
-  }
 
   #[ tokio::test ]
   async fn integration_authentication_error_with_invalid_key()
@@ -169,7 +158,7 @@ mod integration_tests
   async fn integration_rate_limit_error_handling()
   {
   // Get real API key (will panic with clear message if missing)
-  let api_key_string = get_api_key_for_integration();
+  let api_key_string = crate::inc::get_api_key_for_integration();
   
   // Build client with real credentials
   let api_key = Secret::new( api_key_string );
@@ -220,7 +209,7 @@ mod integration_tests
   async fn integration_invalid_model_error_handling()
   {
   // Get real API key (will panic with clear message if missing)
-  let api_key_string = get_api_key_for_integration();
+  let api_key_string = crate::inc::get_api_key_for_integration();
   
   // Build client with real credentials
   let api_key = Secret::new( api_key_string );
@@ -249,7 +238,7 @@ mod integration_tests
   async fn integration_network_error_recovery()
   {
   // Test with invalid base URL to simulate network errors
-  let api_key = Secret::new( get_api_key_for_integration() );
+  let api_key = Secret::new( crate::inc::get_api_key_for_integration() );
   let invalid_url = Some( "https://invalid-domain-that-does-not-exist-12345.com".to_string() );
   
   let env = HuggingFaceEnvironmentImpl::build( api_key, invalid_url )

@@ -1,5 +1,7 @@
 //! Debug validation errors
 
+mod inc;
+
 use api_huggingface::
 {
   components::input::InferenceParameters,
@@ -46,10 +48,10 @@ fn debug_batch_validation()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;
-  use workspace_tools as workspace;
   use api_huggingface::
   {
   Client,
@@ -58,19 +60,10 @@ mod integration_tests
   validation::{ validate_model_identifier, validate_batch_inputs },
   };
 
-  fn get_api_key_for_integration() -> Option< String >
-  {
-  let workspace = workspace::workspace().ok()?;
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" ).ok()?;
-  secrets.get( "HUGGINGFACE_API_KEY" ).cloned()
-  }
-
   #[ tokio::test ]
   async fn integration_validation_with_real_api_calls()
   {
-  // Get real API key - skip test if not available
-  let api_key_string = get_api_key_for_integration()
-      .expect( "INTEGRATION TEST : Must have valid HUGGINGFACE_API_KEY in secret/-secrets.sh" );
+  let api_key_string = crate::inc::get_api_key_for_integration();
   
   // Build client with real credentials
   let api_key = Secret::new( api_key_string );
@@ -98,10 +91,8 @@ mod integration_tests
   #[ tokio::test ]  
   async fn integration_model_validation_with_real_api()
   {
-  // Get real API key - skip test if not available
-  let api_key_string = get_api_key_for_integration()
-      .expect( "INTEGRATION TEST : Must have valid HUGGINGFACE_API_KEY in secret/-secrets.sh" );
-  
+  let api_key_string = crate::inc::get_api_key_for_integration();
+
   // Build client with real credentials
   let api_key = Secret::new( api_key_string );
   let env = HuggingFaceEnvironmentImpl::build( api_key, None )
@@ -126,11 +117,9 @@ mod integration_tests
   #[ tokio::test ]
   async fn integration_batch_validation_with_real_api()
   {
-  // Get real API key - skip test if not available
-  let api_key_string = get_api_key_for_integration()
-      .expect( "INTEGRATION TEST : Must have valid HUGGINGFACE_API_KEY in secret/-secrets.sh" );
-  
-  // Build client with real credentials  
+  let api_key_string = crate::inc::get_api_key_for_integration();
+
+  // Build client with real credentials
   let api_key = Secret::new( api_key_string );
   let env = HuggingFaceEnvironmentImpl::build( api_key, None )
       .expect( "Environment build should succeed" );

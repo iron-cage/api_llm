@@ -7,6 +7,7 @@
 - **Claimed At:** null
 - **Reopen Count:** 0
 - **State:** ❓ (Unverified)
+- **Priority:** 2
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** src/
@@ -113,8 +114,17 @@ Execute in order. Do not skip or reorder steps.
 - [ ] AF1 — not a stub: `grep -A5 "fn load_with_fallbacks" src/secret.rs` shows actual implementation (env var lookup + workspace fallback), not `unimplemented!()` or `todo!()`
 - [ ] AF2 — workspace_tools actually used: `grep -n "workspace_tools" src/secret.rs` → ≥ 1 match (import and usage present)
 
+## Verification Record
+
+**[2026-06-13]** VERIFY FAIL — D3 blocking finding below. State remains ❓ (Unverified).
+- D1 Scope Coherence: PASS — In Scope (secret.rs + test factory) and Out of Scope (other crates) non-empty; observable outcome (grep fn load_with_fallbacks ≥ 1); single deliverable.
+- D2 MOST Goal Quality: PASS — Motivated (contributor DX: must manually export HUGGINGFACE_API_KEY; all other crates use workspace fallback); Observable (grep fn load_with_fallbacks + test suite passes); Scoped (secret.rs + test factory only); Testable.
+- D3 Value / YAGNI: FAIL — YAGNI borderline: current load_from_env() is functional; no integration test currently fails without load_with_fallbacks(); the value is developer ergonomics only. No concrete failing test or user-reported defect motivates immediate implementation. Required to unblock: file a concrete failing scenario (e.g., a test that panics when HUGGINGFACE_API_KEY is not exported but is in -secrets.sh, confirmed reproducible) before re-triggering VERIFY. Alternatively, if workspace standard compliance is a stated invariant, cite the invariant document.
+- D4 Implementation Readiness: PASS — Work Procedure concrete; Test Matrix present; Acceptance Criteria machine-verifiable.
+
 ## History
 
 *(append-only — newest entry last; never edit or remove past entries)*
 
 - **2026-06-13** `CREATED` — Task filed by code audit session. Goal: add load_with_fallbacks() to src/secret.rs following workspace pattern (env var first, then secret/-secrets.sh via workspace_tools); update integration test client factory to use it.
+- **2026-06-13** `VERIFY FAIL` — MAAV gate blocked by D3 (YAGNI): no test currently fails without this function; value is ergonomics-only. Remains ❓ (Unverified) until a concrete failing scenario is documented.

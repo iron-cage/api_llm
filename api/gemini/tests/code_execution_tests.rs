@@ -4,6 +4,8 @@
 //! including mathematical computations, data analysis, error handling, and execution
 //! result validation. All tests use real API calls following the no-mockup policy.
 
+#![ cfg( feature = "integration" ) ]
+
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;
 

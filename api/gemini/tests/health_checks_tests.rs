@@ -7,6 +7,7 @@ use api_gemini::models::health::*;
 use api_gemini::error::Error;
 use std::time::Duration;
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;

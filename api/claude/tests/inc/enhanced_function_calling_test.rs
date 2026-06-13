@@ -106,7 +106,7 @@ async fn integration_tool_choice_auto_mode()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "What is 25 + 17?".to_string() ) ],
     system : None,
@@ -155,7 +155,7 @@ async fn integration_tool_choice_any_mode()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Tell me about Rust".to_string() ) ],
     system : None,
@@ -208,7 +208,7 @@ async fn integration_tool_choice_none_mode()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Calculate 10 + 5".to_string() ) ],
     system : None,
@@ -251,7 +251,7 @@ async fn integration_tool_choice_mode_transitions()
   // First request with AUTO
   let request1 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Hello".to_string() ) ],
     system : None,
@@ -276,7 +276,7 @@ async fn integration_tool_choice_mode_transitions()
   // Second request with NONE
   let request2 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Hi again".to_string() ) ],
     system : None,

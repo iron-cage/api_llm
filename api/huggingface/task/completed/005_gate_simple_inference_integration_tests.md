@@ -6,7 +6,7 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** ❓ (Unverified)
+- **State:** ✅ (Completed)
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** tests/
@@ -111,3 +111,4 @@ Execute in order. Do not skip or reorder steps.
 *(append-only — newest entry last; never edit or remove past entries)*
 
 - **2026-06-13** `CREATED` — Task originally filed targeting `tests/simple_inference_integration_test.rs` (missing function-level integration gates). That file was deleted before execution (git status: `D ../../tests/simple_inference_integration_test.rs`). Task redirected to `tests/inference_tests.rs`, which carries the same violation class: integration tests gated at module level (`#[cfg(feature = "integration")] mod integration_tests { }`) rather than per function — IN-07 requires `#[cfg(feature = "integration")]` immediately before each `#[tokio::test]`.
+- **2026-06-13** `COMPLETED` — Dissolved `#[ cfg( feature = "integration" ) ] mod integration_tests { }` wrapper in `tests/inference_tests.rs`. Moved `create_integration_environment()`, `integration_inference_create()`, and `integration_inference_create_with_parameters()` to file scope. Added `#[ cfg( feature = "integration" ) ]` immediately before `#[ tokio::test ]` on each integration test function. Removed `use super::*;` (redundant at file scope). 561/561 tests pass (`RUSTFLAGS="-D warnings" cargo nextest run --no-fail-fast --no-default-features ...`). All M1-M3 measurements verified: 0 module gates, function-level gates present, no file-level gate.

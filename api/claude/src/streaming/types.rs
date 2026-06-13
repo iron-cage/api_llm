@@ -723,11 +723,11 @@ mod private
         continue;
       }
 
-      if let Some( event_line ) = line.strip_prefix( "event : " )
+      if let Some( event_line ) = line.strip_prefix( "event: " )
       {
         current_event = Some( event_line.to_string() );
       }
-      else if let Some( data_line ) = line.strip_prefix( "data : " )
+      else if let Some( data_line ) = line.strip_prefix( "data: " )
       {
         if !current_data.is_empty()
         {

@@ -24,27 +24,28 @@
 //! cargo test --test rate_limiting_tests --all-features -- --ignored
 //! ```
 
+mod inc;
+
+use api_huggingface::reliability::{ RateLimiter, RateLimiterConfig };
+use core::time::Duration;
+use std::time::Instant;
+
+#[ cfg( feature = "integration" ) ]
 use api_huggingface::{
   Client,
   environment::HuggingFaceEnvironmentImpl,
   providers::ChatMessage,
-  reliability::{RateLimiter, RateLimiterConfig},
   Secret,
 };
-use core::time::Duration;
-use std::time::Instant;
 
-/// Helper to create a test client
-/// Returns None if no API key is available (tests will skip gracefully)
-fn create_test_client() -> Option< Client< HuggingFaceEnvironmentImpl > >
+#[ cfg( feature = "integration" ) ]
+fn create_integration_client() -> Client< HuggingFaceEnvironmentImpl >
 {
-  let api_key = std::env::var( "HUGGINGFACE_API_KEY" )
-  .or_else( |_| std::env::var( "INFERENCE_API_KEY" ))
-  .ok()?;
-
+  let api_key = crate::inc::get_api_key_for_integration();
   let secret = Secret::new( api_key );
-  let env = HuggingFaceEnvironmentImpl::build( secret, None ).ok()?;
-  Client::build( env ).ok()
+  let env = HuggingFaceEnvironmentImpl::build( secret, None )
+    .expect( "Failed to build environment" );
+  Client::build( env ).expect( "Failed to create client" )
 }
 
 // ============================================================================
@@ -380,14 +381,11 @@ async fn test_rate_limiter_reset()
 // Real API Integration Tests
 // ============================================================================
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_rate_limiter_with_real_api_calls()
 {
-  // Skip if no API key is available
-  let Some( client ) = create_test_client( ) else {
-    println!( "⏭️  Skipping test - no API key available" );
-    return;
-  };
+  let client = create_integration_client();
   let config = RateLimiterConfig {
   requests_per_second : Some( 2 ),
   requests_per_minute : None,
@@ -425,14 +423,11 @@ async fn test_rate_limiter_with_real_api_calls()
   assert!( elapsed >= Duration::from_millis( 400 ));
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_rate_limiter_prevents_api_overload()
 {
-  // Skip if no API key is available
-  let Some( client ) = create_test_client( ) else {
-    println!( "⏭️  Skipping test - no API key available" );
-    return;
-  };
+  let client = create_integration_client();
   let config = RateLimiterConfig {
   requests_per_second : Some( 3 ),
   requests_per_minute : Some( 5 ),

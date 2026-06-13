@@ -25,7 +25,7 @@ async fn test_integration_test_request_construction()
   // Test that integration test request construction works
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Test message".to_string() ) ],
     system : Some( vec![ the_module::SystemContent::text( "Test system" ) ] ),
@@ -36,7 +36,7 @@ async fn test_integration_test_request_construction()
   };
 
   // Verify request structure
-  assert_eq!( request.model, "claude-3-5-haiku-20241022" );
+  assert_eq!( request.model, "claude-haiku-4-5-20251001" );
   assert_eq!( request.max_tokens, 50 );
   assert_eq!( request.messages.len(), 1 );
   assert_eq!( request.system.as_ref().map( | s | s[ 0 ].text.as_str() ), Some( "Test system" ) );
@@ -86,7 +86,7 @@ async fn integration_messages_basic_text_generation()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Say 'Hello, World!' exactly.".to_string() ) ],
     system : None,
@@ -111,7 +111,7 @@ async fn integration_messages_basic_text_generation()
   assert_eq!( response.r#type, "message" );
   assert_eq!( response.role, "assistant" );
   assert!( !response.content.is_empty(), "Real API response must have content" );
-  assert_eq!( response.model, "claude-3-5-haiku-20241022" );
+  assert_eq!( response.model, "claude-haiku-4-5-20251001" );
   assert!( response.usage.input_tokens > 0, "Real API response must track input tokens" );
   assert!( response.usage.output_tokens > 0, "Real API response must track output tokens" );
   
@@ -135,7 +135,7 @@ async fn integration_messages_with_system_prompt()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 30,
     messages : vec![ the_module::Message::user( "What is AI?".to_string() ) ],
     system : Some( vec![ the_module::SystemContent::text( "You are a helpful assistant. Always respond with exactly 5 words." ) ] ),
@@ -178,7 +178,7 @@ async fn integration_messages_conversation_flow()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![
       the_module::Message::user( "I'm going to tell you a number. Remember it.".to_string() ),
@@ -328,7 +328,7 @@ async fn integration_performance_response_time()
   
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),  // Fastest model
+    model : "claude-haiku-4-5-20251001".to_string(),  // Fastest model
     max_tokens : 10,
     messages : vec![ the_module::Message::user( "Hi".to_string() ) ],
     system : None,

@@ -260,7 +260,7 @@ async fn test_curl_command_execution_equivalence()
       .expect( "Must have valid API key for integration test" );
 
     let request = the_module::CreateMessageRequest::builder()
-      .model( "claude-3-haiku-20240307" )
+      .model( "claude-haiku-4-5-20251001" )
       .max_tokens( 50 )
       .messages( vec![ the_module::Message::user( "Say 'test successful'" ) ] )
       .build();
@@ -269,7 +269,7 @@ async fn test_curl_command_execution_equivalence()
     let curl_command = client.as_curl_for_request( &request, "https://api.anthropic.com/v1/messages" );
 
     // Validate the cURL command looks correct
-    assert!( curl_command.contains( "claude-3-haiku-20240307" ), "Should contain model name" );
+    assert!( curl_command.contains( "claude-haiku-4-5-20251001" ), "Should contain model name" );
     assert!( curl_command.contains( "test successful" ), "Should contain message content" );
 
     // Note : We don't actually execute the cURL command in tests
@@ -287,7 +287,7 @@ async fn test_curl_request_fidelity()
 
     // Create a complex request
     let original_request = the_module::CreateMessageRequest::builder()
-      .model( "claude-3-haiku-20240307" )
+      .model( "claude-haiku-4-5-20251001" )
       .max_tokens( 100 )
       .temperature( 0.5 )
       .messages( vec![ the_module::Message::user( "Complex test message with special chars : !@#$%^&*()" ) ] )
@@ -304,7 +304,7 @@ async fn test_curl_request_fidelity()
     {
 
       // Validate cURL contains all the same parameters
-      assert!( curl_command.contains( "claude-3-haiku-20240307" ), "cURL should match model" );
+      assert!( curl_command.contains( "claude-haiku-4-5-20251001" ), "cURL should match model" );
       assert!( curl_command.contains( "\"max_tokens\":100" ), "cURL should match max_tokens" );
       assert!( curl_command.contains( "\"temperature\":" ), "cURL should match temperature" );
       assert!( curl_command.contains( "!@#$%^&*()" ), "cURL should preserve special characters" );
@@ -320,7 +320,7 @@ async fn test_curl_request_fidelity()
     );
 
     let request = the_module::CreateMessageRequest::builder()
-      .model( "claude-3-haiku-20240307" )
+      .model( "claude-haiku-4-5-20251001" )
       .max_tokens( 50 )
       .messages( vec![ the_module::Message::user( "This will fail" ) ] )
       .build();

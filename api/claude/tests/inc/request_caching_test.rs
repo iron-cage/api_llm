@@ -55,7 +55,7 @@ mod request_caching_functionality_tests
     // Test that identical requests generate identical keys
     let request1 = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Hello, world!" ) ],
       system : None,
@@ -69,7 +69,7 @@ mod request_caching_functionality_tests
 
     let request2 = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Hello, world!" ) ],
       system : None,
@@ -88,7 +88,7 @@ mod request_caching_functionality_tests
     // Test that different requests generate different keys
     let request3 = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 200, // Different max_tokens
       messages : vec![ the_module::Message::user( "Hello, world!" ) ],
       system : None,
@@ -112,7 +112,7 @@ mod request_caching_functionality_tests
 
     let request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Test message" ) ],
       system : None,
@@ -134,7 +134,7 @@ mod request_caching_functionality_tests
         r#type : "text".to_string(),
         text : Some( "Cached response".to_string() ),
       } ],
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       stop_reason : Some( "end_turn".to_string() ),
       stop_sequence : None,
       usage : the_module::Usage
@@ -167,7 +167,7 @@ mod request_caching_functionality_tests
 
     let request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Expiring message" ) ],
       system : None,
@@ -189,7 +189,7 @@ mod request_caching_functionality_tests
         r#type : "text".to_string(),
         text : Some( "This will expire".to_string() ),
       } ],
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       stop_reason : Some( "end_turn".to_string() ),
       stop_sequence : None,
       usage : the_module::Usage
@@ -225,7 +225,7 @@ mod request_caching_functionality_tests
     let requests = vec![
       the_module::CreateMessageRequest
       {
-        model : "claude-3-5-haiku-20241022".to_string(),
+        model : "claude-haiku-4-5-20251001".to_string(),
         max_tokens : 100,
         messages : vec![ the_module::Message::user( "Message 1" ) ],
         system : None,
@@ -238,7 +238,7 @@ mod request_caching_functionality_tests
       },
       the_module::CreateMessageRequest
       {
-        model : "claude-3-5-haiku-20241022".to_string(),
+        model : "claude-haiku-4-5-20251001".to_string(),
         max_tokens : 100,
         messages : vec![ the_module::Message::user( "Message 2" ) ],
         system : None,
@@ -251,7 +251,7 @@ mod request_caching_functionality_tests
       },
       the_module::CreateMessageRequest
       {
-        model : "claude-3-5-haiku-20241022".to_string(),
+        model : "claude-haiku-4-5-20251001".to_string(),
         max_tokens : 100,
         messages : vec![ the_module::Message::user( "Message 3" ) ],
         system : None,
@@ -277,7 +277,7 @@ mod request_caching_functionality_tests
           r#type : "text".to_string(),
           text : Some( format!( "Response {}", i + 1 ) ),
         } ],
-        model : "claude-3-5-haiku-20241022".to_string(),
+        model : "claude-haiku-4-5-20251001".to_string(),
         stop_reason : Some( "end_turn".to_string() ),
         stop_sequence : None,
         usage : the_module::Usage
@@ -307,7 +307,7 @@ mod request_caching_functionality_tests
 
     let request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Invalidate me" ) ],
       system : None,
@@ -329,7 +329,7 @@ mod request_caching_functionality_tests
         r#type : "text".to_string(),
         text : Some( "To be invalidated".to_string() ),
       } ],
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       stop_reason : Some( "end_turn".to_string() ),
       stop_sequence : None,
       usage : the_module::Usage
@@ -364,7 +364,7 @@ mod request_caching_functionality_tests
 
     let request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Metrics test" ) ],
       system : None,
@@ -386,7 +386,7 @@ mod request_caching_functionality_tests
         r#type : "text".to_string(),
         text : Some( "Metrics response".to_string() ),
       } ],
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       stop_reason : Some( "end_turn".to_string() ),
       stop_sequence : None,
       usage : the_module::Usage
@@ -472,7 +472,7 @@ mod request_caching_integration_tests
     {
       let request = the_module::CreateMessageRequest
       {
-        model : "claude-3-5-haiku-20241022".to_string(),
+        model : "claude-haiku-4-5-20251001".to_string(),
         max_tokens : 100,
         messages : vec![ the_module::Message::user( &format!( "Message {}", i ) ) ],
         system : None,
@@ -494,7 +494,7 @@ mod request_caching_integration_tests
           r#type : "text".to_string(),
           text : Some( format!( "Response {}", i ) ),
         } ],
-        model : "claude-3-5-haiku-20241022".to_string(),
+        model : "claude-haiku-4-5-20251001".to_string(),
         stop_reason : Some( "end_turn".to_string() ),
         stop_sequence : None,
         usage : the_module::Usage
@@ -516,7 +516,7 @@ mod request_caching_integration_tests
     {
       let request = the_module::CreateMessageRequest
       {
-        model : "claude-3-5-haiku-20241022".to_string(),
+        model : "claude-haiku-4-5-20251001".to_string(),
         max_tokens : 100,
         messages : vec![ the_module::Message::user( &format!( "Message {}", i ) ) ],
         system : None,

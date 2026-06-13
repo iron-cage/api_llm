@@ -630,16 +630,9 @@ impl TranslationPlatform
 }
 
 // Helper function to create test client
-// Helper function to get API key for testing
-fn get_api_key_for_testing() -> Option< String >
-{
-  std::env::var( "HUGGINGFACE_API_KEY" ).ok()
-}
-
-// Helper function to create test client
 fn create_test_client() -> Option< Client< HuggingFaceEnvironmentImpl > >
 {
-  let api_key = get_api_key_for_testing()?;
+  let api_key = super::get_api_key_for_testing()?;
   let secret = Secret::new( api_key );
   let env = HuggingFaceEnvironmentImpl::build( secret, None ).ok()?;
   Client::build( env ).ok()

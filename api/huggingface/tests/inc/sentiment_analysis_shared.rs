@@ -3,6 +3,8 @@
 //! This test suite verifies the functionality of a sentiment analysis and content moderation system
 //! that analyzes text sentiment, emotional tone, and provides content filtering using `HuggingFace` models.
 
+#![ allow( clippy::trivially_copy_pass_by_ref ) ]
+
 use api_huggingface::
 {
   Client,
@@ -690,7 +692,7 @@ impl SentimentAnalysisPlatform
 
   // Sort flags by frequency
   let mut common_flags : Vec< ( String, usize ) > = flag_counts.into_iter().collect();
-  common_flags.sort_by( | a, b | b.1.cmp( &a.1 ) );
+  common_flags.sort_by_key( | ( _, count ) | core::cmp::Reverse( *count ) );
   common_flags.truncate( 5 );
 
   SentimentStatistics
@@ -912,16 +914,10 @@ impl SentimentAnalysisPlatform
   }
 }
 
-// Helper function to get API key for testing
-fn get_api_key_for_testing() -> Option< String >
-{
-  std::env::var( "HUGGINGFACE_API_KEY" ).ok()
-}
-
 // Helper function to create test client
 fn create_test_client() -> Option< Client< HuggingFaceEnvironmentImpl > >
 {
-  let api_key = get_api_key_for_testing()?;
+  let api_key = super::get_api_key_for_testing()?;
   let secret = Secret::new( api_key );
   let env = HuggingFaceEnvironmentImpl::build( secret, None ).ok()?;
   Client::build( env ).ok()

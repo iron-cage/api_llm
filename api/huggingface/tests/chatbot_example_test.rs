@@ -5,6 +5,8 @@
 
 #![allow(clippy::missing_inline_in_public_items)]
 
+mod inc;
+
 use api_huggingface::
 {
   Client,
@@ -199,21 +201,15 @@ impl ChatbotSystem
 mod tests
 {
   use super::*;
-  use workspace_tools as workspace;
 
-  fn get_api_key_for_testing() -> Option< String >
+  #[ cfg( feature = "integration" ) ]
+  fn create_integration_client() -> Client< HuggingFaceEnvironmentImpl >
   {
-  let workspace = workspace::workspace().ok()?;
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" ).ok()?;
-  secrets.get( "HUGGINGFACE_API_KEY" ).cloned()
-  }
-
-  fn create_test_client() -> Option< Client< HuggingFaceEnvironmentImpl > >
-  {
-  let api_key = get_api_key_for_testing()?;
+  let api_key = crate::inc::get_api_key_for_integration();
   let secret = Secret::new( api_key );
-  let env = HuggingFaceEnvironmentImpl::build( secret, None ).ok()?;
-  Client::build( env ).ok()
+  let env = HuggingFaceEnvironmentImpl::build( secret, None )
+      .expect( "Failed to build environment" );
+  Client::build( env ).expect( "Failed to create client" )
   }
 
   #[ test ]
@@ -261,25 +257,21 @@ mod tests
   assert_eq!( formal_params.max_new_tokens, Some( 200 ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_chatbot_system_creation()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let chatbot = ChatbotSystem::new( client );
   assert!( chatbot.active_sessions.is_empty() );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_conversation_session_management()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut chatbot = ChatbotSystem::new( client );
 
@@ -300,13 +292,11 @@ mod tests
   assert!( chatbot.get_context( session_id ).is_none() );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_contextual_prompt_building()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _chatbot = ChatbotSystem::new( client );
 
@@ -332,13 +322,11 @@ mod tests
   assert!( prompt.contains( "User : What's the weather like?" ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_different_conversation_styles()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _chatbot = ChatbotSystem::new( client );
 
@@ -369,13 +357,11 @@ mod tests
   assert_ne!( casual_prompt, formal_prompt );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_model_selection_by_style()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut chatbot = ChatbotSystem::new( client );
 
@@ -394,13 +380,11 @@ mod tests
   assert_eq!( technical_context.model, Models::mistral_7b_instruct() );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_error_handling_invalid_session()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut chatbot = ChatbotSystem::new( client );
 
@@ -431,13 +415,11 @@ mod tests
   }
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_parameter_optimization_per_style()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut chatbot = ChatbotSystem::new( client );
 

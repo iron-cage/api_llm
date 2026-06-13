@@ -319,7 +319,7 @@ async fn integration_messages_api_real_request_response_structures()
   // Test complex message request structure with real API
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 20,
     messages : vec![
       the_module::Message::user( "What is 2+2?".to_string() ),
@@ -348,7 +348,7 @@ async fn integration_messages_api_real_request_response_structures()
   assert_eq!( response.r#type, "message" );
   assert_eq!( response.role, "assistant" );
   assert!( !response.content.is_empty(), "Real API must return content" );
-  assert_eq!( response.model, "claude-3-5-haiku-20241022" );
+  assert_eq!( response.model, "claude-haiku-4-5-20251001" );
   assert!( response.usage.input_tokens > 0, "Real API must track input tokens" );
   assert!( response.usage.output_tokens > 0, "Real API must track output tokens" );
   assert!( response.stop_reason.is_some(), "Real API must provide stop reason" );
@@ -375,7 +375,7 @@ async fn integration_messages_api_real_serialization_roundtrip()
 
   // Test that our request serialization works with real API
   let request = the_module::CreateMessageRequest::builder()
-    .model( "claude-3-5-haiku-20241022" )
+    .model( "claude-haiku-4-5-20251001" )
     .max_tokens( 15 )
     .message( the_module::Message::user( "Say 'Hello API!'" ) )
     .temperature( 0.0 )

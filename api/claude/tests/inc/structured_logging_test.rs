@@ -27,7 +27,7 @@ fn test_log_request_structure()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Test" ) ],
     system : None,
@@ -45,7 +45,7 @@ fn test_log_request_structure()
   let logs = logger.get_logs();
   assert_eq!( logs.len(), 1 );
   assert!( logs[ 0 ].contains( "request_id_123" ) );
-  assert!( logs[ 0 ].contains( "claude-3-5-haiku-20241022" ) );
+  assert!( logs[ 0 ].contains( "claude-haiku-4-5-20251001" ) );
 }
 
 #[ test ]
@@ -60,7 +60,7 @@ fn test_log_response_structure()
     "type": "message",
     "role": "assistant",
     "content": [{"type": "text", "text": "Test response"}],
-    "model": "claude-3-5-haiku-20241022",
+    "model": "claude-haiku-4-5-20251001",
     "stop_reason": "end_turn",
     "usage": {"input_tokens": 10, "output_tokens": 5}
   }"#;
@@ -261,7 +261,7 @@ async fn integration_log_api_request_response()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 20,
     messages : vec![ the_module::Message::user( "Hello!".to_string() ) ],
     system : None,
@@ -362,7 +362,7 @@ async fn integration_structured_logging_with_context()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 15,
     messages : vec![ the_module::Message::user( "Test".to_string() ) ],
     system : None,

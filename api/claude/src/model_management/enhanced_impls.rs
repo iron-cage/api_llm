@@ -106,8 +106,8 @@ mod private
       {
         "claude-sonnet-4-6" => "Claude Sonnet 4.6".to_string(),
         "claude-sonnet-4-5-20250929" => "Claude Sonnet 4.5".to_string(),
-        "claude-3-5-haiku-20241022" => "Claude 3.5 Haiku".to_string(),
-        "claude-3-opus-20240229" => "Claude 3 Opus".to_string(),
+        "claude-haiku-4-5-20251001" => "Claude Haiku 4.5".to_string(),
+        "claude-opus-4-6" => "Claude Opus 4.6".to_string(),
         _ => format!( "Model {model_id}" ),
       }
     }
@@ -118,8 +118,8 @@ mod private
       {
         "claude-sonnet-4-6" => "Our most intelligent model, with top-level performance on highly complex tasks and strong vision capabilities".to_string(),
         "claude-sonnet-4-5-20250929" => "High-performance model optimized for speed; text-only, no vision or function calling".to_string(),
-        "claude-3-5-haiku-20241022" => "Our fastest model, ideal for lightweight actions with strong performance on simple tasks".to_string(),
-        "claude-3-opus-20240229" => "Our previous flagship model with exceptional performance on complex tasks".to_string(),
+        "claude-haiku-4-5-20251001" => "Our fastest model, ideal for lightweight actions with strong performance on simple tasks".to_string(),
+        "claude-opus-4-6" => "Our most powerful model for the most complex tasks".to_string(),
         _ => format!( "Model description for {model_id}" ),
       }
     }
@@ -200,8 +200,8 @@ mod private
       // Sonnet 4.5 is text-only (no vision, no function calling); Sonnet 4.6 adds vision + tools
       let (supports_vision, supports_function_calling) = match model_id
       {
-        "claude-sonnet-4-6" | "claude-3-opus-20240229" => (true, true),
-        "claude-3-5-haiku-20241022" => (false, true),
+        "claude-sonnet-4-6" | "claude-opus-4-6" => (true, true),
+        "claude-haiku-4-5-20251001" => (false, true),
         _ => (false, false),  // covers claude-sonnet-4-5-20250929 and unknown models
       };
 
@@ -269,8 +269,8 @@ mod private
       {
         "claude-sonnet-4-6" => ("medium", "high", "medium"),
         "claude-sonnet-4-5-20250929" => ("low", "very_high", "medium"),
-        "claude-3-5-haiku-20241022" => ("low", "very_high", "low"),
-        "claude-3-opus-20240229" => ("high", "medium", "high"),
+        "claude-haiku-4-5-20251001" => ("low", "very_high", "low"),
+        "claude-opus-4-6" => ("high", "medium", "high"),
         _ => ("medium", "medium", "medium"),
       };
 
@@ -308,8 +308,8 @@ mod private
     {
       let (max_context, max_output) = match model_id
       {
-        "claude-sonnet-4-6" | "claude-sonnet-4-5-20250929" | "claude-3-5-haiku-20241022" => (200_000, 8_192),
-        "claude-3-opus-20240229" => (200_000, 4_096),
+        "claude-sonnet-4-6" | "claude-sonnet-4-5-20250929" | "claude-haiku-4-5-20251001"
+        | "claude-opus-4-6" => (200_000, 8_192),
         _ => (100_000, 4_096),
       };
 
@@ -408,7 +408,7 @@ mod private
     {
       let (status, is_deprecated, replacement) = match model_id
       {
-        "claude-sonnet-4-6" | "claude-sonnet-4-5-20250929" | "claude-3-5-haiku-20241022" | "claude-3-opus-20240229" => ("active", false, None),
+        "claude-sonnet-4-6" | "claude-sonnet-4-5-20250929" | "claude-haiku-4-5-20251001" | "claude-opus-4-6" => ("active", false, None),
         "claude-2.1" => ("deprecated", true, Some( "claude-sonnet-4-6" )),
         _ => ("unknown", false, None),
       };
@@ -529,8 +529,8 @@ mod private
       let (input_price, output_price, tier) = match model_id
       {
         "claude-sonnet-4-6" | "claude-sonnet-4-5-20250929" => (0.003, 0.015, Some( "premium".to_string() )),
-        "claude-3-5-haiku-20241022" => (0.00025, 0.00125, Some( "standard".to_string() )),
-        "claude-3-opus-20240229" => (0.015, 0.075, Some( "premium".to_string() )),
+        "claude-haiku-4-5-20251001" => (0.00025, 0.00125, Some( "standard".to_string() )),
+        "claude-opus-4-6" => (0.015, 0.075, Some( "premium".to_string() )),
         _ => (0.001, 0.005, Some( "standard".to_string() )),
       };
 

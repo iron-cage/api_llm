@@ -180,8 +180,8 @@ mod enhanced_model_details_functionality_tests
     // Test retrieval performance for multiple models
     let models = vec![
       "claude-sonnet-4-5-20250929",
-      "claude-3-5-haiku-20241022",
-      "claude-3-opus-20240229"
+      "claude-haiku-4-5-20251001",
+      "claude-opus-4-6"
     ];
 
     for model_id in &models
@@ -215,7 +215,7 @@ mod enhanced_model_details_functionality_tests
 
     let comparison = ModelComparison::between(
       "claude-sonnet-4-5-20250929",
-      "claude-3-5-haiku-20241022"
+      "claude-haiku-4-5-20251001"
     );
 
     // Test capability comparison
@@ -283,7 +283,7 @@ mod enhanced_model_details_functionality_tests
     assert!( !sonnet45.supports_vision(), "Sonnet 4.5 does NOT support vision" );
     assert!( !sonnet45.supports_function_calling(), "Sonnet 4.5 does NOT support function calling" );
 
-    let haiku = EnhancedModelCapabilities::for_model( "claude-3-5-haiku-20241022" );
+    let haiku = EnhancedModelCapabilities::for_model( "claude-haiku-4-5-20251001" );
     assert!( !haiku.supports_vision(), "Haiku 3.5 does NOT support vision" );
     assert!( haiku.supports_function_calling(), "Haiku 3.5 should support function calling" );
   }

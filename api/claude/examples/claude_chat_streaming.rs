@@ -49,7 +49,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
         conversation_count += 1;
         
         let stream_request = CreateMessageRequest {
-            model : "claude-3-5-haiku-20241022".to_string(), // Fast model for chat
+            model : "claude-haiku-4-5-20251001".to_string(), // Fast model for chat
             max_tokens : 500,
             messages : conversation_history.clone(),
             stream : Some(false), // Note : Real streaming implementation would require additional setup
@@ -117,7 +117,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
         println!("\n📈 Session Summary:");
         println!("   • Total exchanges : {conversation_count}");
         let history_len = conversation_history.len(); println!("   • Messages in history : {history_len}");
-        println!("   • Model used : claude-3-5-haiku-20241022");
+        println!("   • Model used : claude-haiku-4-5-20251001");
     }
     
     Ok(())

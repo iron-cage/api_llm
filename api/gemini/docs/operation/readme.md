@@ -11,4 +11,5 @@
 
 | ID | Name | Purpose | Status |
 |----|------|---------|--------|
+| 001 | [Secret Loading](001_secret_loading.md) | Gemini API key loading for development and tests | ✅ |
 | 002 | [Usage Examples](002_usage_examples.md) | Step-by-step procedures for all major API call patterns | ✅ |

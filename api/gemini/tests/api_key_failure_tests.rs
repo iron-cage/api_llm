@@ -1,5 +1,7 @@
 //! Test to verify integration tests fail properly when no API key is available
 
+#![ cfg( feature = "integration" ) ]
+
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;
 

@@ -77,8 +77,8 @@ const VALID_LEGACY_MODELS: &[ &str ] = &
   "claude-sonnet-4-20250514",
   "claude-3-7-sonnet-20250219",
   "claude-opus-4-20250514",
-  "claude-3-5-haiku-20241022",
-  "claude-3-haiku-20240307",
+  "claude-haiku-4-5-20251001",
+  "claude-haiku-4-5-20251001",
 ];
 
 const VALID_MODEL_ALIASES: &[ &str ] = &

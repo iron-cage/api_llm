@@ -1,5 +1,7 @@
 //! Tests to validate that examples use the API correctly
 
+#![ cfg( feature = "integration" ) ]
+
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;
 

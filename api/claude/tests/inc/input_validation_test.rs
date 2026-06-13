@@ -64,7 +64,7 @@ fn test_max_tokens_below_minimum()
   // Test that max_tokens below minimum is rejected
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 0,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -88,7 +88,7 @@ fn test_max_tokens_above_maximum()
   // Test that max_tokens above maximum is rejected
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 300_000,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -112,7 +112,7 @@ fn test_max_tokens_at_boundaries()
   // Test that max_tokens at valid boundaries is accepted
   let request_min = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 1,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -126,7 +126,7 @@ fn test_max_tokens_at_boundaries()
 
   let request_max = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 200_000,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -148,7 +148,7 @@ fn test_messages_empty()
   // Test that empty messages array is rejected
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![],
     system : None,
@@ -172,7 +172,7 @@ fn test_temperature_below_minimum()
   // Test that temperature below minimum is rejected
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -196,7 +196,7 @@ fn test_temperature_above_maximum()
   // Test that temperature above maximum is rejected
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -220,7 +220,7 @@ fn test_temperature_at_boundaries()
   // Test that temperature at valid boundaries is accepted
   let request_min = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -234,7 +234,7 @@ fn test_temperature_at_boundaries()
 
   let request_max = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -256,7 +256,7 @@ fn test_valid_request()
   // Test that a valid request passes validation
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 1000,
     messages : vec!
     [
@@ -287,7 +287,7 @@ fn test_tool_choice_without_tools()
   // Test that tool_choice without tools is rejected
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -317,7 +317,7 @@ fn test_tool_choice_unknown_tool()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -340,7 +340,7 @@ fn test_empty_tools_array()
   // Test that empty tools array is rejected
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -370,7 +370,7 @@ fn test_tool_with_empty_name()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -407,7 +407,7 @@ fn test_duplicate_tool_names()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -437,7 +437,7 @@ fn test_tool_with_empty_description()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -470,7 +470,7 @@ fn test_too_many_tools()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Hello" ) ],
     system : None,
@@ -507,7 +507,7 @@ fn test_valid_tools()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "Calculate 2 + 2" ) ],
     system : None,
@@ -658,7 +658,7 @@ async fn integration_validation_allows_valid_requests()
 
   let valid_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Say hello!" ) ],
     system : None,
@@ -698,7 +698,7 @@ async fn integration_validation_allows_valid_requests()
 #[ test ]
 fn test_validate_model_valid()
 {
-  assert!( the_module::validators::validate_model( "claude-3-opus-20240229" ).is_ok() );
+  assert!( the_module::validators::validate_model( "claude-opus-4-6" ).is_ok() );
 }
 
 #[ test ]

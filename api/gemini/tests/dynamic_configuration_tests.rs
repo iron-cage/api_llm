@@ -8,6 +8,7 @@ use std::time::Duration;
 use std::sync::{ Arc, Mutex };
 use tokio::time::timeout;
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;

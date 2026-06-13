@@ -27,6 +27,7 @@ Automated tests for the `api_huggingface` crate. All integration tests use real 
 | `inference_tests.rs` | Text generation inference API tests |
 | `models_tests.rs` | Model management (get, status, availability) tests |
 | `performance_metrics_tests.rs` | Request latency and throughput tracking tests |
+| `providers_api_integration_test.rs` | Real-endpoint provider integration tests |
 | `providers_api_tests.rs` | Pro plan providers API unit tests |
 | `qa_system_example_test.rs` | Question-answering system end-to-end workflow |
 | `rate_limiting_tests.rs` | Token bucket rate limiting tests |

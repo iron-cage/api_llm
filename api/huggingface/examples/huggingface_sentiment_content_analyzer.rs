@@ -753,7 +753,7 @@ impl SentimentAnalysisPlatform
 
   // Sort flags by frequency
   let mut common_flags : Vec< (String, usize) > = flag_counts.into_iter().collect();
-  common_flags.sort_by(|a, b| b.1.cmp(&a.1));
+  common_flags.sort_by_key( |( _, count )| core::cmp::Reverse( *count ) );
   common_flags.truncate(5);
 
   SentimentStatistics {

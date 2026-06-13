@@ -20,5 +20,3 @@ mod enhanced_circuit_breaker_tests;
 // Include enhanced rate limiting tests
 mod enhanced_rate_limiting_tests;
 
-// Cached content tests temporarily disabled - to be implemented
-// mod cached_content_tests;

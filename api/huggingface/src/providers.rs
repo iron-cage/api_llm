@@ -255,8 +255,8 @@ mod private
   stream : Some( false ), // Non-streaming for now
       };
 
-      let url = self.client.environment.endpoint_url( "/v1/chat/completions" )?;
-      
+      let url = self.client.environment.endpoint_url( "chat/completions" )?;
+
       self.client.post( url.as_str(), &request ).await
   }
 
@@ -416,7 +416,7 @@ mod private
   tool_choice,
       };
 
-      let url = self.client.environment.endpoint_url( "/v1/chat/completions" )?;
+      let url = self.client.environment.endpoint_url( "chat/completions" )?;
 
       self.client.post( url.as_str(), &request ).await
   }

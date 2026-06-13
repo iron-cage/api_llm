@@ -1,5 +1,7 @@
 //! Comprehensive tests for `HuggingFace` Embeddings API functionality
 
+mod inc;
+
 use api_huggingface::
 {
   Client,
@@ -608,26 +610,11 @@ fn test_comprehensive_embedding_request()
 mod integration_tests
 {
   use super::*;
-  use workspace_tools as workspace;
-  
-  /// Helper to get API key for integration tests - panics if not found
-  fn get_api_key_for_integration() -> String
-  {
-  let workspace = workspace::workspace()
-      .expect( "Failed to access workspace - required for integration tests" );
-  
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" )
-      .expect( "Failed to load secret/-secrets.sh - required for integration tests" );
-  
-  secrets.get( "HUGGINGFACE_API_KEY" )
-      .expect( "HUGGINGFACE_API_KEY not found in secret/-secrets.sh - required for integration tests. Get your token from https://huggingface.co/settings/tokens" )
-      .clone()
-  }
 
   /// Helper to create integration test environment
   fn create_integration_environment() -> HuggingFaceEnvironmentImpl
   {
-  let api_key_string = get_api_key_for_integration();
+  let api_key_string = crate::inc::get_api_key_for_integration();
   let api_key = Secret::new( api_key_string );
   HuggingFaceEnvironmentImpl::build( api_key, None )
       .expect( "[create_integration_environment] Failed to create HuggingFace environment with workspace API key - check HUGGINGFACE_API_KEY validity and HuggingFaceEnvironmentImpl::build() implementation" )
@@ -657,13 +644,10 @@ mod integration_tests
       {
   println!( "Integration test successful - received embedding response" );
       },
-      Err( e ) => 
-      {
-  println!( "Integration test failed (expected in CI): {e}" );
-      }
+      Err( e ) => panic!( "Integration test failed: {e}" ),
   }
   }
-  
+
   /// Test real API call with batch embeddings
   #[ tokio::test ]
   async fn integration_embedding_create_batch()
@@ -692,13 +676,10 @@ mod integration_tests
       {
   println!( "Integration batch test successful" );
       },
-      Err( e ) => 
-      {
-  println!( "Integration batch test failed (expected in CI): {e}" );
-      }
+      Err( e ) => panic!( "Integration batch test failed: {e}" ),
   }
   }
-  
+
   /// Test real API call with similarity calculation
   #[ tokio::test ]
   async fn integration_similarity_calculation()
@@ -725,10 +706,7 @@ mod integration_tests
   println!( "Integration similarity test successful - similarity : {similarity}" );
   assert!( ( -1.0..=1.0 ).contains( &similarity ), "Similarity should be in valid range" );
       },
-      Err( e ) => 
-      {
-  println!( "Integration similarity test failed (expected in CI): {e}" );
-      }
+      Err( e ) => panic!( "Integration similarity test failed: {e}" ),
   }
   }
 }

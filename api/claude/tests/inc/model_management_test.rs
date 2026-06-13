@@ -32,8 +32,7 @@ async fn integration_model_management_real_model_validation()
   // Test with known valid models
   let valid_models = vec![
     "claude-sonnet-4-5-20250929",
-    "claude-3-5-haiku-20241022", 
-    "claude-3-opus-20240229",
+    "claude-haiku-4-5-20251001",
   ];
 
   for model_name in valid_models

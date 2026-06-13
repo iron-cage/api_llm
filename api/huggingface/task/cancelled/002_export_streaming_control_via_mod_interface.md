@@ -6,7 +6,8 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** ❓ (Unverified)
+- **State:** ❌ (Cancelled)
+- **Priority:** 2
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** src/
@@ -15,7 +16,7 @@
 
 ## Goal
 
-`src/lib.rs` declares `pub mod streaming_control` as a bare module declaration outside the `mod_interface!` block, bypassing the crate's canonical export mechanism. The module organization invariant (`docs/invariant/001_module_organization.md`) requires all modules to flow through `mod_interface!` as layer entries. The current bare declaration means `streaming_control` is not re-exported through the standard `mod_interface!` path and is invisible to consumers relying on the crate's structured export surface. The fix is a one-line addition: add `streaming_control` as a layer entry in the `mod_interface!` block under the appropriate feature flag and remove the bare `pub mod` declaration outside the block. Observable outcome: `grep "streaming_control" src/lib.rs | grep "layer"` → ≥ 1 match; no bare `pub mod streaming_control` outside the block; `w3 .test l::3` → 0 failures, 0 warnings.
+`src/lib.rs` declares `pub mod streaming_control` as a bare module declaration outside the `mod_interface!` block, bypassing the crate's canonical export mechanism. The module organization invariant (`docs/invariant/001_module_organization.md`) requires all modules to flow through `mod_interface!` as layer entries. The current bare declaration means `streaming_control` is not re-exported through the standard `mod_interface!` path and is invisible to consumers relying on the crate's structured export surface. The fix is a one-line addition: add `streaming_control` as a layer entry in the `mod_interface!` block under the appropriate feature flag and remove the bare `pub mod` declaration outside the block. Observable outcome: `grep "streaming_control" src/lib.rs | grep "exposed use"` → ≥ 1 match; no bare `pub mod streaming_control` outside the block; `w3 .test l::3` → 0 failures, 0 warnings.
 
 ## In Scope
 
@@ -103,3 +104,4 @@ Execute in order. Do not skip or reorder steps.
 *(append-only — newest entry last; never edit or remove past entries)*
 
 - **2026-06-13** `CREATED` — Task filed by code audit session. Goal: add streaming_control as a layer entry in the mod_interface! block in lib.rs; remove bare pub mod declaration outside the block.
+- **2026-06-13** `CANCELLED` — VERIFY gate failed (2/4 dimensions). YAGNI_FAIL: `docs/pattern/001_module_organization.md` §Solution explicitly documents that `lib.rs` uses `pub mod` for all module declarations and `crate::mod_interface!` only for a small set of convenience crate-root type re-exports — `pub mod streaming_control` is the correct and canonical pattern, not a violation. IMPL_FAIL: proposed change (remove `pub mod` + add `exposed use` inside block) would cause a compile error because `exposed use` re-exports an existing module, it does not declare one; `components/mod.rs` confirms both `pub mod` and `exposed use` must coexist. Task reference to `docs/invariant/001_module_organization.md` is also incorrect — that file does not exist; the pattern doc is at `docs/pattern/001_module_organization.md`. No violation exists. Cancelled without execution.

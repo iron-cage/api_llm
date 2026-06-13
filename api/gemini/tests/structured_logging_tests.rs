@@ -10,6 +10,7 @@
 //!
 //! All tests use the logging feature flag and validate actual log output.
 
+#![ cfg( feature = "integration" ) ]
 
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;

@@ -1,5 +1,7 @@
 //! Tests for explicit retry logic functionality
 
+mod inc;
+
 #[ cfg( feature = "inference-retry" ) ]
 mod retry_tests
 {
@@ -211,28 +213,15 @@ mod retry_tests
   assert_eq!( config.jitter_ms, 200 );
   }
 
+  #[ cfg( feature = "integration" ) ]
   mod integration_tests
   {
   use super::*;
-  use workspace_tools as workspace;
   use api_huggingface::
   {
       environment::HuggingFaceEnvironmentImpl,
       secret::Secret,
   };
-
-  fn get_api_key_for_integration() -> String
-  {
-      let workspace = workspace::workspace()
-  .expect( "Failed to access workspace - required for integration tests" );
-      
-      let secrets = workspace.load_secrets_from_file( "-secrets.sh" )
-  .expect( "Failed to load secret/-secrets.sh - required for integration tests" );
-      
-      secrets.get( "HUGGINGFACE_API_KEY" )
-  .expect( "HUGGINGFACE_API_KEY not found in secret/-secrets.sh - required for integration tests. Get your token from https://huggingface.co/settings/tokens" )
-  .clone()
-  }
 
   #[ tokio::test ]
   async fn integration_explicit_retry_with_real_api_failures()
@@ -280,7 +269,7 @@ mod retry_tests
   async fn integration_retry_with_rate_limiting()
   {
       // Get real API key (will panic with clear message if missing)
-      let api_key_string = get_api_key_for_integration();
+      let api_key_string = crate::inc::get_api_key_for_integration();
       
       // Build client with real credentials (explicit retry configuration separate)
       let api_key = Secret::new( api_key_string );
@@ -340,7 +329,7 @@ mod retry_tests
   async fn integration_retry_disabled_vs_enabled()
   {
       // Get real API key (will panic with clear message if missing)
-      let api_key_string = get_api_key_for_integration();
+      let api_key_string = crate::inc::get_api_key_for_integration();
       
       // Test client without retry
       let api_key = Secret::new( api_key_string.clone() );

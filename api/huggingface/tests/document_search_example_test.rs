@@ -5,6 +5,8 @@
 
 #![allow(clippy::missing_inline_in_public_items)]
 
+mod inc;
+
 use api_huggingface::
 {
   Client,
@@ -398,21 +400,15 @@ pub struct SearchIndexStats
 mod tests
 {
   use super::*;
-  use workspace_tools as workspace;
 
-  fn get_api_key_for_testing() -> Option< String >
+  #[ cfg( feature = "integration" ) ]
+  fn create_integration_client() -> Client< HuggingFaceEnvironmentImpl >
   {
-  let workspace = workspace::workspace().ok()?;
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" ).ok()?;
-  secrets.get( "HUGGINGFACE_API_KEY" ).cloned()
-  }
-
-  fn create_test_client() -> Option< Client< HuggingFaceEnvironmentImpl > >
-  {
-  let api_key = get_api_key_for_testing()?;
+  let api_key = crate::inc::get_api_key_for_integration();
   let secret = Secret::new( api_key );
-  let env = HuggingFaceEnvironmentImpl::build( secret, None ).ok()?;
-  Client::build( env ).ok()
+  let env = HuggingFaceEnvironmentImpl::build( secret, None )
+      .expect( "Failed to build environment" );
+  Client::build( env ).expect( "Failed to create client" )
   }
 
   fn create_sample_documents() -> Vec< Document >
@@ -532,26 +528,22 @@ mod tests
   assert!( sim_different_length.abs() < f32::EPSILON );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_search_engine_creation()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
   assert!( engine.documents.is_empty() );
   assert_eq!( engine.embedding_model, Models::all_minilm_l6_v2() );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_search_index_stats()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
   let docs = create_sample_documents();
@@ -573,13 +565,11 @@ mod tests
   assert_eq!( stats.category_counts.get( "news" ), Some( &1 ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_document_management()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
   let doc = create_sample_documents().into_iter().next().expect( "[test_document_management] create_sample_documents() should return at least 1 document - check create_sample_documents() implementation" );
@@ -668,13 +658,11 @@ mod tests
   assert_eq!( filtered_query.metadata_filters.get( "author" ), Some( &"tech_writer".to_string() ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_embedding_model_variations()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   // Test different embedding models
   let models = vec!
@@ -691,13 +679,11 @@ mod tests
   }
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_performance_characteristics()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
 
@@ -732,13 +718,11 @@ mod tests
   assert_eq!( stats.indexed_documents, 0 ); // No embeddings in this test
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_error_handling_scenarios()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
 
@@ -758,13 +742,11 @@ mod tests
   assert!( results.is_ok() || results.is_err() ); // Either outcome is valid depending on API availability
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_batch_processing_structure()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
   let docs = create_sample_documents();

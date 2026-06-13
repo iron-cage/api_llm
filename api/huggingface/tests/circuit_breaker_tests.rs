@@ -24,7 +24,7 @@
 //! cargo test --test circuit_breaker_tests --all-features -- --ignored
 //! ```
 
-use api_huggingface::reliability::{ CircuitBreaker, CircuitBreakerConfig, CircuitState };
+use api_huggingface::reliability::{ CircuitBreaker, CircuitBreakerConfig, CircuitBreakerError, CircuitState };
 use core::time::Duration;
 
 #[ cfg( feature = "integration" ) ]
@@ -463,4 +463,167 @@ async fn test_circuit_breaker_custom_config()
 
   let circuit_breaker = CircuitBreaker::new( config );
   assert!( circuit_breaker.is_closed( ).await );
+}
+
+// ============================================================================
+// Pure-logic tests (migrated from src/reliability/circuit_breaker.rs)
+// ============================================================================
+
+#[ tokio::test ]
+async fn test_initial_state_is_closed()
+{
+  let cb = CircuitBreaker::new( CircuitBreakerConfig::default() );
+  assert!( cb.is_closed().await );
+  assert_eq!( cb.state().await, CircuitState::Closed );
+}
+
+#[ tokio::test ]
+async fn test_successful_operation_keeps_circuit_closed()
+{
+  let cb = CircuitBreaker::new( CircuitBreakerConfig::default() );
+
+  let result = cb.execute( async { Ok::< _, String >( "success" ) } ).await;
+
+  assert!( result.is_ok() );
+  assert!( cb.is_closed().await );
+}
+
+#[ tokio::test ]
+async fn test_failures_open_circuit()
+{
+  let config = CircuitBreakerConfig
+  {
+    failure_threshold : 3,
+    success_threshold : 2,
+    timeout : Duration::from_secs( 60 ),
+  };
+  let cb = CircuitBreaker::new( config );
+
+  for _ in 0..3
+  {
+    let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  }
+
+  assert!( cb.is_open().await );
+}
+
+#[ tokio::test ]
+async fn test_open_circuit_rejects_requests()
+{
+  let config = CircuitBreakerConfig
+  {
+    failure_threshold : 2,
+    success_threshold : 2,
+    timeout : Duration::from_secs( 60 ),
+  };
+  let cb = CircuitBreaker::new( config );
+
+  for _ in 0..2
+  {
+    let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  }
+
+  assert!( cb.is_open().await );
+
+  let result = cb.execute( async { Ok::< _, String >( "success" ) } ).await;
+  assert!( matches!( result, Err( CircuitBreakerError::CircuitOpen ) ) );
+}
+
+#[ tokio::test ]
+async fn test_timeout_transitions_to_half_open()
+{
+  let config = CircuitBreakerConfig
+  {
+    failure_threshold : 2,
+    success_threshold : 2,
+    timeout : Duration::from_millis( 100 ),
+  };
+  let cb = CircuitBreaker::new( config );
+
+  for _ in 0..2
+  {
+    let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  }
+  assert!( cb.is_open().await );
+
+  tokio::time::sleep( Duration::from_millis( 150 ) ).await;
+
+  let _ = cb.execute( async { Ok::< _, String >( "success" ) } ).await;
+
+  assert!( !cb.is_open().await );
+}
+
+#[ tokio::test ]
+async fn test_half_open_success_closes_circuit()
+{
+  let config = CircuitBreakerConfig
+  {
+    failure_threshold : 2,
+    success_threshold : 2,
+    timeout : Duration::from_millis( 100 ),
+  };
+  let cb = CircuitBreaker::new( config );
+
+  for _ in 0..2
+  {
+    let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  }
+
+  tokio::time::sleep( Duration::from_millis( 150 ) ).await;
+
+  for _ in 0..2
+  {
+    let _ = cb.execute( async { Ok::< _, String >( "success" ) } ).await;
+  }
+
+  assert!( cb.is_closed().await );
+}
+
+#[ tokio::test ]
+async fn test_half_open_failure_reopens_circuit()
+{
+  let config = CircuitBreakerConfig
+  {
+    failure_threshold : 2,
+    success_threshold : 2,
+    timeout : Duration::from_millis( 100 ),
+  };
+  let cb = CircuitBreaker::new( config );
+
+  for _ in 0..2
+  {
+    let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  }
+
+  tokio::time::sleep( Duration::from_millis( 150 ) ).await;
+
+  let _ = cb.execute( async { Ok::< _, String >( "success" ) } ).await;
+
+  let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+
+  assert!( cb.is_open().await );
+}
+
+#[ tokio::test ]
+async fn test_reset_clears_state()
+{
+  let config = CircuitBreakerConfig
+  {
+    failure_threshold : 2,
+    success_threshold : 2,
+    timeout : Duration::from_secs( 60 ),
+  };
+  let cb = CircuitBreaker::new( config );
+
+  for _ in 0..2
+  {
+    let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  }
+  assert!( cb.is_open().await );
+
+  cb.reset().await;
+
+  assert!( cb.is_closed().await );
+  assert_eq!( cb.failure_count().await, 0 );
+  assert_eq!( cb.success_count().await, 0 );
 }

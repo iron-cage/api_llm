@@ -1,5 +1,7 @@
 //! Comprehensive tests for `HuggingFace` Inference API functionality
 
+mod inc;
+
 use api_huggingface::
 {
   Client,
@@ -395,94 +397,76 @@ mod streaming_tests
   }
 }
 
+/// Helper to create integration test environment
 #[ cfg( feature = "integration" ) ]
-mod integration_tests
+fn create_integration_environment() -> HuggingFaceEnvironmentImpl
 {
-  use super::*;
-  use workspace_tools as workspace;
-  
-  /// Helper to get API key for integration tests - panics if not found
-  fn get_api_key_for_integration() -> String
-  {
-  let workspace = workspace::workspace()
-      .expect( "Failed to access workspace - required for integration tests" );
-  
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" )
-      .expect( "Failed to load secret/-secrets.sh - required for integration tests" );
-  
-  secrets.get( "HUGGINGFACE_API_KEY" )
-      .expect( "HUGGINGFACE_API_KEY not found in secret/-secrets.sh - required for integration tests. Get your token from https://huggingface.co/settings/tokens" )
-      .clone()
-  }
-
-  /// Helper to create integration test environment
-  fn create_integration_environment() -> HuggingFaceEnvironmentImpl
-  {
-  let api_key_string = get_api_key_for_integration();
+  let api_key_string = crate::inc::get_api_key_for_integration();
   let api_key = Secret::new( api_key_string );
   HuggingFaceEnvironmentImpl::build( api_key, None )
-      .expect( "Should create environment with workspace API key" )
-  }
-  
-  /// Test real API call with inference
-  #[ tokio::test ]
-  async fn integration_inference_create()
-  {
+    .expect( "Should create environment with workspace API key" )
+}
+
+/// Test real API call with inference
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_inference_create()
+{
   // Setup - Get environment with API key (will panic if missing)
   let env = create_integration_environment();
   let client = Client::build( env )
-      .expect( "Should create client" );
-  
+    .expect( "Should create client" );
+
   let inference = client.inference();
-  
+
   // Execution
-  let result = inference.create( 
-      "Hello, how are you?", 
-      "gpt2" 
+  let result = inference.create(
+    "Hello, how are you?",
+    "meta-llama/Llama-3.3-70B-Instruct"
   ).await;
-  
+
   // Verification
   match result
   {
-      Ok( _response ) => 
-      {
-  // Basic response validation
-  println!( "Integration test successful - received response" );
-      },
-      Err( e ) => panic!( "Integration test failed: {e}" ),
+    Ok( _response ) =>
+    {
+      // Basic response validation
+      println!( "Integration test successful - received response" );
+    },
+    Err( e ) => panic!( "Integration test failed: {e}" ),
   }
-  }
-  
-  /// Test real API call with parameters
-  #[ tokio::test ]
-  async fn integration_inference_create_with_parameters()
-  {
+}
+
+/// Test real API call with parameters
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_inference_create_with_parameters()
+{
   // Setup - Get environment with API key (will panic if missing)
   let env = create_integration_environment();
   let client = Client::build( env )
-      .expect( "Should create client" );
-  
+    .expect( "Should create client" );
+
   let inference = client.inference();
   let parameters = InferenceParameters::new()
-      .with_temperature( 0.7 )
-      .with_max_new_tokens( 50 );
-  
+    .with_temperature( 0.7 )
+    .with_max_new_tokens( 50 );
+
   // Execution
-  let result = inference.create_with_parameters( 
-      "Once upon a time", 
-      "gpt2",
-      parameters
+  let result = inference.create_with_parameters(
+    "Once upon a time",
+    "meta-llama/Llama-3.3-70B-Instruct",
+    parameters
   ).await;
-  
+
   // Verification
   match result
   {
-      Ok( _response ) => 
-      {
-  println!( "Integration test with parameters successful" );
-      },
-      Err( e ) => panic!( "Integration test with parameters failed: {e}" ),
-  }
+    Ok( _response ) =>
+    {
+      println!( "Integration test with parameters successful" );
+    },
+    Err( e ) => panic!( "Integration test with parameters failed: {e}" ),
   }
 }
 

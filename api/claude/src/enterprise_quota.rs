@@ -214,7 +214,7 @@ mod private
       match model
       {
         // Claude 3 Opus
-        "claude-3-opus-20240229" | "claude-3-opus-latest" =>
+        "claude-opus-4-6" | "claude-3-opus-20240229" | "claude-3-opus-latest" =>
         {
           Self
           {

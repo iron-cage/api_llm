@@ -5,6 +5,8 @@
 
 #![allow(clippy::missing_inline_in_public_items)]
 
+mod inc;
+
 use api_huggingface::
 {
   Client,
@@ -518,21 +520,15 @@ pub struct ContentPlatformStats
 mod tests
 {
   use super::*;
-  use workspace_tools as workspace;
 
-  fn get_api_key_for_testing() -> Option< String >
+  #[ cfg( feature = "integration" ) ]
+  fn create_integration_client() -> Client< HuggingFaceEnvironmentImpl >
   {
-  let workspace = workspace::workspace().ok()?;
-  let secrets = workspace.load_secrets_from_file( "-secrets.sh" ).ok()?;
-  secrets.get( "HUGGINGFACE_API_KEY" ).cloned()
-  }
-
-  fn create_test_client() -> Option< Client< HuggingFaceEnvironmentImpl > >
-  {
-  let api_key = get_api_key_for_testing()?;
+  let api_key = crate::inc::get_api_key_for_integration();
   let secret = Secret::new( api_key );
-  let env = HuggingFaceEnvironmentImpl::build( secret, None ).ok()?;
-  Client::build( env ).ok()
+  let env = HuggingFaceEnvironmentImpl::build( secret, None )
+      .expect( "Failed to build environment" );
+  Client::build( env ).expect( "Failed to create client" )
   }
 
   fn create_sample_templates() -> Vec< ContentTemplate >
@@ -654,13 +650,11 @@ mod tests
   assert!( request.context.is_some() );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_platform_initialization()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let platform = ContentGenerationPlatform::new( client );
   assert!( platform.templates.is_empty() );
@@ -672,13 +666,11 @@ mod tests
   assert!( platform.default_models.contains_key( &ContentType::Creative ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_template_management()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut platform = ContentGenerationPlatform::new( client );
   let templates = create_sample_templates();
@@ -703,13 +695,11 @@ mod tests
   assert_eq!( social_templates.len(), 1 );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_prompt_building()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _platform = ContentGenerationPlatform::new( client );
 
@@ -734,13 +724,11 @@ mod tests
   assert!( prompt.contains( "150-400 words" ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_generation_parameters()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _platform = ContentGenerationPlatform::new( client );
 
@@ -766,13 +754,11 @@ mod tests
   assert_eq!( professional_params.max_new_tokens.expect( "[test_generation_parameters] InferenceParameters.max_new_tokens should be Some for short content - check get_generation_parameters() implementation" ), 200 ); // Short content
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_content_cleaning()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _platform = ContentGenerationPlatform::new( client );
 
@@ -802,13 +788,11 @@ mod tests
   assert!( cleaned_meta.contains( "Technology is important" ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_quality_assessment()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _platform = ContentGenerationPlatform::new( client );
 
@@ -839,13 +823,11 @@ mod tests
   assert!( poor_quality.overall_score < quality.overall_score );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_tone_matching()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _platform = ContentGenerationPlatform::new( client );
 
@@ -870,13 +852,11 @@ mod tests
   assert!( authoritative_score > 0.8 );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_platform_statistics()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let mut platform = ContentGenerationPlatform::new( client );
   let templates = create_sample_templates();
@@ -892,13 +872,11 @@ mod tests
   assert!( stats.available_models.len() >= 3 ); // At least 3 different models
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_content_length_validation()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let _platform = ContentGenerationPlatform::new( client );
 
@@ -911,13 +889,11 @@ mod tests
   assert!( medium_params.max_new_tokens.expect( "[test_content_length_validation] InferenceParameters.max_new_tokens should be Some for medium length - check get_generation_parameters() implementation" ) < long_params.max_new_tokens.expect( "[test_content_length_validation] InferenceParameters.max_new_tokens should be Some for long length - check get_generation_parameters() implementation" ) );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_error_scenarios()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let platform = ContentGenerationPlatform::new( client );
 
@@ -941,13 +917,11 @@ mod tests
   assert!( creative_templates.is_empty() ); // No creative templates added
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn test_batch_generation_structure()
   {
-  let Some( client ) = create_test_client() else {
-      println!( "Skipping test - no API key available" );
-      return;
-  };
+  let client = create_integration_client();
 
   let platform = ContentGenerationPlatform::new( client );
 

@@ -284,11 +284,11 @@ async fn integration_content_generation_refactor_real_api()
 
   // Test content generator with real API
   let content_gen = the_module::ContentGenerator::new( client.clone() )
-    .with_default_model( "claude-3-5-haiku-20241022" )
+    .with_default_model( "claude-haiku-4-5-20251001" )
     .with_default_max_tokens( 25 );
 
   let request = the_module::ContentGenerationRequest::builder()
-    .model( "claude-3-5-haiku-20241022" )
+    .model( "claude-haiku-4-5-20251001" )
     .max_tokens( 25 )
     .temperature( 0.3 )
     .message( the_module::Message::user( "Write a haiku about programming.".to_string() ) )

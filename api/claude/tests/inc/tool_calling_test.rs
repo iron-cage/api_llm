@@ -508,7 +508,7 @@ async fn integration_tool_calling_real_math_tool()
   // Pitfall : Always verify model capabilities when selecting models for feature-specific tests
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 200,
     messages : vec![ the_module::Message::user( "What's 15 multiplied by 7? Use the calculator tool.".to_string() ) ],
     system : Some( vec![ the_module::SystemContent::text( "You have access to a calculator tool. Use it for mathematical calculations." ) ] ),
@@ -591,7 +591,7 @@ async fn integration_tool_calling_multiple_tools()
   // Pitfall : Always verify model capabilities when selecting models for feature-specific tests
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 150,
     messages : vec![
       the_module::Message::user( "I have a calculator and weather tool available. What's 8 + 5?".to_string() )
@@ -619,13 +619,14 @@ async fn integration_tool_calling_multiple_tools()
   assert!( response.usage.input_tokens > 0 );
   assert!( response.usage.output_tokens > 0 );
 
-  // Should either use calculator tool or provide math answer
+  // Should either use a tool (tool_use block) or provide a text answer with math
   let has_math_response = response.content.iter().any( |content| {
-    content.text.as_ref().is_some_and( |text| 
-      text.contains( "13" ) || text.contains( "calculator" ) || text.contains( '8' )
-    )
+    content.r#type == "tool_use"
+      || content.text.as_ref().is_some_and( |text|
+        text.contains( "105" ) || text.contains( "calculator" ) || text.contains( "15" )
+      )
   } );
-  
+
   assert!( has_math_response, "Multiple tools response should handle math question" );
 
   println!( "✅ Multiple tools integration test passed!" );

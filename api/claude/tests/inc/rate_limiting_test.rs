@@ -215,7 +215,7 @@ mod rate_limiting_functionality_tests
     // Test request size calculation
     let simple_request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Simple question" ) ],
       system : None,

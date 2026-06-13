@@ -15,8 +15,7 @@
 //! All tests follow Test-Driven Development (TDD) principles and are designed to guide
 //! the implementation of a comprehensive code assistant platform.
 
-#![allow(missing_docs)]
-#![allow(clippy::pedantic)]
+#![ allow( clippy::pedantic, clippy::upper_case_acronyms ) ]
 
 use std::collections::HashMap;
 

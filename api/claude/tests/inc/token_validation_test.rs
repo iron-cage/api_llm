@@ -85,7 +85,7 @@ async fn test_live_token_authentication_verification()
   // Test minimal API request for authentication verification
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 10,
     messages : vec![ the_module::Message::user( "Auth test".to_string() ) ],
     system : None,
@@ -115,7 +115,7 @@ async fn test_live_token_authentication_verification()
   assert!( response.id.starts_with( "msg_" ), "INTEGRATION FAILURE: Invalid message ID format : {}", response.id );
   assert_eq!( response.r#type, "message", "INTEGRATION FAILURE: Response type must be 'message'" );
   assert_eq!( response.role, "assistant", "INTEGRATION FAILURE: Response role must be 'assistant'" );
-  assert_eq!( response.model, "claude-3-5-haiku-20241022", "INTEGRATION FAILURE: Model mismatch" );
+  assert_eq!( response.model, "claude-haiku-4-5-20251001", "INTEGRATION FAILURE: Model mismatch" );
   assert!( !response.content.is_empty(), "INTEGRATION FAILURE: Response must have content" );
   assert_eq!( response.content[0].r#type, "text", "INTEGRATION FAILURE: Content type must be 'text'" );
   assert!( response.usage.input_tokens > 0, "INTEGRATION FAILURE: Must track input tokens" );
@@ -139,7 +139,7 @@ async fn test_live_token_authentication_verification()
   
   let invalid_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 5,
     messages : vec![ the_module::Message::user( "Test".to_string() ) ],
     system : None,

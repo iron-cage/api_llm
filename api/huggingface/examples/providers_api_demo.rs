@@ -1,7 +1,7 @@
-//! HuggingFace Inference Providers API Demo — Pro Plan Models
+//! `HuggingFace` Inference Providers API Demo — Pro Plan Models
 //!
 //! Demonstrates the chat completions endpoint that provides access to Pro models.
-//! Requires HUGGINGFACE_API_KEY environment variable with Pro plan access.
+//! Requires `HUGGINGFACE_API_KEY` environment variable with Pro plan access.
 //!
 //! ```bash
 //! cargo run --example providers_api_demo --all-features
@@ -82,16 +82,22 @@ async fn test_working_model( providers : &Providers< HuggingFaceEnvironmentImpl 
   {
       role : "system".to_string(),
       content : "You are a helpful math assistant.".to_string(),
+      tool_calls : None,
+      tool_call_id : None,
   },
   ChatMessage
   {
       role : "user".to_string(),
       content : "I have x = 13".to_string(),
+      tool_calls : None,
+      tool_call_id : None,
   },
   ChatMessage
   {
       role : "user".to_string(),
       content : "What is x * 3?".to_string(),
+      tool_calls : None,
+      tool_call_id : None,
   }
   ];
 

@@ -83,9 +83,6 @@ caching = ["client"]
 token-counting = ["client"]
 dynamic-config = ["reliability"]
 
-# Development and Testing Features
-integration-tests = ["inference", "embeddings", "models"]
-
 # Convenience Bundles
 basic = ["inference", "embeddings", "models", "env-config"]
 full = [
@@ -97,7 +94,7 @@ full = [
 ]
 
 # Integration testing configuration
-integration = ["integration-tests", "env-config", "logging"]
+integration = ["inference", "embeddings", "models", "env-config", "logging"]
 
 [dependencies]
 

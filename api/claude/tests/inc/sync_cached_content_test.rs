@@ -71,7 +71,7 @@ fn integration_sync_cached_content_creation()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Hello!".to_string() ) ],
     system : Some( system_prompt ),
@@ -123,7 +123,7 @@ fn integration_sync_cache_hit_scenario()
   // First request - creates cache
   let request1 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 30,
     messages : vec![ the_module::Message::user( "What is 2+2?".to_string() ) ],
     system : Some( system_prompt.clone() ),
@@ -148,7 +148,7 @@ fn integration_sync_cache_hit_scenario()
   // Second request - should hit cache
   let request2 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 30,
     messages : vec![ the_module::Message::user( "What is 3+3?".to_string() ) ],
     system : Some( system_prompt ),
@@ -236,7 +236,7 @@ fn integration_sync_cached_content_cost_savings()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 20,
     messages : vec![ the_module::Message::user( "Hi".to_string() ) ],
     system : Some( system_prompt ),

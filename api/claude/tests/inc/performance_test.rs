@@ -19,7 +19,7 @@ async fn test_request_construction_performance()
   {
     let _request = the_module::CreateMessageRequest
     {
-      model : "claude-3-5-haiku-20241022".to_string(),
+      model : "claude-haiku-4-5-20251001".to_string(),
       max_tokens : 100,
       messages : vec![ the_module::Message::user( "Test message".to_string() ) ],
       system : Some( vec![ the_module::SystemContent::text( "Test system" ) ] ),
@@ -240,7 +240,7 @@ async fn integration_performance_api_response_time()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(), // Fast model
+    model : "claude-haiku-4-5-20251001".to_string(), // Fast model
     max_tokens : 20,
     messages : vec![ the_module::Message::user( "Hello!".to_string() ) ],
     system : None,
@@ -288,7 +288,7 @@ async fn integration_performance_concurrent_api_requests()
   // Make 3 concurrent API requests
   let request1 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 15,
     messages : vec![ the_module::Message::user( "Test 1".to_string() ) ],
     system : None,
@@ -300,7 +300,7 @@ async fn integration_performance_concurrent_api_requests()
 
   let request2 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 15,
     messages : vec![ the_module::Message::user( "Test 2".to_string() ) ],
     system : None,
@@ -312,7 +312,7 @@ async fn integration_performance_concurrent_api_requests()
 
   let request3 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 15,
     messages : vec![ the_module::Message::user( "Test 3".to_string() ) ],
     system : None,

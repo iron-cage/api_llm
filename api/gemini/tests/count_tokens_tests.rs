@@ -26,9 +26,12 @@
 //! implementation is complete.
 
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::
 {
-client ::{ Client, ClientBuilder },
+client ::{ ClientBuilder },
 models ::{ Content, Part, CountTokensRequest, Blob },
   error ::Error,
 };
@@ -37,12 +40,11 @@ models ::{ Content, Part, CountTokensRequest, Blob },
 ///
 /// This test validates that the `count_tokens` method can successfully count
 /// tokens for simple text input. The response should contain a valid token count.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_simple_text()
 {
-  let Ok(client) = Client::new() else {
-    panic!( "API key required for count tokens tests. Set GEMINI_API_KEY environment variable." );
-  };
+  let client = create_integration_client();
 
   let models_api = client.models();
 
@@ -88,15 +90,7 @@ async fn test_count_tokens_simple_text()
     },
     Err( e ) =>
     {
-      // If we get authentication errors, that's expected in CI
-      match e
-      {
-        Error::AuthenticationError( _ ) =>
-        {
-        println!( "⚠️  Authentication error (expected without API key): {e}" );
-        },
-      _ => panic!( "Count tokens failed : {e:?}" ),
-      }
+      panic!( "Count tokens simple text failed : {e:?}" );
     }
   }
 }
@@ -105,12 +99,11 @@ async fn test_count_tokens_simple_text()
 ///
 /// This test validates that the `count_tokens` method can handle multimodal
 /// inputs containing both text and image data.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_multimodal_content()
 {
-  let Ok(client) = Client::new() else {
-    panic!( "API key required for count tokens tests. Set GEMINI_API_KEY environment variable." );
-  };
+  let client = create_integration_client();
 
   let models_api = client.models();
 
@@ -163,14 +156,7 @@ async fn test_count_tokens_multimodal_content()
     },
     Err( e ) =>
     {
-      match e
-      {
-        Error::AuthenticationError( _ ) =>
-        {
-        println!( "⚠️  Authentication error (expected without API key): {e}" );
-        },
-      _ => panic!( "Multimodal count tokens failed : {e:?}" ),
-      }
+      panic!( "Count tokens multimodal failed : {e:?}" );
     }
   }
 }
@@ -179,12 +165,11 @@ async fn test_count_tokens_multimodal_content()
 ///
 /// This test validates that the `count_tokens` method can handle multi-turn
 /// conversation contexts and provide accurate token counts.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_conversation_context()
 {
-  let Ok(client) = Client::new() else {
-    panic!( "API key required for count tokens tests. Set GEMINI_API_KEY environment variable." );
-  };
+  let client = create_integration_client();
 
   let models_api = client.models();
 
@@ -225,14 +210,7 @@ async fn test_count_tokens_conversation_context()
     },
     Err( e ) =>
     {
-      match e
-      {
-        Error::AuthenticationError( _ ) =>
-        {
-        println!( "⚠️  Authentication error (expected without API key): {e}" );
-        },
-      _ => panic!( "Conversation count tokens failed : {e:?}" ),
-      }
+      panic!( "Count tokens conversation failed : {e:?}" );
     }
   }
 }
@@ -241,12 +219,11 @@ async fn test_count_tokens_conversation_context()
 ///
 /// This test validates that token counting works across different Gemini models
 /// and respects their specific token counting behaviors.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_different_models()
 {
-  let Ok(client) = Client::new() else {
-    panic!( "API key required for count tokens tests. Set GEMINI_API_KEY environment variable." );
-  };
+  let client = create_integration_client();
 
   let models_api = client.models();
 
@@ -290,10 +267,6 @@ async fn test_count_tokens_different_models()
       {
         match e
         {
-          Error::AuthenticationError( _ ) =>
-          {
-        println!( "⚠️  Authentication error for {model} (expected without API key): {e}" );
-          },
           Error::InvalidArgument( _ ) =>
           {
           println!( "⚠️  Model {model} not available, skipping" );
@@ -309,12 +282,11 @@ async fn test_count_tokens_different_models()
 ///
 /// This test validates that the `count_tokens` method properly handles various
 /// error conditions and returns appropriate error types.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_error_handling()
 {
-  let Ok(client) = Client::new() else {
-    panic!( "API key required for count tokens tests. Set GEMINI_API_KEY environment variable." );
-  };
+  let client = create_integration_client();
 
   let models_api = client.models();
 
@@ -365,12 +337,11 @@ async fn test_count_tokens_error_handling()
 ///
 /// This test validates that token counting can optionally include generation
 /// configuration parameters that might affect token usage calculations.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_with_generation_config()
 {
-  let Ok(client) = Client::new() else {
-    panic!( "API key required for count tokens tests. Set GEMINI_API_KEY environment variable." );
-  };
+  let client = create_integration_client();
 
   let models_api = client.models();
 
@@ -410,14 +381,7 @@ async fn test_count_tokens_with_generation_config()
     },
     Err( e ) =>
     {
-      match e
-      {
-        Error::AuthenticationError( _ ) =>
-        {
-        println!( "⚠️  Authentication error (expected without API key): {e}" );
-        },
-      _ => panic!( "Count tokens (basic counting) failed : {e:?}" ),
-      }
+      panic!( "Count tokens with generation config failed : {e:?}" );
     }
   }
 }
@@ -426,12 +390,11 @@ async fn test_count_tokens_with_generation_config()
 ///
 /// This test validates that the `count_tokens` method respects rate limits
 /// and handles rate limiting errors appropriately.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_rate_limiting()
 {
-  let Ok(client) = Client::new() else {
-    panic!( "API key required for count tokens tests. Set GEMINI_API_KEY environment variable." );
-  };
+  let client = create_integration_client();
 
   let models_api = client.models();
 
@@ -477,10 +440,6 @@ async fn test_count_tokens_rate_limiting()
           {
           println!( "⚠️  Request {i} hit rate limit (expected behavior)" );
           },
-          Error::AuthenticationError( _ ) =>
-          {
-          println!( "⚠️  Authentication error for request {i} (expected without API key)" );
-          },
           _ =>
           {
         println!( "⚠️  Request {i} failed with error : {e:?}" );
@@ -495,6 +454,7 @@ async fn test_count_tokens_rate_limiting()
 ///
 /// This test validates that `count_tokens` properly handles authentication
 /// errors when invalid API keys are provided.
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_count_tokens_authentication_error()
 {

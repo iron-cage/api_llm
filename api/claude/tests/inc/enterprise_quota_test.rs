@@ -85,7 +85,7 @@ mod enterprise_quota_tests
   #[ test ]
   fn test_cost_calculator_opus()
   {
-    let pricing = CostCalculator::for_model( "claude-3-opus-20240229" );
+    let pricing = CostCalculator::for_model( "claude-opus-4-6" );
     assert!( ( pricing.input_cost_per_million - 15.0_f64 ).abs() < f64::EPSILON );
     assert!( ( pricing.output_cost_per_million - 75.0_f64 ).abs() < f64::EPSILON );
   }

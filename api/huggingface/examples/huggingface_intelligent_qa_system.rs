@@ -583,16 +583,15 @@ impl QASystem
   // Boost for question-specific indicators
   match question.question_type
   {
-      QuestionType::YesNo => {
-  if answer.to_lowercase().contains("yes") || answer.to_lowercase().contains("no")
+      QuestionType::YesNo
+  if answer.to_lowercase().contains("yes") || answer.to_lowercase().contains("no") =>
   {
           confidence += 0.1;
-  }
       },
-      QuestionType::Factual => {
-  if answer.contains('.') { // Proper sentences
+      QuestionType::Factual
+  if answer.contains('.') => // Proper sentences
+  {
           confidence += 0.1;
-  }
       },
       _ => {}
   }

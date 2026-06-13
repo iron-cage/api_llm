@@ -121,7 +121,7 @@ async fn integration_single_system_instruction()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Say hello!".to_string() ) ],
     system : Some( system ),
@@ -166,7 +166,7 @@ async fn integration_multi_part_system_instructions()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Hello!".to_string() ) ],
     system : Some( system ),
@@ -213,7 +213,7 @@ async fn integration_system_instructions_with_caching()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 100,
     messages : vec![ the_module::Message::user( "What is ownership in Rust?".to_string() ) ],
     system : Some( system ),
@@ -251,7 +251,7 @@ async fn integration_empty_system_instructions()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Hello!".to_string() ) ],
     system : None,
@@ -293,7 +293,7 @@ async fn integration_long_system_instruction()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 50,
     messages : vec![ the_module::Message::user( "Hello!".to_string() ) ],
     system : Some( system ),

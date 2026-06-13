@@ -201,7 +201,7 @@ where
       request = request.with_options( opts );
   }
   
-  let endpoint = format!( "/models/{model_id}" );
+  let endpoint = format!( "models/{model_id}" );
   let url = self.client.environment.endpoint_url( &endpoint )?;
   
   self.client.post( url.as_str(), &request ).await
@@ -230,7 +230,7 @@ where
   {
   let stream_params = parameters.with_streaming( true );
   let request = InferenceRequest::new( inputs ).with_parameters( stream_params );
-  let endpoint = format!( "/models/{}", model.as_ref() );
+  let endpoint = format!( "models/{}", model.as_ref() );
   let url = self.client.environment.endpoint_url( &endpoint )?;
   
   self.client.post_stream( url.as_str(), &request ).await

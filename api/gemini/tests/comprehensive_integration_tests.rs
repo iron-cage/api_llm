@@ -15,6 +15,8 @@
 //! All tests use real API tokens and make actual HTTP requests.
 
 
+#![ cfg( feature = "integration" ) ]
+
 #[ allow( clippy::duplicate_mod ) ]
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;

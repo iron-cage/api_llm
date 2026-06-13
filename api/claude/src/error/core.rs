@@ -665,7 +665,14 @@ mod private
   {
     fn from( error : reqwest::Error ) -> Self
     {
-      Self::http_error( error.to_string() )
+      if error.is_timeout()
+      {
+        Self::http_error( format!( "Request timed out: {error}" ) )
+      }
+      else
+      {
+        Self::http_error( error.to_string() )
+      }
     }
   }
 

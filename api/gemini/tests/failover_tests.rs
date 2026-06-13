@@ -6,6 +6,7 @@ use api_gemini::models::failover::*;
 use core::time::Duration;
 use std::time::SystemTime;
 
+#[ cfg( feature = "integration" ) ]
 mod integration_tests
 {
   use super::*;

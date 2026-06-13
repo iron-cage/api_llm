@@ -275,7 +275,7 @@ async fn integration_error_handling_network_timeout()
   // Test with extremely large request that might timeout
   let large_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 4000, // Large response
     messages : vec![ 
       the_module::Message::user( 
@@ -326,7 +326,7 @@ async fn integration_error_handling_invalid_parameters()
   // Test with invalid temperature
   let invalid_temp_request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 10,
     messages : vec![ the_module::Message::user( "Test".to_string() ) ],
     system : None,
@@ -364,7 +364,7 @@ async fn integration_error_handling_authentication_failures()
 
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 10,
     messages : vec![ the_module::Message::user( "Test auth".to_string() ) ],
     system : None,

@@ -20,7 +20,7 @@ use crate::environment::{ HuggingFaceEnvironment, EnvironmentInterface };
 use serde::{ Deserialize, Serialize };
 use core::time::Duration;
 
-/// HuggingFace Hub API base URL — separate from the inference API base URL
+/// `HuggingFace` Hub API base URL — separate from the inference API base URL
 const HF_HUB_API_BASE : &str = "https://huggingface.co/api";
 
 /// Configuration for model waiting behavior

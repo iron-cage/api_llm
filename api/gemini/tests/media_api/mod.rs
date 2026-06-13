@@ -15,6 +15,7 @@
 
 // Import shared test utilities from common module
 mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 
 use api_gemini::models::{
@@ -202,6 +203,9 @@ mod unit_tests
 }
 
 // Sub-modules with integration tests
+#[ cfg( feature = "integration" ) ]
 mod basic_operations;
+#[ cfg( feature = "integration" ) ]
 mod advanced_features;
+#[ cfg( feature = "integration" ) ]
 mod reliability;

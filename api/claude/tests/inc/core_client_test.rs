@@ -99,7 +99,7 @@ async fn integration_client_real_api_lifecycle()
   // Test that client can make a simple API call
   let request = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 5,
     messages : vec![ the_module::Message::user( "Hi".to_string() ) ],
     system : None,
@@ -140,7 +140,7 @@ async fn integration_client_concurrent_requests()
   // Test concurrent requests with same client
   let request1 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 5,
     messages : vec![ the_module::Message::user( "Test 1".to_string() ) ],
     system : None,
@@ -152,7 +152,7 @@ async fn integration_client_concurrent_requests()
 
   let request2 = the_module::CreateMessageRequest
   {
-    model : "claude-3-5-haiku-20241022".to_string(),
+    model : "claude-haiku-4-5-20251001".to_string(),
     max_tokens : 5,
     messages : vec![ the_module::Message::user( "Test 2".to_string() ) ],
     system : None,

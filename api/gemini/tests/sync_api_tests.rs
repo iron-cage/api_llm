@@ -11,13 +11,9 @@ use core::time::Duration;
 #[ test ]
 fn test_sync_client_construction()
 {
-  let api_key = std::env::var( "GEMINI_API_KEY" )
-  .or_else( | _ | std::fs::read_to_string( "secret/gemini_api_key" ).map( | s | s.trim().to_string() ) )
-  .unwrap_or_else( | _ | "test-key".to_string() );
-
-  // Build sync client - `.expect()` provides loud failure if build fails
+  // Build sync client with placeholder key — no API call is made, so key is not validated
   let _sync_client = Client::sync_builder()
-  .api_key( api_key )
+  .api_key( "test-key".to_string() )
   .timeout( Duration::from_secs( 30 ) )
   .build()
   .expect( "Failed to build sync client" );
@@ -26,10 +22,7 @@ fn test_sync_client_construction()
 }
 
 /// Test synchronous models API functionality
-// DISABLED: 2025-11-15 by Claude
-// REASON: Requires real Gemini API credentials to test synchronous models API
-// APPROVED: self (test author)
-// TRACKING: Integration tests requiring API credentials
+#[ cfg( feature = "integration" ) ]
 #[ test ]
 fn test_sync_models_api()
 {
@@ -64,12 +57,15 @@ fn test_sync_models_api()
 }
 
 /// Test synchronous content generation functionality
+#[ cfg( feature = "integration" ) ]
 #[ test ]
 fn test_sync_content_generation()
 {
-  let api_key = std::env::var( "GEMINI_API_KEY" )
-  .or_else( | _ | std::fs::read_to_string( "secret/gemini_api_key" ).map( | s | s.trim().to_string() ) )
-  .unwrap_or_else( | _ | "test-key".to_string() );
+  use workspace_tools as workspace;
+  let ws = workspace::workspace().expect( "Failed to resolve workspace" );
+  let api_key = ws.load_secret_key( "GEMINI_API_KEY", "-secrets.sh" )
+  .or_else( |_| std::env::var( "GEMINI_API_KEY" ) )
+  .expect( "❌ GEMINI_API_KEY not found in workspace secrets or environment" );
 
   let sync_client = Client::sync_builder()
   .api_key(api_key)
@@ -98,13 +94,8 @@ fn test_sync_content_generation()
         assert!(!response.candidates.is_empty(), "Should have at least one candidate");
         println!("✅ Sync content generation successful");
       }
-      Err( api_gemini::error::Error::AuthenticationError( _ ) ) =>
-      {
-        println!( "⚠️  Authentication error (expected without valid API key)" );
-        // Test passes - authentication error is expected behavior
-      }
       Err(e) => {
-      panic!("Unexpected error type : {e:?}");
+      panic!("Sync content generation failed : {e:?}");
       }
     }
   } else {
@@ -113,12 +104,15 @@ fn test_sync_content_generation()
 }
 
 /// Test synchronous embeddings functionality
+#[ cfg( feature = "integration" ) ]
 #[ test ]
 fn test_sync_embeddings()
 {
-  let api_key = std::env::var( "GEMINI_API_KEY" )
-  .or_else( | _ | std::fs::read_to_string( "secret/gemini_api_key" ).map( | s | s.trim().to_string() ) )
-  .unwrap_or_else( | _ | "test-key".to_string() );
+  use workspace_tools as workspace;
+  let ws = workspace::workspace().expect( "Failed to resolve workspace" );
+  let api_key = ws.load_secret_key( "GEMINI_API_KEY", "-secrets.sh" )
+  .or_else( |_| std::env::var( "GEMINI_API_KEY" ) )
+  .expect( "❌ GEMINI_API_KEY not found in workspace secrets or environment" );
 
   let sync_client = Client::sync_builder()
   .api_key(api_key)
@@ -147,13 +141,8 @@ fn test_sync_embeddings()
         assert!(!response.embedding.values.is_empty(), "Should have embedding values");
         println!("✅ Sync embeddings successful");
       }
-      Err( api_gemini::error::Error::AuthenticationError( _ ) ) =>
-      {
-        println!( "⚠️  Authentication error (expected without valid API key)" );
-        // Test passes - authentication error is expected behavior
-      }
       Err(e) => {
-      panic!("Unexpected error type : {e:?}");
+      panic!("Sync embeddings failed : {e:?}");
       }
     }
   } else {
@@ -162,16 +151,18 @@ fn test_sync_embeddings()
 }
 
 /// Test synchronous runtime management and thread safety
+#[ cfg( feature = "integration" ) ]
 #[ test ]
 fn test_sync_runtime_management()
 {
   // Test that sync client can be used from multiple threads
   use std::sync::Arc;
   use std::thread;
-
-  let api_key = std::env::var( "GEMINI_API_KEY" )
-  .or_else( | _ | std::fs::read_to_string( "secret/gemini_api_key" ).map( | s | s.trim().to_string() ) )
-  .unwrap_or_else( | _ | "test-key".to_string() );
+  use workspace_tools as workspace;
+  let ws = workspace::workspace().expect( "Failed to resolve workspace" );
+  let api_key = ws.load_secret_key( "GEMINI_API_KEY", "-secrets.sh" )
+  .or_else( |_| std::env::var( "GEMINI_API_KEY" ) )
+  .expect( "❌ GEMINI_API_KEY not found in workspace secrets or environment" );
 
   let sync_client = Arc::new(
   Client::sync_builder()
@@ -194,13 +185,8 @@ fn test_sync_runtime_management()
         assert!(!models.models.is_empty(), "Thread {i} should have models");
         println!("✅ Thread {i} sync models list successful");
         }
-        Err( api_gemini::error::Error::AuthenticationError( _ ) ) =>
-        {
-        println!("⚠️  Thread {i} authentication error (expected without valid API key)");
-          // Thread passes - authentication error is expected behavior
-        }
         Err(e) => {
-      panic!("Thread {i} unexpected error type : {e:?}");
+      panic!("Thread {i} sync models list failed : {e:?}");
         }
       }
     });
@@ -215,13 +201,16 @@ fn test_sync_runtime_management()
 }
 
 /// Test synchronous streaming functionality (should be converted to blocking)
+#[ cfg( feature = "integration" ) ]
 #[ cfg( feature = "streaming" ) ]
 #[ test ]
 fn test_sync_streaming_blocking()
 {
-  let api_key = std::env::var( "GEMINI_API_KEY" )
-  .or_else( | _ | std::fs::read_to_string( "secret/gemini_api_key" ).map( | s | s.trim().to_string() ) )
-  .unwrap_or_else( | _ | "test-key".to_string() );
+  use workspace_tools as workspace;
+  let ws = workspace::workspace().expect( "Failed to resolve workspace" );
+  let api_key = ws.load_secret_key( "GEMINI_API_KEY", "-secrets.sh" )
+  .or_else( |_| std::env::var( "GEMINI_API_KEY" ) )
+  .expect( "❌ GEMINI_API_KEY not found in workspace secrets or environment" );
 
   let sync_client = Client::sync_builder()
   .api_key(api_key)
@@ -251,18 +240,8 @@ fn test_sync_streaming_blocking()
         assert!(!responses.is_empty(), "Should have streamed responses");
         println!("✅ Sync streaming successful");
       }
-      Err( api_gemini::error::Error::AuthenticationError( _ ) ) =>
-      {
-        println!( "⚠️  Authentication error (expected without valid API key)" );
-        // Test passes - authentication error is expected behavior
-      }
-      Err(api_gemini::error::Error::ApiError(msg)) if msg.contains("API key") =>
-      {
-      println!("⚠️  API key error (expected without valid API key): {msg}");
-        // Test passes - API key error is expected behavior
-      }
       Err(e) => {
-      panic!("Unexpected error type : {e:?}");
+      panic!("Sync streaming failed : {e:?}");
       }
     }
   } else {
@@ -271,12 +250,15 @@ fn test_sync_streaming_blocking()
 }
 
 /// Performance benchmark for sync wrapper overhead
+#[ cfg( feature = "integration" ) ]
 #[ test ]
 fn test_sync_wrapper_performance()
 {
-  let api_key = std::env::var( "GEMINI_API_KEY" )
-  .or_else( | _ | std::fs::read_to_string( "secret/gemini_api_key" ).map( | s | s.trim().to_string() ) )
-  .unwrap_or_else( | _ | "test-key".to_string() );
+  use workspace_tools as workspace;
+  let ws = workspace::workspace().expect( "Failed to resolve workspace" );
+  let api_key = ws.load_secret_key( "GEMINI_API_KEY", "-secrets.sh" )
+  .or_else( |_| std::env::var( "GEMINI_API_KEY" ) )
+  .expect( "❌ GEMINI_API_KEY not found in workspace secrets or environment" );
 
   // Async client for comparison
   let rt = tokio::runtime::Runtime::new().expect("Failed to create runtime");
@@ -337,18 +319,14 @@ fn test_sync_wrapper_performance()
         panic!("Failed to get model for sync test");
       }
     }
-    Err( api_gemini::error::Error::AuthenticationError( _ ) ) =>
-    {
-      println!("⚠️  Performance test skipped due to authentication error (expected without valid API key)");
-      // Test passes - authentication error is expected behavior
-    }
     Err(e) => {
-    panic!("Async call failed with unexpected error : {e:?}");
+    panic!("Async call failed in performance test : {e:?}");
     }
   }
 }
 
 /// Test error handling in synchronous context
+#[ cfg( feature = "integration" ) ]
 #[ test ]
 fn test_sync_error_handling()
 {

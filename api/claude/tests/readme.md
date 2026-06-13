@@ -280,7 +280,7 @@ async fn integration_real_api_test( )
 
     // Real API call with actual request
     let request = the_module::CreateMessageRequest {
-        model: "claude-3-5-haiku-20241022".to_string( ),
+        model: "claude-haiku-4-5-20251001".to_string( ),
         max_tokens : 10,
         messages : vec![the_module::Message::user("Test".to_string( ))],
         // ... other fields
