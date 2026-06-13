@@ -42,7 +42,7 @@ mod dynamic_configuration_tests
     assert_eq!( int_val.as_integer(), Some( 42 ) );
     assert_eq!( float_val.as_float(), Some( std::f64::consts::PI ) );
     assert_eq!( bool_val.as_boolean(), Some( true ) );
-    assert_eq!( duration_val.as_duration(), Some( Duration::from_millis( 5000 ) ) );
+    assert_eq!( duration_val.as_duration(), Some( Duration::from_secs( 5 ) ) );
   }
 
   #[ tokio::test ]

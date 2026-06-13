@@ -1,4 +1,5 @@
 //! Example of appending audio to the input buffer using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_input_audio_buffer_append`
@@ -65,13 +66,13 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
   // --- Prepare Dummy Audio Data ---
   let dummy_audio_bytes = include_bytes!("data/example.wav");
-  let audio_base64 = base64_engine.encode( &dummy_audio_bytes );
+  let audio_base64 = base64_engine.encode( dummy_audio_bytes );
 
   // 5. Prepare the client event to append the audio data.
   let iaba_append = RealtimeClientEventInputAudioBufferAppend::former()
@@ -112,13 +113,12 @@ if start_time.elapsed() > wait_duration
       }
       Ok( Err( e ) ) =>
       {
-        eprintln!("\nError reading from WebSocket : {:?}", e);
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() );
       }
       Err( _ ) =>
       {
         // Timeout elapsed for this read attempt, continue checking overall wait duration
-        continue;
       }
     }
   }

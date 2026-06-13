@@ -291,14 +291,11 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             && truncated_event.audio_end_ms == audio_end_ms_target
             // && truncated_event.content_index == 0 // Content index check removed for robustness
             {
-              println!( "Successfully received conversation.item.truncated confirmation for item {}.", item_id_to_truncate );
+              println!( "Successfully received conversation.item.truncated confirmation for item {item_id_to_truncate}." );
               confirmation_received = true;
               break; // Break after receiving confirmation
             }
-            else
-            {
-              println!( "Received truncation confirmation for a different item/parameters : {:?}", truncated_event );
-            }
+            println!( "Received truncation confirmation for a different item/parameters : {truncated_event:?}" );
           }
           // Handle server errors (e.g., item not found, invalid time)
           RealtimeServerEvent::Error( error_event ) =>
