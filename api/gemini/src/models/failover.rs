@@ -463,7 +463,7 @@ mod private
       // For now, we'll create a simplified client. In a full implementation,
       // we would extract the API key and other settings from the original client.
       let backup_client = crate::client::Client::builder()
-        .api_key( std::env::var( "GEMINI_API_KEY" ).unwrap_or_else( |_| "test-key".to_string() ) )
+        .api_key( self.client.api_key.clone() )
         .base_url( backup_endpoint.clone() )
         .build()?;
 

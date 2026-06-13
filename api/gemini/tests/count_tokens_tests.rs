@@ -27,12 +27,14 @@
 
 
 #[ path = "common/mod.rs" ] mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 
+#[ cfg( feature = "integration" ) ]
 use api_gemini::
 {
-client ::{ ClientBuilder },
-models ::{ Content, Part, CountTokensRequest, Blob },
+  client ::{ ClientBuilder },
+  models ::{ Content, Part, CountTokensRequest, Blob },
   error ::Error,
 };
 

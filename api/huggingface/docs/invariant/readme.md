@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Document non-negotiable behavioral constraints governing every implementation decision in `api_huggingface`.
-- **Responsibility**: Master file listing all invariant instances with ID, name, and enforcement status.
+- **Responsibility**: Each invariant/ instance covers one non-negotiable behavioral constraint for `api_huggingface`.
 - **In Scope**: Design-level constraints applying universally across the crate — governing principles, test mandates, policy rules.
 - **Out of Scope**: Feature-specific behaviors (see feature/), API contracts (see api/), implementation patterns (see pattern/).
 

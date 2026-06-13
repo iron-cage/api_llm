@@ -72,7 +72,6 @@ enabled = [
   "dep:serde",
   "dep:serde_with",
   "dep:serde_json",
-  "dep:serde_yml",
   "dep:base64",
   "dep:secrecy",
   "dep:urlencoding",
@@ -156,7 +155,6 @@ regex = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_with = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
-serde_yml = { workspace = true, optional = true }
 base64 = { workspace = true, optional = true }
 secrecy = { workspace = true, features = ["serde"], optional = true }
 urlencoding = { workspace = true, optional = true }

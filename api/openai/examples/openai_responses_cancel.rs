@@ -10,31 +10,31 @@
 //! Make sure you have set the `OPENAI_API_KEY` environment variable
 //! or have a `secret/-secret.sh` file with the key.
 
-use api_openai::ClientApiAccessors;
-use api_openai::exposed::
+use api_openai::
 {
+  ClientApiAccessors,
   Client,
-  OpenAIError,
   components ::
   {
     responses ::{ CreateResponseRequest, ResponseInput, ResponseStreamEvent },
     common ::ModelIdsResponses,
   },
 };
-use futures_util::stream::StreamExt;
 
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
-  // Load environment variables
-  dotenv ::from_filename("./secret/-secret.sh").ok();
-
-  println!("Initializing client...");
-  let secret = api_openai::exposed::Secret::load_from_env("OPENAI_API_KEY")
-    .unwrap_or_else(|_| api_openai::exposed::Secret::new("dummy_key".to_string()));
-  let env = api_openai::exposed::environment::OpenaiEnvironmentImpl::build(secret, None, None, api_openai::environment::OpenAIRecommended::base_url().to_string(), api_openai::environment::OpenAIRecommended::realtime_base_url().to_string())
-    .expect("Failed to create environment");
-  let client = Client::build(env).expect("Failed to create client");
+  println!( "Initializing client..." );
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 1. Create a long-running streaming response
   println!("Creating a streaming response that we can cancel...");

@@ -4,7 +4,9 @@
 //! runtime management, and synchronous client patterns.
 
 
-use api_gemini::{ client::Client, * };
+use api_gemini::client::Client;
+#[ cfg( feature = "integration" ) ]
+use api_gemini::*;
 use core::time::Duration;
 
 /// Test synchronous client construction and basic functionality
@@ -45,7 +47,7 @@ fn test_sync_models_api()
   println!( "✅ Sync models list successful" );
 
   // Synchronous model get call - just verify by_name works
-  match sync_client.models().by_name("gemini-1.5-pro-latest")
+  match sync_client.models().by_name("gemini-flash-latest")
   {
     Ok(_model) => {
       println!("✅ Sync model by_name successful");
@@ -85,7 +87,7 @@ fn test_sync_content_generation()
 
   // Test sync content generation - handle authentication errors gracefully
   let models_api = sync_client.models();
-  let model_result = models_api.by_name("gemini-1.5-pro-latest");
+  let model_result = models_api.by_name("gemini-flash-latest");
   if let Ok(model) = model_result
   {
     match model.generate_content(&request)
@@ -132,7 +134,7 @@ fn test_sync_embeddings()
 
   // Test sync embeddings - handle authentication errors gracefully
   let models_api = sync_client.models();
-  let model_result = models_api.by_name("text-embedding-004");
+  let model_result = models_api.by_name("gemini-embedding-001");
   if let Ok(model) = model_result
   {
     match model.embed_content(&request)
@@ -231,7 +233,7 @@ fn test_sync_streaming_blocking()
   // Test sync streaming - handle authentication errors gracefully
   // Should convert streaming response to collected results
   let models_api = sync_client.models();
-  let model_result = models_api.by_name("gemini-1.5-pro-latest");
+  let model_result = models_api.by_name("gemini-flash-latest");
   if let Ok(model) = model_result
   {
     match model.generate_content_stream(&request)
@@ -288,7 +290,7 @@ fn test_sync_wrapper_performance()
   // Measure async performance - handle authentication errors
   let async_start = std::time::Instant::now();
   let async_result = rt.block_on(async {
-    async_client.models().by_name("gemini-1.5-pro-latest")
+    async_client.models().by_name("gemini-flash-latest")
     .generate_content(&request).await
   });
   let async_duration = async_start.elapsed();
@@ -300,7 +302,7 @@ fn test_sync_wrapper_performance()
       // Measure sync performance
       let sync_start = std::time::Instant::now();
       let models_api = sync_client.models();
-      let model_result = models_api.by_name("gemini-1.5-pro-latest");
+      let model_result = models_api.by_name("gemini-flash-latest");
       if let Ok(model) = model_result
       {
         match model.generate_content(&request)
@@ -347,7 +349,7 @@ fn test_sync_error_handling()
   };
 
   // This should fail with authentication error
-  let result = sync_client.models().by_name("gemini-1.5-pro-latest")
+  let result = sync_client.models().by_name("gemini-flash-latest")
   .and_then(|model| model.generate_content(&request));
 
   assert!(result.is_err(), "Should fail with invalid API key");

@@ -11,14 +11,19 @@ use api_huggingface::
 {
   Client,
   environment::HuggingFaceEnvironmentImpl,
-  components::
-  {
-  embeddings::EmbeddingResponse,
-  models::Models,
-  },
+  components::embeddings::EmbeddingResponse,
+};
+use std::collections::HashMap;
+
+#[ cfg( feature = "integration" ) ]
+use api_huggingface::
+{
+  components::models::Models,
   secret::Secret,
 };
-use std::{ collections::HashMap, time::Instant };
+
+#[ cfg( feature = "integration" ) ]
+use std::time::Instant;
 
 #[ allow( missing_docs ) ]
 /// Represents a document in the search index

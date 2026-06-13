@@ -82,20 +82,3 @@ where
   Ok( results )
   }
 }
-
-#[ cfg( test ) ]
-mod tests
-{
-  use super::*;
-
-  #[ test ]
-  fn test_classification_request_creation()
-  {
-  let request = ClassificationRequest
-  {
-      inputs : "base64data".to_string(),
-  };
-
-  assert_eq!( request.inputs, "base64data" );
-  }
-}

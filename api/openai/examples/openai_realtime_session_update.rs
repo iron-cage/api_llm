@@ -10,34 +10,39 @@ use api_openai::ClientApiAccessors;
 #[ allow( unused_imports ) ]
 use api_openai::
 {
-  client ::Client,
+  Client,
   error ::OpenAIError,
-  api ::realtime::{ RealtimeClient, ws::WsSession },
   components ::realtime_shared::
   {
     RealtimeSessionCreateRequest,
     RealtimeClientEventSessionUpdate,
+    RealtimeClientEvent,
     RealtimeServerEvent,
   },
 
 };
 
-use tracing_subscriber::{ EnvFilter, fmt }; // Added for logging
 
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
   // Setup tracing for logging
-  fmt()
-  .with_env_filter( EnvFilter::from_default_env().add_directive( "api_openai=trace".parse().unwrap() ) )
-  .init();
+  tracing_subscriber::fmt::init();
 
   // Load environment variables
-  dotenv ::from_filename( "./secret/-secret.sh" ).ok();
 
   // 1. Create a new OpenAI client.
   tracing ::info!( "Initializing client..." );
-  let client = Client::new();
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 2. Create the request payload to initiate the session with initial settings.
   tracing ::info!( "Building initial realtime session request..." );
@@ -49,12 +54,12 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending request to OpenAI API to create session..." );
   // 3. Call the API endpoint to get session details.
-  let session = client.realtime().create( initial_request ).await?;
+  let session = client.realtime().create_session( initial_request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let token = session.client_secret.value;
+  let _token = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
-  let session_client  = WsSession::connect( client.environment().clone(), Some( &token ) ).await?;
+  let session_client = client.realtime().connect_ws( &session.id ).await?;
 
   // --- Prepare the session update ---
   let new_temperature = 0.9;
@@ -75,14 +80,15 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( temp = new_temperature, output_format = new_output_format, "Sending session.update event..." );
   // 7. Send the session update event over the WebSocket.
-  session_client.session_update( su_update ).await?;
+  session_client.send_event( RealtimeClientEvent::SessionUpdate( su_update ) ).await?;
 
   // 8. Loop to read responses, specifically looking for the SessionUpdated confirmation.
   tracing ::info!( "Waiting for session.updated confirmation..." );
   let mut confirmation_received = false;
   loop
   {
-    let response = session_client.read_event().await;
+    let response = session_client.recv_event().await.map( Some );
+    #[ allow( unreachable_patterns ) ]
     match response
     {
       Ok( Some( event ) ) =>
@@ -128,7 +134,7 @@ async fn main() -> Result< (), OpenAIError >
       Err( e ) =>
       {
         eprintln!( "\nError reading from WebSocket : {:?}", e );
-        return Err( e ); // Propagate the error
+        return Err( e.into() ); // Propagate the error
       }
     }
   }
@@ -136,7 +142,7 @@ async fn main() -> Result< (), OpenAIError >
   if !confirmation_received
   {
     eprintln!("Loop finished without receiving session.updated confirmation with expected changes.");
-    return Err( OpenAIError::WsInvalidMessage( "Did not receive expected session update confirmation".to_string() ) );
+    return Err( OpenAIError::WsInvalidMessage( "Did not receive expected session update confirmation".to_string() ).into() );
   }
 
   Ok( () )

@@ -1,59 +1,52 @@
-use api_openai::ClientApiAccessors;
-/*
+//! Example of listing input items for a response using the OpenAI Responses API.
+//!
+//! Demonstrates creating a response and listing its input items.
+//!
+//! Run with:
+//! `cargo run --example openai_responses_list_input_items`
+
 use api_openai::
 {
-  client ::Client,
-  error ::OpenAIError,
-  api ::responses::
-  {
-    CreateResponseRequest,
-    ResponseInput,
-  },
+  ClientApiAccessors,
+  Client,
   components ::
   {
+    responses ::{ CreateResponseRequest, ResponseInput },
     common ::{ ModelIdsResponses, ListQuery },
   },
 };
 
-#[ tokio::main ]
+#[ tokio::main( flavor = "current_thread" ) ]
 async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
-  let client = Client::new();
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
-  // First, create a response to get an ID
-  let create_request = CreateResponseRequest
-  {
-    model : ModelIdsResponses::from( "gpt-5.1-chat-latest".to_string() ),
-    input : ResponseInput::String( "Hello for list input items example!".to_string() ),
-    previous_response_id : None,
-    reasoning : None,
-    max_output_tokens : None,
-    instructions : None,
-    text : None,
-    tools : None,
-    tool_choice : None,
-    truncation : None,
-    metadata : None,
-    temperature : None,
-    top_p : None,
-    user : None,
-    include : None,
-    parallel_tool_calls : None,
-    store : None,
-    stream : None,
-  };
-  let created_response = client.responses().create( create_request ).await?;
-  let response_id = created_response.id;
-  println!( "Created response ID: {}", response_id );
+  // Create a response to list its input items
+  let request = CreateResponseRequest::former()
+    .model( ModelIdsResponses::from( "gpt-5.1-chat-latest".to_string() ) )
+    .input( ResponseInput::String( "Hello for list input items example!".to_string() ) )
+    .form();
+  let created = client.responses().create( request ).await?;
+  let response_id = created.id;
+  println!( "Created response ID : {response_id}" );
 
-  // Now, list input items for the response
-  let query = ListQuery::former().limit( 10 ).form();
+  // List input items for the response
+  let query = ListQuery { limit : Some( 10 ) };
   let input_items = client.responses().list_input_items( &response_id, Some( query ) ).await?;
-  println!( "Listed {} input items for response ID: {}", input_items.data.len(), response_id );
+  println!( "Listed {} input item(s) for response ID : {response_id}", input_items.data.len() );
 
-  // Clean up : delete the created response
+  // Clean up
   client.responses().delete( &response_id ).await?;
+  println!( "Deleted response ID : {response_id}" );
 
   Ok( () )
 }
-*/

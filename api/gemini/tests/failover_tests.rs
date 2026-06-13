@@ -1,6 +1,7 @@
 //! Failover functionality tests
 
 #[ path = "common/mod.rs" ] mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 use api_gemini::models::failover::*;
 use core::time::Duration;

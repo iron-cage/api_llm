@@ -16,11 +16,11 @@
 
 ## Goal
 
-`src/secret.rs` exposes only `load_from_env(var_name)`, which reads the API key exclusively from an environment variable. Every other crate in the workspace (api_claude, api_gemini, api_xai, api_openai) exposes a `load_with_fallbacks()` pattern that tries the env var first, then falls back to `workspace_tools::workspace()?.load_secret_key("HUGGINGFACE_API_KEY", "-secrets.sh")`. Without this fallback, contributors running integration tests locally must manually `export HUGGINGFACE_API_KEY=...` — they cannot rely on the workspace `secret/-secrets.sh` file that all other crates use. The fix adds `load_with_fallbacks()` to `src/secret.rs` following the existing workspace pattern, and updates the integration test client factory to use it. Observable outcome: `grep -n "fn load_with_fallbacks" src/secret.rs` → ≥ 1 match; `w3 .test l::3` → 0 failures, 0 warnings.
+`src/secret.rs` exposes only `load_from_env(var_name)`, which reads the API key exclusively from an environment variable. Every other crate in the workspace (api_claude, api_gemini, api_xai, api_openai) exposes a `load_with_fallbacks()` pattern that tries the env var first, then falls back to `workspace_tools::workspace()?.load_secrets_from_file( "-secrets.sh" )?` and retrieves the key via `.get( "HUGGINGFACE_API_KEY" )`. Without this fallback, contributors running integration tests locally must manually `export HUGGINGFACE_API_KEY=...` — they cannot rely on the workspace `secret/-secrets.sh` file that all other crates use. The fix adds `load_with_fallbacks()` to `src/secret.rs` following the existing workspace pattern, and updates the integration test client factory to use it. Observable outcome: `grep -n "fn load_with_fallbacks" src/secret.rs` → ≥ 1 match; `w3 .test l::3` → 0 failures, 0 warnings.
 
 ## In Scope
 
-- `src/secret.rs` — add `pub fn load_with_fallbacks() -> Result<Self, ...>` that tries `HUGGINGFACE_API_KEY` env var first, then falls back to `workspace_tools::workspace()?.load_secret_key("HUGGINGFACE_API_KEY", "-secrets.sh")`
+- `src/secret.rs` — add `pub fn load_with_fallbacks() -> Result<Self, ...>` that tries `HUGGINGFACE_API_KEY` env var first, then falls back to `workspace_tools::workspace()?.load_secrets_from_file( "-secrets.sh" )?` + `.get( "HUGGINGFACE_API_KEY" )`
 - Integration test client factory (wherever `create_test_client()` or equivalent is defined in `tests/`) — update to call `load_with_fallbacks()` instead of `load_from_env()`
 - `Cargo.toml` — verify `workspace_tools` is already in `[dependencies]`; add it if missing
 
@@ -122,9 +122,17 @@ Execute in order. Do not skip or reorder steps.
 - D3 Value / YAGNI: FAIL — YAGNI borderline: current load_from_env() is functional; no integration test currently fails without load_with_fallbacks(); the value is developer ergonomics only. No concrete failing test or user-reported defect motivates immediate implementation. Required to unblock: file a concrete failing scenario (e.g., a test that panics when HUGGINGFACE_API_KEY is not exported but is in -secrets.sh, confirmed reproducible) before re-triggering VERIFY. Alternatively, if workspace standard compliance is a stated invariant, cite the invariant document.
 - D4 Implementation Readiness: PASS — Work Procedure concrete; Test Matrix present; Acceptance Criteria machine-verifiable.
 
+**[2026-06-13 — Re-VERIFY]** VERIFY FAIL (confirmed) — D3 still blocking; AMENDED corrections did not resolve YAGNI gate. State remains ❓ (Unverified).
+- D1 Scope Coherence: PASS — In Scope and Out of Scope bounded; observable outcome grep-verifiable.
+- D2 MOST Goal Quality: PASS — Motivated, Observable, Scoped, Testable.
+- D3 Value / YAGNI: FAIL — Crate-local invariant (`docs/invariant/002_testing_standards.md`) permits the current two-path approach and does NOT mandate `load_with_fallbacks()`. `tests/inc/mod.rs` already reads workspace secrets directly via `workspace_tools` without a `Secret::load_with_fallbacks()` method — no integration test fails today. No concrete failing test, defect report, or crate-local invariant mandate has been cited. Workspace-level invariant language conflicts with crate-local invariant; that contradiction must be resolved before this task can be promoted.
+- D4 Implementation Readiness: PASS — Work Procedure ordered; Test Matrix populated; Acceptance Criteria machine-verifiable.
+
 ## History
 
 *(append-only — newest entry last; never edit or remove past entries)*
 
 - **2026-06-13** `CREATED` — Task filed by code audit session. Goal: add load_with_fallbacks() to src/secret.rs following workspace pattern (env var first, then secret/-secrets.sh via workspace_tools); update integration test client factory to use it.
 - **2026-06-13** `VERIFY FAIL` — MAAV gate blocked by D3 (YAGNI): no test currently fails without this function; value is ergonomics-only. Remains ❓ (Unverified) until a concrete failing scenario is documented.
+- **2026-06-13** `AMENDED` — corrected env var from HF_TOKEN to HUGGINGFACE_API_KEY throughout; verified against src/secret.rs, src/environment/mod.rs, and tests/ helper functions. Also corrected workspace_tools API call pattern from `load_secret_key("HUGGINGFACE_API_KEY", "-secrets.sh")` to `load_secrets_from_file( "-secrets.sh" )?.get( "HUGGINGFACE_API_KEY" )` — confirmed by tests/inc/mod.rs, tests/sync_api_tests.rs (6 call sites), and tests/embeddings_tests.rs; `load_secrets_from_file` is the method used exclusively throughout this crate.
+- **2026-06-13** `VERIFY FAIL (Re-VERIFY)` — Second MAAV run confirms D3 block unchanged. AMENDED corrections valid but do not resolve YAGNI gate. Crate-local invariant does not mandate `load_with_fallbacks()`; `tests/inc/mod.rs` already provides workspace secrets access without it. Remains ❓ (Unverified) until: (a) a concrete failing test is documented, OR (b) crate-local invariant is updated to mandate the workspace `load_with_fallbacks()` pattern.

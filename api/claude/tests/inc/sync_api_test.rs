@@ -27,12 +27,15 @@ fn test_sync_client_construction()
     // Fix(BUG-hygiene-001): Fail loudly when ANTHROPIC_API_KEY missing
     // Root cause : Silent skip when env var missing created false positive test pass
     // Previous : if let Ok(secret) silently skipped test when ANTHROPIC_API_KEY unset
-    // Fixed : .expect() fails loudly with clear message
+    // Fixed : .expect() via from_workspace() fails loudly with clear message
     // Pitfall : Never use conditional skip - always fail loudly with .expect()
 
-    // Test construction with explicit secret
-    let secret = std::env::var( "ANTHROPIC_API_KEY" )
-      .expect( "ANTHROPIC_API_KEY must be set for sync_api_test - test requires real API key" );
+    // Test construction with explicit secret from workspace
+    let secret = the_module::Client::from_workspace()
+      .expect( "workspace must have ANTHROPIC_API_KEY for sync_api_test" )
+      .secret()
+      .ANTHROPIC_API_KEY
+      .clone();
 
     let client = SyncClient::new( &secret );
     assert!( client.is_ok(), "Should construct client with valid secret" );
@@ -203,9 +206,15 @@ fn test_sync_client_timeout_configuration()
     // Fix(BUG-004): Fail loudly when builder fails
     // Root cause : Silent skip when build_from_env failed - timeout test falsely passed
     // Pitfall : Never skip configuration verification on construction failure - fail loudly
+    let ws_api_key = the_module::Client::from_workspace()
+      .expect( "workspace must have ANTHROPIC_API_KEY for timeout test" )
+      .secret()
+      .ANTHROPIC_API_KEY
+      .clone();
+
     let client = SyncClientBuilder::new()
       .timeout( Duration::from_secs( 30 ) )
-      .build_from_env()
+      .build( &ws_api_key )
       .expect( "Client builder with timeout must succeed for timeout configuration test" );
 
     assert!( client.get_timeout() == Duration::from_secs( 30 ), "Timeout should be configured" );
@@ -215,7 +224,7 @@ fn test_sync_client_timeout_configuration()
     // Pitfall : Never skip timeout behavior verification - fail loudly to detect construction issues
     let client = SyncClientBuilder::new()
       .timeout( Duration::from_millis( 1 ) )
-      .build_from_env()
+      .build( &ws_api_key )
       .expect( "Client builder with short timeout must succeed for timeout behavior test" );
 
     let mut request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
@@ -257,8 +266,8 @@ mod sync_api_runtime_tests
   {
     use the_module::SyncClient;
 
-    let client = Arc::new( SyncClient::from_env()
-      .expect( "INTEGRATION: API key must be available for thread safety test" ) );
+    let client = Arc::new( SyncClient::from_workspace()
+      .expect( "INTEGRATION: workspace must have ANTHROPIC_API_KEY for thread safety test" ) );
 
     let results = Arc::new( Mutex::new( Vec::new() ) );
     let mut handles = vec![];
@@ -327,8 +336,8 @@ mod sync_api_runtime_tests
   {
     use the_module::{ SyncClient, CreateMessageRequest };
 
-    let client = SyncClient::from_env()
-      .expect( "INTEGRATION: API key must be available for blocking behavior test" );
+    let client = SyncClient::from_workspace()
+      .expect( "INTEGRATION: workspace must have ANTHROPIC_API_KEY for blocking behavior test" );
 
     let mut request = CreateMessageRequest::new( "claude-haiku-4-5-20251001" );
     request.add_user_message( "Count to 3" );
@@ -361,10 +370,10 @@ mod sync_api_integration_tests
     use the_module::{ SyncClient, Client, CreateMessageRequest };
 
     // Both sync and async clients must be constructable simultaneously
-    let sync_client = SyncClient::from_env()
-      .expect( "INTEGRATION: API key must be available for sync interoperability test" );
-    let async_client = Client::from_env()
-      .expect( "INTEGRATION: API key must be available for async interoperability test" );
+    let sync_client = SyncClient::from_workspace()
+      .expect( "INTEGRATION: workspace must have ANTHROPIC_API_KEY for sync interoperability test" );
+    let async_client = Client::from_workspace()
+      .expect( "INTEGRATION: workspace must have ANTHROPIC_API_KEY for async interoperability test" );
 
     // Both clients must agree on key presence
     assert!( sync_client.has_api_key() == async_client.api_key().is_some(),
@@ -389,8 +398,8 @@ mod sync_api_integration_tests
   {
     use the_module::{ SyncClient, CreateMessageRequest };
 
-    let client = SyncClient::from_env()
-      .expect( "INTEGRATION: API key must be available for performance overhead test" );
+    let client = SyncClient::from_workspace()
+      .expect( "INTEGRATION: workspace must have ANTHROPIC_API_KEY for performance overhead test" );
 
     let mut times = Vec::new();
 
@@ -466,10 +475,10 @@ fn test_sync_error_handling()
     // Fix(BUG-hygiene-005): Fail loudly when client unavailable for invalid model test
     // Root cause : Silent skip when from_env failed - invalid model error handling test falsely passed
     // Previous : if let Ok silently skipped model validation test when client construction failed
-    // Fixed : .expect() fails loudly with clear message about model validation requirement
+    // Fixed : .expect() via from_workspace() fails loudly with clear message
     // Pitfall : Never skip error handling verification - fail loudly to ensure test executes
-    let client = SyncClient::from_env()
-      .expect( "Client must be available from environment for invalid model error handling test" );
+    let client = SyncClient::from_workspace()
+      .expect( "workspace must have ANTHROPIC_API_KEY for invalid model error handling test" );
 
     let mut request = CreateMessageRequest::new( "invalid-model-name" );
     request.add_user_message( "Hello!" );

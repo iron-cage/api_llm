@@ -1,11 +1,15 @@
 //! Dynamic configuration functionality tests
 
 #[ path = "common/mod.rs" ] mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 use api_gemini::models::config::*;
+#[ cfg( feature = "integration" ) ]
 use api_gemini::error::Error;
 use std::time::Duration;
+#[ cfg( feature = "integration" ) ]
 use std::sync::{ Arc, Mutex };
+#[ cfg( feature = "integration" ) ]
 use tokio::time::timeout;
 
 #[ cfg( feature = "integration" ) ]

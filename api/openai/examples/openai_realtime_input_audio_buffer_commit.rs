@@ -14,14 +14,14 @@ use api_openai::ClientApiAccessors;
 #[ allow( unused_imports ) ]
 use api_openai::
 {
-  client ::Client,
+  Client,
   error ::OpenAIError,
-  api ::realtime::{ RealtimeClient, ws::WsSession },
   components ::realtime_shared::
   {
     RealtimeSessionCreateRequest,
     RealtimeClientEventInputAudioBufferAppend,
     RealtimeClientEventInputAudioBufferCommit,
+    RealtimeClientEvent,
     RealtimeServerEvent,
     RealtimeSessionTurnDetection,
     RealtimeSessionInputAudioTranscription,
@@ -30,26 +30,31 @@ use api_openai::
 };
 
 
-use tracing_subscriber::{ EnvFilter, fmt }; // Added for logging
 use base64::{ engine::general_purpose::STANDARD as base64_engine, Engine as _ }; // For base64 encoding
 use std::sync::{ Arc, Mutex };
 use tokio::time::{ sleep, Duration }; // For adding delays
 use std::io::{ Write, stdout }; // For flushing print output
 
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
   // Setup tracing for logging
-  fmt()
-  .with_env_filter( EnvFilter::from_default_env().add_directive( "api_openai=trace".parse().unwrap() ) )
-  .init();
+  tracing_subscriber::fmt::init();
 
   // Load environment variables
-  dotenv ::from_filename( "./secret/-secret.sh" ).ok();
 
   // 1. Create a new OpenAI client.
   tracing ::info!( "Initializing client..." );
-  let client = Client::new();
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 2. Create the request payload to initiate the session.
   tracing ::info!( "Building realtime session request..." );
@@ -70,14 +75,14 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending request to OpenAI API to create session..." );
   // 3. Call the API endpoint to get session details.
-  let session = client.realtime().create( request ).await?;
+  let session = client.realtime().create_session( request ).await?;
   tracing ::info!( session_id = %session.id, "Session created." );
 
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let token = session.client_secret.value;
+  let _token = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
-  let session_client  = WsSession::connect( client.environment().clone(), Some( &token ) ).await?;
+  let session_client = client.realtime().connect_ws( &session.id ).await?;
   tracing ::info!( "WebSocket client connected." );
 
 
@@ -89,7 +94,7 @@ async fn main() -> Result< (), OpenAIError >
   .audio( audio_base64 )
   .form();
   tracing ::info!( "Sending input_audio_buffer.append event..." );
-  session_client.input_audio_buffer_append( append_event ).await?;
+  session_client.send_event( RealtimeClientEvent::InputAudioBufferAppend( append_event ) ).await?;
 
   // Allow a moment for the server to process the append.
   tracing ::info!( "Waiting after append..." );
@@ -105,7 +110,7 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( event_id = %client_event_id, "Sending input_audio_buffer.commit event..." );
   // 6. Send the commit event over the WebSocket.
-  session_client.input_audio_buffer_commit( commit_event ).await?;
+  session_client.send_event( RealtimeClientEvent::InputAudioBufferCommit( commit_event ) ).await?;
 
 
   // 7. Loop to read responses, looking for commit confirmation AND the resulting user message creation.
@@ -129,19 +134,15 @@ async fn main() -> Result< (), OpenAIError >
       return Err( OpenAIError::WsInvalidMessage(
         format!( "Timeout waiting for commit/create confirmations (commit_confirmed : {}, item_created_confirmed : {})",
         commit_confirmed, item_created_confirmed
-      )));
+      ) ).into() );
     }
 
     // Use timeout for reading to avoid blocking forever if connection stalls
     let read_timeout = Duration::from_millis(500);
-    match tokio::time::timeout( read_timeout, session_client.read_event() ).await
+    match tokio::time::timeout( read_timeout, session_client.recv_event() ).await
     {
-      Ok( response_result ) => // Read successful within timeout
+      Ok( Ok( event ) ) => // Successfully received and deserialized an event
       {
-        match response_result
-        {
-          Ok( Some( event ) ) => // Successfully received and deserialized an event
-          {
             match event
             {
               RealtimeServerEvent::InputAudioBufferCommitted( committed_event ) =>
@@ -215,35 +216,28 @@ if error_event.error.event_id.as_deref() == Some(&client_event_id)
 {
                   eprintln!("Server error explicitly linked to our commit request (event_id : {}).", client_event_id);
                   // Return the specific API error
-                  return Err(OpenAIError::WsInvalidMessage
-                  (format!("Commit failed : type={}, code={:?}, message={}",
-                    error_event.error.r#type, error_event.error.code, error_event.error.message
-                  )));
+                  return Err( OpenAIError::WsInvalidMessage(
+                    format!( "Commit failed : type={}, code={:?}, message={}",
+                      error_event.error.r#type, error_event.error.code, error_event.error.message
+                  ) ).into() );
                 } else if error_event.error.message.to_lowercase().contains("commit")
                 {
                   eprintln!("Server error message mentions 'commit'.");
-                    return Err( OpenAIError::WsInvalidMessage
-                    (format!("Commit likely failed : type={}, code={:?}, message={}",
-                      error_event.error.r#type, error_event.error.code, error_event.error.message
-                  )));
+                    return Err( OpenAIError::WsInvalidMessage(
+                      format!( "Commit likely failed : type={}, code={:?}, message={}",
+                        error_event.error.r#type, error_event.error.code, error_event.error.message
+                  ) ).into() );
                 }
                 // Otherwise, log as a general error but continue waiting for confirmations if needed
                }
               // Handle other events not explicitly checked above
               _ => { println!( "\n--- Received Other Event --- \n{event:?}" ); }
             }
-          }
-          Ok( None ) => // WebSocket closed
-          {
-            println!( "\nWebSocket connection closed by server." );
-            break; // Exit loop
-          }
-          Err( e ) => // Error during WebSocket read/deserialization
-          {
-            eprintln!( "\nError reading from WebSocket : {:?}", e );
-            return Err( e ); // Propagate the error
-          }
-        }
+      }
+      Ok( Err( e ) ) => // Error during WebSocket read/deserialization
+      {
+        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        return Err( e.into() ); // Propagate the error
       }
       Err( _elapsed ) => // Read timed out
       {
@@ -259,12 +253,12 @@ if error_event.error.event_id.as_deref() == Some(&client_event_id)
   {
     eprintln!("Loop finished without receiving full confirmation (commit : {}, item_created : {}).", commit_confirmed, item_created_confirmed);
     // Determine if connection closed prematurely or confirmations just weren't received
-    if session_client.read_event().await.is_ok() { // Check if connection is still technically open
-         return Err( OpenAIError::WsInvalidMessage( "Did not receive expected commit/create confirmations".to_string() ) );
+    if session_client.recv_event().await.is_ok() { // Check if connection is still technically open
+         return Err( OpenAIError::WsInvalidMessage( "Did not receive expected commit/create confirmations".to_string() ).into() );
     }
     else
     {
-         return Err( OpenAIError::WsConnectionClosed ); // Assume closed if read fails now
+         return Err( OpenAIError::Ws( "WebSocket connection closed".to_string() ).into() ); // Assume closed if read fails now
     }
   }
 

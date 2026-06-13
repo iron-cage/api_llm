@@ -65,12 +65,12 @@ where
   validate_model_identifier( model_id )?;
   
   let request = EmbeddingRequest::new( input_text );
-  let endpoint = format!( "/models/{model_id}" );
+  let endpoint = format!( "models/{model_id}" );
   let url = self.client.environment.endpoint_url( &endpoint )?;
-  
+
   self.client.post( url.as_str(), &request ).await
   }
-  
+
   /// Create embeddings for multiple texts
   ///
   /// # Arguments
@@ -93,12 +93,12 @@ where
   validate_model_identifier( model_id )?;
   
   let request = EmbeddingRequest::new_batch( inputs );
-  let endpoint = format!( "/models/{model_id}" );
+  let endpoint = format!( "models/{model_id}" );
   let url = self.client.environment.endpoint_url( &endpoint )?;
-  
+
   self.client.post( url.as_str(), &request ).await
   }
-  
+
   /// Create an embedding with custom options
   ///
   /// # Arguments
@@ -124,12 +124,12 @@ where
   validate_model_identifier( model_id )?;
   
   let request = EmbeddingRequest::new( input_text ).with_options( options );
-  let endpoint = format!( "/models/{model_id}" );
+  let endpoint = format!( "models/{model_id}" );
   let url = self.client.environment.endpoint_url( &endpoint )?;
-  
+
   self.client.post( url.as_str(), &request ).await
   }
-  
+
   /// Create embeddings using the feature extraction pipeline
   ///
   /// # Arguments
@@ -158,8 +158,8 @@ where
   "task": "feature-extraction"
       }
   });
-  
-  let endpoint = format!( "/models/{model_id}" );
+
+  let endpoint = format!( "models/{model_id}" );
   let url = self.client.environment.endpoint_url( &endpoint )?;
   
   self.client.post( url.as_str(), &request ).await

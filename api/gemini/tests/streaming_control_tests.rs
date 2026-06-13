@@ -1,10 +1,13 @@
 //! Streaming control functionality tests
 
 #[ path = "common/mod.rs" ] mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 use api_gemini::models::streaming_control::*;
 use std::time::Duration;
+#[ cfg( feature = "integration" ) ]
 use tokio::time::timeout;
+#[ cfg( feature = "integration" ) ]
 use futures::stream;
 
 #[ cfg( feature = "integration" ) ]

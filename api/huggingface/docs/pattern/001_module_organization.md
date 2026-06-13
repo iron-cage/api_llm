@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the `mod_interface` module structure pattern that all `api_huggingface` source modules must follow.
-- **Responsibility**: All contributors; deviations require explicit code-review justification before merging.
+- **Responsibility**: mod_interface module structure — inline private block, mod_interface! re-exports, subdirectory conventions.
 - **In Scope**: Every `.rs` file and directory under `src/` — module declarations, public re-exports, submodule structure.
 - **Out of Scope**: Test files in `tests/`, example files in `examples/`.
 
@@ -27,6 +27,24 @@ Apply to every `.rs` file and directory under `src/`. Do not use this pattern in
 
 **Benefits**: Public API surface is explicit and auditable. Feature gating is centralized. Accidental exposure is prevented. **Trade-offs**: Requires `mod_interface` macro overhead in individual feature modules. Subdirectory `mod.rs` files have mixed conventions — some use `mod_interface!`, others use standard `pub mod`/`pub use`.
 
+### APIs
+
+| File | Relationship |
+|------|--------------|
+| `api/001_reference.md` | Defines the public API surface that this module pattern exposes |
+
+### Features
+
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Enterprise feature modules follow this pattern with feature-gated `pub mod` declarations |
+
+### Invariants
+
+| File | Relationship |
+|------|--------------|
+| `invariant/001_thin_client_principle.md` | Governs explicit API exposure — no accidental re-exports permitted |
+
 ### Sources
 
 | File | Relationship |
@@ -43,21 +61,3 @@ Apply to every `.rs` file and directory under `src/`. Do not use this pattern in
 | `tests/client_tests.rs` | Verifies public API surface exposed by `mod_interface` re-exports compiles correctly |
 | `tests/components_tests.rs` | Verifies shared component types are accessible via module re-exports |
 | `tests/docs/pattern/01_module_organization.md` | GWT spec scenarios for this doc instance |
-
-### APIs
-
-| File | Relationship |
-|------|--------------|
-| `api/001_reference.md` | Defines the public API surface that this module pattern exposes |
-
-### Invariants
-
-| File | Relationship |
-|------|--------------|
-| `invariant/001_thin_client_principle.md` | Governs explicit API exposure — no accidental re-exports permitted |
-
-### Features
-
-| File | Relationship |
-|------|--------------|
-| `feature/001_enterprise_reliability.md` | Enterprise feature modules follow this pattern with feature-gated `pub mod` declarations |

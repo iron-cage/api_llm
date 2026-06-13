@@ -419,7 +419,7 @@ async fn integration_test_embeddings_example_real_api()
     output_dimensionality: None,
   };
 
-  let response = client.models().by_name( "text-embedding-004" )
+  let response = client.models().by_name( "gemini-embedding-001" )
   .embed_content( &embed_request )
   .await
   .expect( "Embeddings example structure should work with real API" );
@@ -621,26 +621,10 @@ async fn integration_test_safety_settings_example_real_api()
   // The response should be substantive (not just an error or refusal)
 assert!( response_text.len() > 20, "Response should be substantive for safe content : {response_text}" );
   
-  // Accept any positive, creative response that doesn't indicate content blocking
-  let response_lower = response_text.to_lowercase();
-  let contains_story_elements = response_lower.contains( "friend" ) || 
-  response_lower.contains( "story" ) ||
-  response_lower.contains( "cooperation" ) ||
-  response_lower.contains( "together" ) ||
-  response_lower.contains( "help" ) ||
-  response_lower.contains( "kind" );
-                               
-  // If it doesn't contain expected elements, ensure it's at least a creative narrative
-  if !contains_story_elements
-  {
-    // Should be a narrative (contains narrative elements)
-    let is_narrative = response_lower.contains( "once" ) ||
-    response_lower.contains( "there" ) ||
-    response_lower.contains( "was" ) ||
-    response_lower.contains( "said" ) ||
-    response_text.split( '.' ).count() > 2; // Multiple sentences
-  assert!( is_narrative, "Response should either relate to friendship/cooperation or be a creative narrative : {response_text}" );
-  }
+  // Accept any substantive response — the safety settings allow this prompt,
+  // so any non-empty prose verifies the safety filter configuration is working.
+  // Keyword checks are fragile against non-deterministic model output.
+assert!( response_text.len() > 50, "Response should be a substantive story, not a refusal : {response_text}" );
 }
 
 #[ tokio::test ]

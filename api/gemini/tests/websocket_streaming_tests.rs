@@ -1,9 +1,11 @@
 //! WebSocket streaming functionality tests
 
 #[ path = "common/mod.rs" ] mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 use api_gemini::models::websocket_streaming::*;
 use std::time::Duration;
+#[ cfg( feature = "integration" ) ]
 use tokio::time::timeout;
 
 #[ cfg( feature = "integration" ) ]

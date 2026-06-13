@@ -11,7 +11,7 @@
 | OP-08 | Vision requires base64-encoded inline_data Part | procedure step | ✅ |
 | OP-09 | Function calling uses FunctionDeclaration with JSON schema | procedure step | ✅ |
 | OP-10 | System instructions set via system_instruction field | procedure step | ✅ |
-| OP-11 | Embeddings use text-embedding-004 and return Vec<f32> | procedure step | ✅ |
+| OP-11 | Embeddings use gemini-embedding-001 and return Vec<f32> | procedure step | ✅ |
 | OP-12 | Sync API requires sync_api feature and sync_builder | procedure step | ✅ |
 | OP-13 | Safety settings add 15-17 seconds to response time | timing note | ✅ |
 | OP-14 | All operations return typed Result; no state modified | expected outcome | ✅ |
@@ -58,11 +58,11 @@
 
 ---
 
-### OP-11: Embeddings use text-embedding-004 and return Vec<f32>
+### OP-11: Embeddings use gemini-embedding-001 and return Vec<f32>
 
 - **Given:** Text content to be embedded for semantic search or comparison
-- **When:** `embed_content()` is called on the text-embedding-004 model
-- **Then:** An `EmbedContentRequest` is constructed with `content: Content { parts: [text_part], role: "user" }` and `task_type: Some("RETRIEVAL_DOCUMENT")`; the response `embedding.values` is a `Vec<f32>` with 768 dimensions for the text-embedding-004 model
+- **When:** `embed_content()` is called on the gemini-embedding-001 model
+- **Then:** An `EmbedContentRequest` is constructed with `content: Content { parts: [text_part], role: "user" }` and `task_type: Some("RETRIEVAL_DOCUMENT")`; the response `embedding.values` is a `Vec<f32>` with 768 dimensions for the gemini-embedding-001 model
 
 ---
 

@@ -50,7 +50,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "text-embedding-004" );
+  /// let model = models_api.by_name( "gemini-embedding-001" );
   ///
   /// // Create embedding for search query
   /// let request = EmbedContentRequest {
@@ -107,7 +107,7 @@ impl ModelApi< '_ >
     }
 
     let url = format!(
-      "{}/v1/models/{}:embedContent",
+      "{}/v1beta/models/{}:embedContent",
       self.client.base_url,
       self.model_id
     );
@@ -151,7 +151,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "text-embedding-004" );
+/// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// let embedding = model.embed_text( "Hello, world!" ).await?;
   /// println!( "Generated embedding with {} dimensions", embedding.len() );
@@ -214,7 +214,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "text-embedding-004" );
+/// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// // Embed a search query
   /// let query_embedding = model.embed_text_with_task(
@@ -306,7 +306,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "text-embedding-004" );
+/// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// let texts = vec![
   ///   "First document to embed".to_string(),
@@ -391,7 +391,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "text-embedding-004" );
+/// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// let embed1 = model.embed_text( "machine learning" ).await?;
   /// let embed2 = model.embed_text( "artificial intelligence" ).await?;
@@ -469,7 +469,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-/// let model = models_api.by_name( "text-embedding-004" );
+/// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// let embedding = model.embedding_request()
   ///   .with_text( "Advanced machine learning techniques" )
@@ -525,7 +525,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "text-embedding-004" );
+  /// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// let texts = vec![
   ///   "Hello world",
@@ -650,7 +650,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "text-embedding-004" );
+  /// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// let contents = vec![
   ///   Content {
@@ -737,7 +737,7 @@ impl ModelApi< '_ >
   /// # async fn main() -> Result< (), Box< dyn std::error::Error > > {
   /// let client = Client::new()?;
   /// let models_api = client.models();
-  /// let model = models_api.by_name( "text-embedding-004" );
+  /// let model = models_api.by_name( "gemini-embedding-001" );
   /// 
   /// let texts = vec![ "Text 1", "Text 2" ];
   /// let embeddings = model

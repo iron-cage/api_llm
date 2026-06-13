@@ -52,7 +52,7 @@
 ### FT-05: Embed Content endpoint returns embedding values
 
 - **Given:** A `Client` with a valid API key; an `EmbedContentRequest` with a text `Part` and `task_type: Some("RETRIEVAL_DOCUMENT")`
-- **When:** `client.models().by_name("models/text-embedding-004").embed_content(&request).await` is called
+- **When:** `client.models().by_name("models/gemini-embedding-001").embed_content(&request).await` is called
 - **Then:** An `EmbedContentResponse` is returned with `embedding.values` as a non-empty `Vec<f32>`; the request targets `POST /v1beta/models/{model}:embedContent`
 
 ---

@@ -16,13 +16,13 @@
 use api_openai::ClientApiAccessors;
 use api_openai::
 {
-  client ::Client,
+  Client,
   error ::OpenAIError,
-  api ::realtime::{ RealtimeClient, ws::WsSession },
   components ::realtime_shared::
   {
     RealtimeTranscriptionSessionCreateRequest,
     RealtimeClientEventTranscriptionSessionUpdate,
+    RealtimeClientEvent,
     RealtimeServerEvent,
     RealtimeSessionInputAudioTranscription,
   },
@@ -30,22 +30,27 @@ use api_openai::
 };
 
 
-use tracing_subscriber::{ EnvFilter, fmt }; // Added for logging
 
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
   // Setup tracing for logging
-  fmt()
-  .with_env_filter( EnvFilter::from_default_env().add_directive( "api_openai=trace".parse().unwrap() ) )
-  .init();
+  tracing_subscriber::fmt::init();
 
   // Load environment variables
-  dotenv ::from_filename( "./secret/-secret.sh" ).ok();
 
   // 1. Create a new OpenAI client.
   tracing ::info!( "Initializing client..." );
-  let client = Client::new();
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 2. **WARNING:** Creating a standard session here. A real transcription update
   //    scenario requires creating a transcription session via the REST API first.
@@ -57,12 +62,12 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending request to OpenAI API to create standard session..." );
   // 3. Call the API endpoint to get session details.
-  let session = client.realtime().create_transcription( initial_request ).await?;
+  let session = client.realtime().create_transcription_session( initial_request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let token = session.client_secret.expect("Client secret").value;
+  let _token = session.client_secret.expect("Client secret").value;
   // 4. Establish the WebSocket connection using the session token.
-  let session_client  = WsSession::connect( client.environment().clone(), Some( &token ) ).await?;
+  let session_client = client.realtime().connect_ws( &session.id ).await?;
 
   // --- Prepare the transcription session update ---
   let new_model = "gpt-4o-transcribe";
@@ -88,7 +93,7 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( language = new_language, "Sending transcription_session.update event..." );
   // 7. Send the transcription session update event over the WebSocket.
-  session_client.transcription_session_update( tsu_update ).await?;
+  session_client.send_event( RealtimeClientEvent::TranscriptionSessionUpdate( tsu_update ) ).await?;
 
   // 8. Loop to read responses. We expect either TranscriptionSessionUpdated (if context was correct)
   //    or an Error (more likely given the standard session setup).
@@ -98,7 +103,8 @@ async fn main() -> Result< (), OpenAIError >
 
   loop
   {
-    let response = session_client.read_event().await;
+    let response = session_client.recv_event().await.map( Some );
+    #[ allow( unreachable_patterns ) ]
     match response
     {
       Ok( Some( event ) ) =>
@@ -158,7 +164,7 @@ async fn main() -> Result< (), OpenAIError >
       Err( e ) =>
       {
         eprintln!( "\nError reading from WebSocket : {:?}", e );
-        return Err( e ); // Propagate the error
+        return Err( e.into() ); // Propagate the error
       }
     }
   }
@@ -167,7 +173,7 @@ async fn main() -> Result< (), OpenAIError >
   if !confirmation_received && !error_received
   {
     eprintln!( "Loop finished without receiving transcription_session.updated or an expected error." );
-    return Err( OpenAIError::WsInvalidMessage( "Did not receive expected transcription update confirmation or relevant error".to_string() ) );
+    return Err( OpenAIError::WsInvalidMessage( "Did not receive expected transcription update confirmation or relevant error".to_string() ).into() );
   }
 
 if confirmation_received

@@ -3,31 +3,54 @@
 ### Scope
 
 - **Purpose**: Document the enterprise reliability capability group — the set of opt-in features that add production resilience to `api_huggingface` without automatic activation.
-- **Responsibility**: All contributors; changes to reliability feature behavior require updating this instance before merge.
+- **Responsibility**: Enterprise reliability feature group — contracts, activation requirements, and interaction rules.
 - **In Scope**: Circuit breaker, rate limiting, failover, health checks, caching, performance metrics, token counting, dynamic configuration — their contracts, activation requirements, and interaction rules.
 - **Out of Scope**: Core inference API behavior, authentication, streaming control, vision/audio APIs.
 
-### Design
+### Contract
 
-The enterprise reliability features form a Tier 2 capability group. All features require explicit Cargo feature flag activation and explicit developer construction at call sites — no automatic behaviors occur. Features are independent (each can be activated alone) but share the `reliability` base module as a dependency. Caching and performance metrics depend only on `client`. Token counting and dynamic configuration depend on `reliability`.
+The enterprise reliability features form a Tier 2 capability group. All features require explicit Cargo feature flag activation and explicit developer construction at call sites — no automatic behaviors occur. Features are independent — each can be activated in isolation. `caching`, `performance-metrics`, and `token-counting` depend only on `client`; `circuit-breaker`, `rate-limiting`, `failover`, `health-checks`, and `dynamic-config` also depend on the `reliability` base module.
 
 Each feature provides a dedicated type (`CircuitBreaker`, `RateLimiter`, `FailoverManager`, `HealthChecker`, `Cache`, `MetricsCollector`, `TokenCounter`, `DynamicConfig`) that the caller constructs and wraps around API calls. No feature intercepts API calls transparently.
 
-### Activation Requirements
+### Activation
 
 Every enterprise feature requires two conditions: (1) the Cargo feature flag enabled in `Cargo.toml`, and (2) explicit developer construction and invocation of the feature type at the call site.
+
+### Interaction Rules
+
+Enterprise features are independent — each can be enabled in isolation without enabling others. `circuit-breaker`, `rate-limiting`, `failover`, `health-checks`, and `dynamic-config` depend on the `reliability` base module, which must be included when any of these are enabled. `caching`, `performance-metrics`, and `token-counting` depend only on `client` and do not require `reliability`. No two features share runtime state — each maintains isolated internal state and does not observe or affect the behavior of others.
+
+### APIs
+
+| File | Relationship |
+|------|--------------|
+| `api/001_reference.md` | Documents all client operations governed by this enterprise reliability feature group |
+
+### Collections
+
+| File | Relationship |
+|------|--------------|
+| `collection/001_features.md` | Authoritative catalog of all Tier 2 enterprise feature flags governed by this instance |
 
 ### Invariants
 
 | File | Relationship |
 |------|--------------|
 | `invariant/001_thin_client_principle.md` | Governs all enterprise features — explicit opt-in only, no automatic activation |
+| `invariant/002_testing_standards.md` | Enterprise features must be tested with real API calls under this invariant |
 
 ### Operations
 
 | File | Relationship |
 |------|--------------|
 | `operation/001_features.md` | Feature selection and verification procedure for enabling enterprise features |
+
+### Patterns
+
+| File | Relationship |
+|------|--------------|
+| `pattern/001_module_organization.md` | Defines the module structure all enterprise feature modules must follow |
 
 ### Sources
 

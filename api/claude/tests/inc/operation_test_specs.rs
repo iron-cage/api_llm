@@ -12,10 +12,19 @@ use super::*;
 #[ test ]
 fn test_op_01()
 {
-  let key = std::env::var( "ANTHROPIC_API_KEY" )
-    .expect( "INTEGRATION: ANTHROPIC_API_KEY must be set in process environment" );
+  // Load key from workspace, set env var, then verify from_env() reads it correctly
+  let ws_client = the_module::Client::from_workspace()
+    .expect( "INTEGRATION: workspace must have ANTHROPIC_API_KEY to test from_env() path" );
+  let key = ws_client.secret().ANTHROPIC_API_KEY.clone();
+  let saved = std::env::var( "ANTHROPIC_API_KEY" ).ok();
+  std::env::set_var( "ANTHROPIC_API_KEY", &key );
   let client = the_module::Client::from_env()
     .expect( "INTEGRATION: Client::from_env() must succeed when ANTHROPIC_API_KEY is set" );
+  match saved
+  {
+    Some( k ) => std::env::set_var( "ANTHROPIC_API_KEY", k ),
+    None => std::env::remove_var( "ANTHROPIC_API_KEY" ),
+  }
   assert_eq!( client.secret().ANTHROPIC_API_KEY, key );
 }
 
@@ -107,10 +116,18 @@ fn test_op_08()
 #[ test ]
 fn test_op_09()
 {
-  let client_env = the_module::Client::from_env()
-    .expect( "INTEGRATION: Client::from_env() must succeed with ANTHROPIC_API_KEY set" );
+  // Load from workspace first, set env var to same key, then verify from_env() matches
   let client_ws = the_module::Client::from_workspace()
     .expect( "INTEGRATION: Client::from_workspace() must succeed with valid secrets file" );
+  let saved = std::env::var( "ANTHROPIC_API_KEY" ).ok();
+  std::env::set_var( "ANTHROPIC_API_KEY", &client_ws.secret().ANTHROPIC_API_KEY );
+  let client_env = the_module::Client::from_env()
+    .expect( "INTEGRATION: Client::from_env() must succeed when ANTHROPIC_API_KEY is set" );
+  match saved
+  {
+    Some( k ) => std::env::set_var( "ANTHROPIC_API_KEY", k ),
+    None => std::env::remove_var( "ANTHROPIC_API_KEY" ),
+  }
   assert_eq!(
     client_env.secret().ANTHROPIC_API_KEY,
     client_ws.secret().ANTHROPIC_API_KEY,

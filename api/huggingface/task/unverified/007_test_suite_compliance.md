@@ -173,6 +173,13 @@ Execute in order. Do not skip or reorder steps.
 - D4 Implementation Readiness: PASS — Work Procedure steps are concrete and executable for each individual violation category; Test Matrix has 9 rows.
 - **Required to unblock:** Split into individual tasks (one per violation category: V01/V02/V03+V04/V05/V07); raise each to Priority ≥ 2; verify V05 line numbers against current codebase. OR: raise Priority to ≥ 2 AND narrow scope to a single violation category.
 
+**[2026-06-13 — Re-VERIFY]** VERIFY FAIL (confirmed + expanded) — D1, D2, D3 still blocking; mechanical checks reveal multiple stale claims. State remains ❓ (Unverified).
+- D1 Scope Coherence: FAIL (confirmed) — Task still bundles 5 independent violation categories; structural bundling issue unaddressed.
+- D2 MOST Goal Quality: FAIL (confirmed) — No single MOST-compliant goal; 5 disjoint observable outcomes; structural issue unaddressed.
+- D3 Value / YAGNI: FAIL (confirmed + expanded) — Priority remains 1 (< 2 required). Mechanical checks reveal: V05 stale ("gpt2" at lines 441/473 already corrected — only occurrence is line 129 in unit test `test_model_identifier_validation`); V03/V04 stale (get_api_key_* helpers already consolidated — exactly 1 definition each in `tests/inc/mod.rs`); V07 stale (`src/reliability/circuit_breaker.rs` is 322 lines with no inline test block; claimed lines 323-500 do not exist); V06 factual error (`tests/providers_api_integration_test.rs` was NOT deleted — file exists and is properly gated). Only V01 and V02 remain potentially valid and require fresh audit.
+- D4 Implementation Readiness: PASS — Work Procedure steps concrete; Test Matrix populated.
+- **Required to unblock (updated):** (1) Raise Priority to ≥ 2; (2) Run fresh audit to confirm which violations among V01/V02 still apply and at which file/line locations; (3) Rewrite task scope around surviving violations only (V03/V04/V05/V07/V06 all stale); (4) Split into individual tasks per surviving category OR narrow to one category.
+
 ## History
 
 *(append-only — newest entry last; never edit or remove past entries)*
@@ -181,3 +188,4 @@ Execute in order. Do not skip or reorder steps.
 - **2026-06-13** `REVISED` — MAAV (4 agents) identified 8 actionable issues.
 - **2026-06-13** `NOTE` — V06 pre-resolved: `tests/providers_api_integration_test.rs` was deleted before task execution (git status: `D`). No implementation work needed for this violation category. Applied corrections: removed non-existent file exclusion; clarified module-level gate compliance; scoped V06 to lines 441/473 only (line 127 preserved); added C10 AC for V02; clarified step 4 (no unit test gating); corrected step 6 replacement to string literal; removed create_test_client from consolidation scope; specified single test function for fn main() conversion.
 - **2026-06-13** `VERIFY FAIL` — MAAV gate blocked by D1 (bundles 6 independent deliverables), D2 (no single MOST goal), D3 (Priority=1 < 2; stale V05 line numbers). Remains ❓ (Unverified) until task is split or scope is narrowed to a single violation category.
+- **2026-06-13** `VERIFY FAIL (Re-VERIFY)` — Second MAAV run + mechanical checks confirm all 3 blocking dimensions unchanged. New findings: V05 stale (gpt2 only at line 129 unit test; lines 441/473 already use correct model); V03/V04 stale (helpers already consolidated in tests/inc/mod.rs — 1 definition each); V07 stale (circuit_breaker.rs is only 322 lines, no inline test block); V06 factual error (providers_api_integration_test.rs exists and is properly gated — was NOT deleted). Only V01 and V02 potentially still apply. Fresh audit required before re-filing.

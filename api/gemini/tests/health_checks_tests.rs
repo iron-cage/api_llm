@@ -1,10 +1,14 @@
 //! Health checks functionality tests
 
 #[ path = "common/mod.rs" ] mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
+#[ cfg( feature = "integration" ) ]
 use api_gemini::client::Client;
 use api_gemini::models::health::*;
+#[ cfg( feature = "integration" ) ]
 use api_gemini::error::Error;
+#[ cfg( feature = "integration" ) ]
 use std::time::Duration;
 
 #[ cfg( feature = "integration" ) ]

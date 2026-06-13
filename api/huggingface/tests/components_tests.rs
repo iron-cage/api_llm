@@ -165,7 +165,7 @@ mod integration_tests
   // Use inference API to validate parameters work with real API (with timeout)
   let response = tokio::time::timeout(
       core::time::Duration::from_secs( 10 ),
-      client.inference().create_with_parameters( "Hello", "meta-llama/Llama-3.2-1B-Instruct", params )
+      client.inference().create_with_parameters( "Hello", "meta-llama/Llama-3.3-70B-Instruct", params )
   ).await;
 
   // Handle API response gracefully - external API may be unavailable or timeout
@@ -225,34 +225,36 @@ Integration tests require real API access to validate functionality." );
   let client = Client::build( env )
       .expect( "Client build should succeed" );
 
-  // Test that model constants work with real API calls
-  let model = Models::all_minilm_l6_v2();  // Embedding model
-  
-  // Use embeddings API to validate model constant works (with timeout)
+  // Test that model constants work with real API calls (use inference - embeddings endpoint not available)
+  let model = Models::llama_3_3_70b_instruct();
+
   let response = tokio::time::timeout(
-      core::time::Duration::from_secs( 10 ),
-      client.embeddings().create( "test text", model )
+      core::time::Duration::from_secs( 30 ),
+      client.inference().create_with_parameters( "Say hello", model, InferenceParameters::default().with_max_new_tokens( 10 ) )
   ).await;
 
-  // Handle API response gracefully - external API may be unavailable or timeout
   match response
   {
-      Ok( Ok( embeddings ) ) => {
-  match embeddings
+      Ok( Ok( response_data ) ) =>
+      {
+  match response_data
   {
-          api_huggingface::components::embeddings::EmbeddingResponse::Single( embedding_vecs ) => {
-      assert!( !embedding_vecs.is_empty(), "Embeddings should not be empty" );
-      assert!( !embedding_vecs[0].is_empty(), "First embedding should have dimensions" );
+          api_huggingface::components::inference_shared::InferenceResponse::Single( output ) =>
+          {
+      assert!( !output.generated_text.is_empty(), "Generated text should not be empty" );
           },
-          api_huggingface::components::embeddings::EmbeddingResponse::Batch( batch_embeddings ) => {
-      assert!( !batch_embeddings.is_empty(), "Batch embeddings should not be empty" );
-      assert!( !batch_embeddings[0].is_empty(), "First batch should not be empty" );
-      assert!( !batch_embeddings[0][0].is_empty(), "First embedding should have dimensions" );
+          api_huggingface::components::inference_shared::InferenceResponse::Batch( outputs ) =>
+          {
+      assert!( !outputs.is_empty(), "Batch should not be empty" );
+          },
+          api_huggingface::components::inference_shared::InferenceResponse::Summarization( summaries ) =>
+          {
+      assert!( !summaries.is_empty(), "Summarization should not be empty" );
           }
   }
       },
-      Ok( Err( e ) ) => panic!( "Integration test failed: {e}" ),
-      Err( e ) => panic!( "Integration test timeout: {e:?}" ),
+      Ok( Err( e ) ) => panic!( "Integration test FAILED - API error : {e}" ),
+      Err( e ) => panic!( "Integration test FAILED - timeout : {e:?}" ),
   }
   }
 
@@ -271,7 +273,7 @@ Integration tests require real API access to validate functionality." );
   // Make real API call to get actual InferenceOutput (with timeout)
   let response = tokio::time::timeout(
       core::time::Duration::from_secs( 10 ),
-      client.inference().create_with_parameters( "The capital of France is", "meta-llama/Llama-3.2-1B-Instruct", InferenceParameters::default().with_max_new_tokens( 20 ) )
+      client.inference().create_with_parameters( "The capital of France is", "meta-llama/Llama-3.3-70B-Instruct", InferenceParameters::default().with_max_new_tokens( 20 ) )
   ).await;
 
   // Handle API response gracefully - external API may be unavailable or timeout

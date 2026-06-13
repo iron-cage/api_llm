@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Document design pattern specifications for `api_huggingface`.
-- **Responsibility**: Master file listing all pattern doc instances with ID, name, and status.
+- **Responsibility**: Each pattern/ instance covers one design pattern specification for `api_huggingface`.
 - **In Scope**: Module structure patterns, API design patterns, architectural conventions.
 - **Out of Scope**: API contracts (see api/), feature specifications, operational procedures (see operation/).
 

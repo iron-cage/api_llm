@@ -86,20 +86,3 @@ where
   } )
   }
 }
-
-#[ cfg( test ) ]
-mod tests
-{
-  use super::*;
-
-  #[ test ]
-  fn test_audio_to_audio_request_creation()
-  {
-  let request = AudioToAudioRequest
-  {
-      inputs : "base64data".to_string(),
-  };
-
-  assert_eq!( request.inputs, "base64data" );
-  }
-}

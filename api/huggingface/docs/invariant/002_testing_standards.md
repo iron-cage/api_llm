@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Enforce zero-tolerance no-mock policy and loud-failure requirements for all `api_huggingface` integration tests.
-- **Responsibility**: All contributors; any mock usage in integration tests is a critical policy violation.
+- **Responsibility**: Zero-tolerance no-mock and loud-failure requirements for all integration tests.
 - **In Scope**: All files under `tests/` — integration tests, unit tests, manual test plans.
 - **Out of Scope**: Example files in `examples/`, benchmark harnesses in `benches/`.
 
@@ -25,6 +25,24 @@ Integration tests must: (1) load real credentials via `workspace_tools::workspac
 
 Any mock usage in integration tests requires immediate remediation before merge. Tests that silently pass without real credentials are a policy violation of equal severity.
 
+### APIs
+
+| File | Relationship |
+|------|--------------|
+| `api/001_reference.md` | All methods documented there require real-API integration tests under this invariant |
+
+### Features
+
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Enterprise features must be tested with real API calls under this invariant |
+
+### Invariants
+
+| File | Relationship |
+|------|--------------|
+| `invariant/001_thin_client_principle.md` | Companion invariant — governs no-mock and no-implicit behavior requirements |
+
 ### Sources
 
 | File | Relationship |
@@ -37,21 +55,3 @@ Any mock usage in integration tests requires immediate remediation before merge.
 |------|--------------|
 | `tests/` | All integration tests MUST use `#[cfg(feature = "integration")]` gate and loud-failure pattern (no silent skip/pass permitted) |
 | `tests/docs/invariant/02_testing_standards.md` | GWT spec scenarios for this doc instance |
-
-### APIs
-
-| File | Relationship |
-|------|--------------|
-| `api/001_reference.md` | All methods documented there require real-API integration tests under this invariant |
-
-### Invariants
-
-| File | Relationship |
-|------|--------------|
-| `invariant/001_thin_client_principle.md` | Companion invariant — governs no-mock and no-implicit behavior requirements |
-
-### Features
-
-| File | Relationship |
-|------|--------------|
-| `feature/001_enterprise_reliability.md` | Enterprise features must be tested with real API calls under this invariant |

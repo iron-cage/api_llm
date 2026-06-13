@@ -7,6 +7,7 @@
 
 mod inc;
 
+#[ cfg( feature = "integration" ) ]
 use api_huggingface::
 {
   Client,

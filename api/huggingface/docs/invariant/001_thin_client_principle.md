@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Enforce that `api_huggingface` is a stateless HTTP transport with no automatic or implicit behaviors — every client action is explicit, transparent, and direct.
-- **Responsibility**: All contributors and code reviewers; any automatic or implicit behavior in client code is a blocking violation requiring immediate remediation.
+- **Responsibility**: One-endpoint-per-method mapping and no-implicit-behavior requirements for api_huggingface.
 - **In Scope**: All client methods, enterprise feature modules, streaming, multimodal handlers — every source file under `src/`.
 - **Out of Scope**: Workspace-level configuration infrastructure, secret file loading mechanics, test helper utilities in `tests/`.
 
@@ -26,6 +26,30 @@ All enterprise reliability features (circuit_breaker, rate_limiting, failover, h
 
 Any automatic or implicit behavior in client code is a blocking code-review violation. The offending code must be removed or refactored to require explicit caller opt-in before merge.
 
+### APIs
+
+| File | Relationship |
+|------|--------------|
+| `api/001_reference.md` | Documents the one-to-one endpoint mapping this invariant enforces |
+
+### Features
+
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Defines all opt-in enterprise features governed by this invariant |
+
+### Invariants
+
+| File | Relationship |
+|------|--------------|
+| `invariant/002_testing_standards.md` | Companion invariant — enforces no-mock, real-API testing for all client methods |
+
+### Patterns
+
+| File | Relationship |
+|------|--------------|
+| `pattern/001_module_organization.md` | Module structure supporting explicit re-export of API surface |
+
 ### Sources
 
 | File | Relationship |
@@ -44,27 +68,3 @@ Any automatic or implicit behavior in client code is a blocking code-review viol
 | `tests/circuit_breaker_tests.rs` | Verifies circuit breaker activates only when explicitly constructed |
 | `tests/failover_tests.rs` | Verifies failover activates only when explicitly configured |
 | `tests/docs/invariant/01_thin_client_principle.md` | GWT spec scenarios for this doc instance |
-
-### APIs
-
-| File | Relationship |
-|------|--------------|
-| `api/001_reference.md` | Documents the one-to-one endpoint mapping this invariant enforces |
-
-### Invariants
-
-| File | Relationship |
-|------|--------------|
-| `invariant/002_testing_standards.md` | Companion invariant — enforces no-mock, real-API testing for all client methods |
-
-### Patterns
-
-| File | Relationship |
-|------|--------------|
-| `pattern/001_module_organization.md` | Module structure supporting explicit re-export of API surface |
-
-### Features
-
-| File | Relationship |
-|------|--------------|
-| `feature/001_enterprise_reliability.md` | Defines all opt-in enterprise features governed by this invariant |

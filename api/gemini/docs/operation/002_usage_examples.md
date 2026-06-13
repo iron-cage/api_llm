@@ -61,8 +61,8 @@ Each pattern follows the same structure: configure the client, construct a typed
 
 #### Embeddings
 1. Create `EmbedContentRequest { content: Content { parts: [text_part], role: "user" }, task_type: Some("RETRIEVAL_DOCUMENT") }`
-2. Call `client.models().by_name("models/text-embedding-004").embed_content(&request).await`
-3. Access `response.embedding.values` — a `Vec<f32>` of embedding dimensions (768 for text-embedding-004)
+2. Call `client.models().by_name("models/gemini-embedding-001").embed_content(&request).await`
+3. Access `response.embedding.values` — a `Vec<f32>` of embedding dimensions (768 for gemini-embedding-001)
 
 #### Model Information
 - List all available models: `client.models().list().await` → `ListModelsResponse { models: Vec<Model> }`

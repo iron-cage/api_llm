@@ -1,97 +1,54 @@
-# API: Client Interface
+# API: Reference
 
 ### Scope
 
-- **Purpose**: Document the complete public API contract for `api_huggingface` — method signatures, endpoint mapping, error types, and parameter contracts.
-- **Responsibility**: All contributors; new public methods or changed signatures require updating this document before merge.
-- **In Scope**: Client method signatures, endpoint mapping to HuggingFace Inference and Router APIs, request/response type contracts, error enum variants, parameter constraints.
-- **Out of Scope**: Internal implementation details, source-level comments, Cargo feature configuration, example usage code.
+- **Purpose**: Document the complete public API contract for `api_huggingface` — operations, endpoint mapping, error conditions, and versioning guarantees.
+- **Responsibility**: Complete public API contract — method signatures, endpoints, error types, and parameters.
+- **In Scope**: Client construction, all API operation groups, error conditions, compatibility guarantees.
+- **Out of Scope**: Internal implementation details, source-level comments, Cargo feature configuration.
 
 ### Abstract
 
-The `api_huggingface` client provides access to HuggingFace Inference API and Router API endpoints through a generic `Client<E>` type parameterized over an environment `E`. All methods map directly to one HuggingFace API endpoint with no implicit behaviors. Enterprise features (circuit breaker, rate limiting, failover, caching, etc.) are accessible only when their corresponding Cargo feature is enabled. Authentication is provided via `Secret` loaded explicitly from an environment variable or workspace secrets file.
+`api_huggingface` provides access to HuggingFace Inference API, Router API, and model management endpoints through a single generic client type parameterized over an environment. All operations map directly to one HuggingFace API endpoint with no implicit behaviors. Enterprise features are accessible only when their corresponding Cargo feature flag is enabled. Authentication is provided by a secret loaded explicitly from an environment variable or workspace secrets file.
 
-### Client Construction
+### Operations
 
-- `Client::build(env)` — construct from an environment, returns `Result<Client<E>>`
-- `Secret::load_from_env(key)` — load API key from an environment variable
-- `HuggingFaceEnvironmentImpl::build(secret, base_url)` — build environment from secret and optional URL override
+**Client construction** — initialize a client from a configured environment; load API credentials from an environment variable or workspace secrets file; configure base URL and timeout.
 
-### Inference Operations
+**Text generation** — submit a prompt with a model identifier to the Inference API and receive generated text; supply optional inference parameters (temperature, max tokens, top-p, top-k, repetition penalty); receive output as a token stream (requires `inference-streaming`).
 
-Maps to HuggingFace Inference API endpoint `/models/{model_id}`.
+**Chat completion** — submit a conversation history with role-based messages to the Router API and receive an assistant reply; optionally specialize the request for math problems.
 
-- `client.inference().create(prompt, model)` — single-turn text generation
-- `client.inference().create_with_parameters(prompt, model, params)` — generation with inference parameters (requires `inference-parameters` feature)
-- `client.inference().create_stream(prompt, model)` — streaming text generation (requires `inference-streaming` feature)
-- `InferenceParameters` — controls temperature, max tokens, top-p, top-k, repetition penalty
+**Embedding generation** — convert text to a dense vector; generate vectors for a batch of texts (requires `embeddings-batch`); compute cosine similarity between two texts (requires `embeddings-similarity`); configure normalization and truncation.
 
-### Providers Operations
+**Model management** — retrieve model metadata; check model availability; poll until a model becomes available within a specified timeout.
 
-Maps to HuggingFace Inference Providers API endpoint `/v1/chat/completions` (Pro plan models).
+**Vision** (requires `vision`) — classify an image and receive confidence scores; detect objects with bounding boxes; generate a caption from an image.
 
-- `client.providers().simple_chat(model, message)` — single-message chat completion
-- `client.providers().math_completion(model, question)` — math-specialized completion
-- `client.providers().chat_completion(model, messages, max_tokens, temperature, top_p)` — full chat completion with role-based messages
-- `ChatMessage` — role-based message with `role: String` and `content: String`
+**Audio** (requires `audio`) — transcribe speech to text; synthesize text to speech; classify audio content; transform audio to audio.
 
-### Embeddings Operations
+### Error Handling
 
-Maps to HuggingFace Feature Extraction API.
+All operations return a `Result`. Callers must handle errors from the following conditions:
 
-- `client.embeddings().create(text, model)` — generate single embedding vector
-- `client.embeddings().create_batch(texts, model)` — generate multiple embedding vectors (requires `embeddings-batch` feature)
-- `client.embeddings().similarity(text1, text2, model)` — cosine similarity between two texts (requires `embeddings-similarity` feature)
-- `EmbeddingOptions` — normalize and truncate configuration flags
+- Invalid request or parameter validation failure
+- Authentication failure — missing, expired, or unauthorized API key
+- Request rate exceeded or quota limit reached
+- Model unavailable — loading, cold start, or not found
+- HTTP transport failure — connection error, timeout, or DNS failure
+- Response deserialization failure — invalid or unexpected response format
 
-### Model Management Operations
-
-Maps to HuggingFace Models API.
-
-- `client.models().get(model)` — retrieve model metadata
-- `client.models().is_available(model)` — check model readiness
-- `client.models().status(model)` — get current model status string
-- `client.models().wait_for_model(model, timeout)` — poll until model available or timeout
-
-### Vision Operations
-
-Maps to HuggingFace Vision API endpoints (requires `vision` feature).
-
-- `client.vision().classify(image, model)` — image classification with confidence scores
-- `client.vision().detect(image, model)` — object detection with bounding boxes
-- `client.vision().caption(image, model)` — image-to-text caption generation
-
-### Audio Operations
-
-Maps to HuggingFace Audio API endpoints (requires `audio` feature).
-
-- `client.audio().transcribe(audio, model)` — automatic speech recognition
-- `client.audio().synthesize(text, model)` — text-to-speech generation
-- `client.audio().classify(audio, model)` — audio classification
-- `client.audio().transform(audio, model)` — audio-to-audio transformation
-
-### Error Types
-
-`HuggingFaceError` variants:
-
-- `Api(msg)` — invalid requests, model errors, parameter validation failures
-- `Authentication(msg)` — invalid API key, expired tokens, permission errors
-- `RateLimit(msg)` — request rate exceeded, quota limits
-- `ModelUnavailable(msg)` — model loading, cold start, not found
-- `Http(msg)` — connection errors, HTTP transport failures, timeouts, DNS failures
-- `Serialization(msg)` — JSON parsing errors, invalid response formats
-
-### Model Constants
-
-`Models` struct provides associated functions for commonly used model identifiers:
-
-- Text generation: `Models::llama_3_1_8b_instruct()`, `Models::mistral_7b_instruct()`, `Models::kimi_k2_instruct()`
-- Embeddings: `Models::all_minilm_l6_v2()`, `Models::bge_large_en_v1_5()`
-- Returns model identifier strings compatible with all API operations above
+Error variant additions in future versions are non-breaking; callers should use a catch-all arm.
 
 ### Compatibility Guarantees
 
-All public method signatures follow semantic versioning. Breaking changes require a major version increment. Error variant additions are non-breaking (callers should use catch-all arms). Feature flag additions are non-breaking; removals or renames are breaking changes.
+All public method signatures follow semantic versioning. Breaking changes require a major version increment. Feature flag additions are non-breaking; removals or renames are breaking changes.
+
+### Features
+
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Enterprise features usable in conjunction with all operations |
 
 ### Invariants
 
@@ -106,33 +63,27 @@ All public method signatures follow semantic versioning. Breaking changes requir
 |------|--------------|
 | `pattern/001_module_organization.md` | Module structure exposing all API accessors via `mod_interface!` |
 
-### Features
-
-| File | Relationship |
-|------|--------------|
-| `feature/001_enterprise_reliability.md` | Enterprise features usable in conjunction with all operations above |
-
 ### Sources
 
 | File | Relationship |
 |------|--------------|
-| `src/secret.rs` | `Secret::load_from_env()` — credential loading |
-| `src/error.rs` | `HuggingFaceError` enum — all variants listed in Error Types |
-| `src/client.rs` | `Client<E>` struct — all accessor methods |
-| `src/inference.rs` | `Inference<E>` — text generation methods |
-| `src/providers.rs` | `Providers<E>` — Router API chat completion methods |
-| `src/embeddings.rs` | `Embeddings<E>` — embedding generation methods |
-| `src/models.rs` | `Models<E>` — model management methods |
-| `src/components/models.rs` | `Models` struct — model constant functions |
-| `src/components/input.rs` | `InferenceParameters` — inference parameter type |
+| `src/client.rs` | Client type and all API accessor methods |
+| `src/components/input.rs` | Inference parameter type |
+| `src/components/models.rs` | Named model constant functions |
+| `src/embeddings.rs` | Embedding generation operations |
+| `src/error.rs` | Error type and all error conditions |
+| `src/inference.rs` | Text generation operations |
+| `src/models.rs` | Model management operations |
+| `src/providers.rs` | Router API chat completion operations |
+| `src/secret.rs` | Credential loading |
 
 ### Tests
 
 | File | Relationship |
 |------|--------------|
-| `tests/inference_tests.rs` | Integration tests for Inference operations |
-| `tests/providers_api_tests.rs` | Unit tests for Providers API types |
-| `tests/embeddings_tests.rs` | Integration tests for Embeddings operations |
-| `tests/models_tests.rs` | Integration tests for Model Management |
-| `tests/client_tests.rs` | Client initialization and configuration tests |
+| `tests/client_tests.rs` | Client initialization and configuration |
 | `tests/docs/api/01_reference.md` | GWT spec scenarios for this doc instance |
+| `tests/embeddings_tests.rs` | Embedding generation operations |
+| `tests/inference_tests.rs` | Text generation operations |
+| `tests/models_tests.rs` | Model management operations |
+| `tests/providers_api_tests.rs` | Router API chat completion operations |

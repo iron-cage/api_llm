@@ -14,11 +14,10 @@
 use api_openai::ClientApiAccessors;
 use api_openai::
 {
-  client ::Client,
-  error ::OpenAIError,
-  api ::realtime::{ RealtimeClient, ws::WsSession },
+  Client,
   components ::realtime_shared::
   {
+    RealtimeClientEvent,
     RealtimeSessionCreateRequest,
     RealtimeClientEventInputAudioBufferAppend,
   },
@@ -26,23 +25,28 @@ use api_openai::
 };
 
 
-use tracing_subscriber::{ EnvFilter, fmt }; // Added for logging
 use base64::{ engine::general_purpose::STANDARD as base64_engine, Engine as _ }; // For base64 encoding
 
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
   // Setup tracing for logging
-  fmt()
-  .with_env_filter( EnvFilter::from_default_env().add_directive( "api_openai=trace".parse().unwrap() ) )
-  .init();
+  tracing_subscriber::fmt::init();
 
   // Load environment variables
-  dotenv ::from_filename( "./secret/-secret.sh" ).ok();
 
   // 1. Create a new OpenAI client.
   tracing ::info!( "Initializing client..." );
-  let client = Client::new();
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 2. Create the request payload to initiate the session, configuring audio input.
   tracing ::info!( "Building realtime session request..." );
@@ -58,12 +62,12 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending request to OpenAI API to create session..." );
   // 3. Call the API endpoint to get session details.
-  let session = client.realtime().create( request ).await?;
+  let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let token = session.client_secret.value;
+  let _token = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
-  let session_client  = WsSession::connect( client.environment().clone(), Some( &token ) ).await?;
+  let session_client = client.realtime().connect_ws( &session.id ).await?;
 
   // --- Prepare Dummy Audio Data ---
   let dummy_audio_bytes = include_bytes!("data/example.wav");
@@ -76,7 +80,7 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending input_audio_buffer.append event..." );
   // 6. Send the append event over the WebSocket.
-  session_client.input_audio_buffer_append( iaba_append ).await?;
+  session_client.send_event( RealtimeClientEvent::InputAudioBufferAppend( iaba_append ) ).await?;
   tracing ::info!( "Audio append event sent." );
 
   // 7. Wait briefly and read any subsequent events (like VAD or transcription).
@@ -95,30 +99,22 @@ if start_time.elapsed() > wait_duration
 
     // Try reading with a small timeout to avoid blocking forever if nothing comes
     let read_timeout = tokio::time::Duration::from_millis( 100 );
-    match tokio::time::timeout( read_timeout, session_client.read_event() ).await
+    match tokio::time::timeout( read_timeout, session_client.recv_event() ).await
     {
-      Ok( response_result ) => match response_result
+      Ok( Ok( event ) ) =>
       {
-        Ok(Some(event)) =>
-        {
-          println!( "\n--- Received Subsequent Event ---" );
-          println!( "{event:?}" );
-          // Depending on session config, you might see:
-          // - InputAudioBufferSpeechStarted/Stopped
-          // - ConversationItemInputAudioTranscriptionDelta/Completed
-          // etc.
-        }
-        Ok( None ) =>
-        {
-          println!( "\nWebSocket connection closed by server unexpectedly." );
-          return Err( OpenAIError::WsConnectionClosed );
-        }
-        Err( e ) =>
-        {
-          eprintln!("\nError reading from WebSocket : {:?}", e);
-          return Err(e);
-        }
-      },
+        println!( "\n--- Received Subsequent Event ---" );
+        println!( "{event:?}" );
+        // Depending on session config, you might see:
+        // - InputAudioBufferSpeechStarted/Stopped
+        // - ConversationItemInputAudioTranscriptionDelta/Completed
+        // etc.
+      }
+      Ok( Err( e ) ) =>
+      {
+        eprintln!("\nError reading from WebSocket : {:?}", e);
+        return Err( e.into() );
+      }
       Err( _ ) =>
       {
         // Timeout elapsed for this read attempt, continue checking overall wait duration

@@ -78,7 +78,7 @@ async fn test_circuit_breaker_successful_request_keeps_closed()
 
   let result = circuit_breaker.execute( async {
   client.providers( ).chat_completion(
-      "meta-llama/Llama-3.2-1B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
       vec![ChatMessage { role : "user".to_string( ), content : "test".to_string( ), tool_calls : None, tool_call_id : None } ],
       Some( 10 ),
       None,
@@ -123,7 +123,7 @@ async fn test_circuit_breaker_resets_failure_count_on_success()
   // Now succeed
   let result = circuit_breaker.execute( async {
   client.providers( ).chat_completion(
-      "meta-llama/Llama-3.2-1B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
       vec![ChatMessage { role : "user".to_string( ), content : "test".to_string( ), tool_calls : None, tool_call_id : None } ],
       Some( 10 ),
       None,
@@ -205,7 +205,7 @@ async fn test_circuit_breaker_rejects_requests_when_open()
   // Try a request that would normally succeed - should be rejected
   let result = circuit_breaker.execute( async {
   client.providers( ).chat_completion(
-      "meta-llama/Llama-3.2-1B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
       vec![ChatMessage { role : "user".to_string( ), content : "test".to_string( ), tool_calls : None, tool_call_id : None } ],
       Some( 10 ),
       None,
@@ -261,7 +261,7 @@ async fn test_circuit_breaker_transitions_to_half_open_after_timeout()
   // Execute a request - should transition to half-open
   let result = circuit_breaker.execute( async {
   client.providers( ).chat_completion(
-      "meta-llama/Llama-3.2-1B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
       vec![ChatMessage { role : "user".to_string( ), content : "test".to_string( ), tool_calls : None, tool_call_id : None } ],
       Some( 10 ),
       None,
@@ -309,7 +309,7 @@ async fn test_circuit_breaker_closes_after_success_threshold_in_half_open()
   {
   let result = circuit_breaker.execute( async {
       client.providers( ).chat_completion(
-  "meta-llama/Llama-3.2-1B-Instruct",
+  "meta-llama/Llama-3.3-70B-Instruct",
   vec![ChatMessage { role : "user".to_string( ), content : "test".to_string( ), tool_calls : None, tool_call_id : None } ],
   Some( 10 ),
   None,
@@ -357,7 +357,7 @@ async fn test_circuit_breaker_reopens_on_failure_in_half_open()
   // One success ( transitions to half-open )
   let _ = circuit_breaker.execute( async {
   client.providers( ).chat_completion(
-      "meta-llama/Llama-3.2-1B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
       vec![ChatMessage { role : "user".to_string( ), content : "test".to_string( ), tool_calls : None, tool_call_id : None } ],
       Some( 10 ),
       None,
@@ -424,7 +424,7 @@ async fn test_circuit_breaker_reset_clears_all_state()
   // Should be able to execute requests normally
   let result = circuit_breaker.execute( async {
   client.providers( ).chat_completion(
-      "meta-llama/Llama-3.2-1B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
       vec![ChatMessage { role : "user".to_string( ), content : "test".to_string( ), tool_calls : None, tool_call_id : None } ],
       Some( 10 ),
       None,

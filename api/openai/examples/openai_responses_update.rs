@@ -10,31 +10,34 @@
 //! Make sure you have set the `OPENAI_API_KEY` environment variable
 //! or have a `secret/-secret.sh` file with the key.
 
-use api_openai::ClientApiAccessors;
-use api_openai::exposed::
+use api_openai::
 {
+  ClientApiAccessors,
   Client,
-  OpenAIError,
   components ::
   {
     responses ::{ CreateResponseRequest, ResponseInput, ResponseObject },
     common ::ModelIdsResponses,
   },
 };
+use chrono::Utc;
 use serde_json::json;
 
+#[ allow( deprecated ) ]
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
-  // Load environment variables
-  dotenv ::from_filename("./secret/-secret.sh").ok();
-
-  println!("Initializing client...");
-  let secret = api_openai::exposed::Secret::load_from_env("OPENAI_API_KEY")
-    .unwrap_or_else(|_| api_openai::exposed::Secret::new("dummy_key".to_string()));
-  let env = api_openai::exposed::environment::OpenaiEnvironmentImpl::build(secret, None, None, api_openai::environment::OpenAIRecommended::base_url().to_string(), api_openai::environment::OpenAIRecommended::realtime_base_url().to_string())
-    .expect("Failed to create environment");
-  let client = Client::build(env).expect("Failed to create client");
+  println!( "Initializing client..." );
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 1. First create a response
   println!("Creating a response...");
@@ -52,7 +55,7 @@ async fn main() -> Result< (), OpenAIError >
   let update_data = json!({
     "metadata": {
       "category": "joke",
-      "updated_at": chrono::Utc::now().to_rfc3339(),
+      "updated_at": Utc::now().to_rfc3339(),
       "custom_field": "example_value"
     }
   });
@@ -67,7 +70,7 @@ async fn main() -> Result< (), OpenAIError >
 if let Some(metadata) = updated_response.metadata
 {
     println!("Update verification:");
-    for (key, value) in metadata.iter()
+    for (key, value) in metadata.0.iter()
     {
       println!("  {}: {}", key, value);
     }

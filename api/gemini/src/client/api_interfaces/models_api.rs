@@ -148,7 +148,7 @@ use super::super::Client;
     /// ];
     ///
     /// let batch_request = BatchEmbedContentsRequest { requests };
-    /// let response = models_api.batch_embed_contents("text-embedding-004", &batch_request).await?;
+    /// let response = models_api.batch_embed_contents("gemini-embedding-001", &batch_request).await?;
     ///
     /// for (i, embedding) in response.embeddings.iter().enumerate() {
     ///   println!("Embedding {}: {} values", i, embedding.values.len());
@@ -163,7 +163,7 @@ use super::super::Client;
       request : &crate::models::BatchEmbedContentsRequest
     ) -> Result< crate::models::BatchEmbedContentsResponse, Error >
     {
-      let url = format!( "{}/v1/models/{model_name}:batchEmbedContents", self.client.base_url );
+      let url = format!( "{}/v1beta/models/{model_name}:batchEmbedContents", self.client.base_url );
 
       crate ::internal::http::execute_legacy::< crate::models::BatchEmbedContentsRequest, crate::models::BatchEmbedContentsResponse >
       (

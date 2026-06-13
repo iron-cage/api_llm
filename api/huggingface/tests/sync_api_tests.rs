@@ -100,7 +100,7 @@ fn test_sync_inference_basic()
 
   let client = SyncClient::new( api_key ).expect( "[test_sync_inference_basic] Failed to create SyncClient" );
 
-  let result = client.inference().create( "What is 2+2?", "meta-llama/Llama-3.2-1B-Instruct" );
+  let result = client.inference().create( "What is 2+2?", "meta-llama/Llama-3.3-70B-Instruct" );
   assert!( result.is_ok(), "[test_sync_inference_basic] Sync inference call failed. Error : {:?}", result.err() );
 
   let response = result.expect( "[test_sync_inference_basic] Inference result should be Ok after is_ok() check - check SyncInference::create() implementation" );
@@ -126,7 +126,7 @@ fn test_sync_inference_with_parameters()
   let client = SyncClient::new( api_key ).expect( "[test_sync_inference_with_parameters] Failed to create SyncClient" );
 
   let params = InferenceParameters::new().with_temperature( 0.7 ).with_max_new_tokens( 50 );
-  let result = client.inference().create_with_parameters( "Explain quantum computing in one sentence", "meta-llama/Llama-3.2-1B-Instruct", params );
+  let result = client.inference().create_with_parameters( "Explain quantum computing in one sentence", "meta-llama/Llama-3.3-70B-Instruct", params );
   assert!( result.is_ok(), "[test_sync_inference_with_parameters] Sync inference with parameters failed. Error : {:?}", result.err() );
 }
 
@@ -147,7 +147,7 @@ fn test_sync_chat_completion()
 
   let client = SyncClient::new( api_key ).expect( "[test_sync_chat_completion] Failed to create SyncClient" );
 
-  let result = client.inference().create( "Hello, how are you?", "meta-llama/Llama-3.2-1B-Instruct" );
+  let result = client.inference().create( "Hello, how are you?", "meta-llama/Llama-3.3-70B-Instruct" );
   assert!( result.is_ok(), "[test_sync_chat_completion] Sync chat-style inference failed. Error : {:?}", result.err() );
 }
 
@@ -236,7 +236,7 @@ fn test_sync_performance_overhead()
   let sync_client = SyncClient::new( api_key ).expect( "[test_sync_performance_overhead] Failed to create SyncClient" );
 
   let start = Instant::now();
-  let _sync_result = sync_client.inference().create( "Test prompt", "meta-llama/Llama-3.2-1B-Instruct" );
+  let _sync_result = sync_client.inference().create( "Test prompt", "meta-llama/Llama-3.3-70B-Instruct" );
   let sync_duration = start.elapsed();
 
   println!( "[test_sync_performance_overhead] Sync call took : {:.2?}", sync_duration );
@@ -290,11 +290,11 @@ fn test_sync_api_complete_workflow()
 
   let client = SyncClient::new( api_key ).expect( "[test_sync_api_complete_workflow] Failed to create SyncClient" );
 
-  let basic_result = client.inference().create( "Hello, world!", "meta-llama/Llama-3.2-1B-Instruct" );
+  let basic_result = client.inference().create( "Hello, world!", "meta-llama/Llama-3.3-70B-Instruct" );
   assert!( basic_result.is_ok(), "[test_sync_api_complete_workflow] Basic inference failed. Error : {:?}", basic_result.err() );
 
   let params = InferenceParameters::new().with_temperature( 0.8 ).with_max_new_tokens( 100 );
-  let param_result = client.inference().create_with_parameters( "Explain AI in simple terms", "meta-llama/Llama-3.2-1B-Instruct", params );
+  let param_result = client.inference().create_with_parameters( "Explain AI in simple terms", "meta-llama/Llama-3.3-70B-Instruct", params );
   assert!( param_result.is_ok(), "[test_sync_api_complete_workflow] Parametrized inference failed. Error : {:?}", param_result.err() );
 
   let counter = client.token_counter();

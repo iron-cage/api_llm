@@ -75,7 +75,7 @@ pub mod cache;
 #[ cfg( feature = "client" ) ]
 pub mod performance;
 
-// Enterprise reliability features
+// Enterprise reliability features — sub-features: circuit-breaker, rate-limiting, failover, health-checks
 #[ cfg( feature = "reliability" ) ]
 pub mod reliability;
 
@@ -114,7 +114,7 @@ pub mod audio;
 #[ cfg( feature = "sync" ) ]
 pub mod sync;
 
-// Streaming control module (available with streaming-control feature)
+// Streaming control module (available with streaming-control feature; requires inference-streaming)
 #[ cfg( feature = "streaming-control" ) ]
 pub mod streaming_control;
 

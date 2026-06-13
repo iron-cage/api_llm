@@ -16,8 +16,10 @@ use api_huggingface::
   input::InferenceParameters,
   models::Models,
   },
-  secret::Secret,
 };
+
+#[ cfg( feature = "integration" ) ]
+use api_huggingface::secret::Secret;
 use std::collections::HashMap;
 use core::fmt::Write;
 

@@ -56,7 +56,6 @@
 
 #![ cfg( feature = "integration" ) ]
 
-#[ allow( clippy::duplicate_mod ) ]
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;
 
@@ -402,7 +401,7 @@ async fn test_embed_content()
 
   let result = client
   .models()
-  .by_name( "text-embedding-004" )
+  .by_name( "gemini-embedding-001" )
   .embed_content( &request )
   .await;
 
@@ -657,9 +656,10 @@ async fn test_multiple_candidates_generation()
       temperature: Some( 0.9 ),
       top_k: Some( 40 ),
       top_p: Some( 0.95 ),
-      candidate_count: Some( 2 ), // Request multiple candidates
+      // candidate_count not set — deprecated and unsupported on current Gemini models
       max_output_tokens: Some( 500 ),
       stop_sequences: None,
+      ..Default::default()
     }),
     safety_settings: None,
     tools: None,

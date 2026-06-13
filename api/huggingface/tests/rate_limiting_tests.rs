@@ -386,20 +386,21 @@ async fn test_rate_limiter_reset()
 async fn test_rate_limiter_with_real_api_calls()
 {
   let client = create_integration_client();
+  // Use per-minute limit so the bucket does not refill during API call latency.
   let config = RateLimiterConfig {
-  requests_per_second : Some( 2 ),
-  requests_per_minute : None,
+  requests_per_second : None,
+  requests_per_minute : Some( 2 ),
   requests_per_hour : None,
   };
   let limiter = RateLimiter::new( config );
 
-  // Make 2 real API calls with rate limiting
+  // Make 2 real API calls with rate limiting — both must succeed.
   for i in 0..2
   {
   limiter.acquire( ).await.unwrap( );
 
   let result = client.providers( ).chat_completion(
-      "meta-llama/Llama-3.2-1B-Instruct",
+      "meta-llama/Llama-3.3-70B-Instruct",
       vec![ChatMessage {
   role : "user".to_string( ),
   content : format!( "Say the number {i}" ),
@@ -414,13 +415,9 @@ async fn test_rate_limiter_with_real_api_calls()
   assert!( result.is_ok( ), "API call {i} should succeed" );
   }
 
-  // Third call should be rate limited initially
-  let start = Instant::now( );
-  limiter.acquire( ).await.unwrap( );
-  let elapsed = start.elapsed( );
-
-  // Should have waited
-  assert!( elapsed >= Duration::from_millis( 400 ));
+  // Per-minute bucket is now exhausted — immediate try_acquire must fail.
+  let rate_limited = limiter.try_acquire( ).await;
+  assert!( rate_limited.is_err( ), "Rate limiter must block after per-minute quota exhausted" );
 }
 
 #[ cfg( feature = "integration" ) ]
@@ -444,7 +441,7 @@ async fn test_rate_limiter_prevents_api_overload()
   if limiter.try_acquire( ).await.is_ok( )
   {
       let result = client.providers( ).chat_completion(
-  "meta-llama/Llama-3.2-1B-Instruct",
+  "meta-llama/Llama-3.3-70B-Instruct",
   vec![ChatMessage {
           role : "user".to_string( ),
           content : format!( "Count {i}" ),

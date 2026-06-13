@@ -2,7 +2,7 @@
 
 ### Purpose
 
-This directory contains technical documentation for the `api_huggingface` crate, organized into design collections following doc.rulebook.md standards. Documentation is structured by design dimension (invariant/, api/, feature/, operation/, pattern/) with each collection containing a master file (`readme.md`) and NNN-prefixed instance files.
+This directory contains technical documentation for the `api_huggingface` crate, organized into design collections following doc.rulebook.md standards. Documentation is structured by design dimension (invariant/, api/, collection/, feature/, operation/, pattern/, pitfall/) with each entity directory containing a master file (`readme.md`) and NNN-prefixed instance files.
 
 ### Responsibility
 
@@ -10,10 +10,12 @@ This directory contains technical documentation for the `api_huggingface` crate,
 |------|---------|
 | `readme.md` | Master documentation index with navigation and Complete Entity Coverage |
 | `invariant/` | Non-negotiable behavioral constraints — thin client principle, testing standards |
-| `api/` | API design collection - comprehensive API reference, endpoints, usage patterns |
-| `operation/` | Operational procedures collection - feature management, cargo features, status tracking |
+| `api/` | API contract reference — endpoint mapping, operations, error conditions |
+| `collection/` | Enumerated item catalogs — feature flag tables, tier classifications |
+| `operation/` | Operational procedures — feature selection, build verification, rollback |
 | `pattern/` | Design pattern specifications — module organization (mod_interface) |
 | `feature/` | Feature specification collection — capability groups, enterprise feature contracts |
+| `pitfall/` | Confirmed design pitfalls — root cause, avoidance, and detection |
 | `entities/` | Module index of all active doc entities and instances |
 
 ### Collections
@@ -30,21 +32,30 @@ Non-negotiable behavioral constraints.
 
 #### api/
 
-API design, endpoints, and usage patterns.
+API contract reference — endpoint mapping, operations, and versioning.
 
 **Master File**: `api/readme.md`
 
 **Instances**:
-- `001_reference.md` — Comprehensive API reference covering client operations, models, environment config, error handling
+- `001_reference.md` — Complete public API contract: operations, error conditions, compatibility guarantees
+
+#### collection/
+
+Enumerated item catalogs — feature flag tables and tier classifications.
+
+**Master File**: `collection/readme.md`
+
+**Instances**:
+- `001_features.md` — Cargo feature flag catalog: convenience bundles, Tier 1 core features, Tier 2 enterprise features
 
 #### operation/
 
-Operational procedures for feature management and configuration.
+Operational procedures for building and verifying `api_huggingface` integrations.
 
 **Master File**: `operation/readme.md`
 
 **Instances**:
-- `001_features.md` — Complete feature tables, cargo features documentation, feature tier classification
+- `001_features.md` — Feature selection procedure: trigger, steps, verification, and rollback
 
 #### pattern/
 
@@ -64,13 +75,24 @@ Enterprise reliability and capability feature specifications.
 **Instances**:
 - `001_enterprise_reliability.md` — Enterprise reliability feature group — circuit breaker, rate limiting, failover, caching, metrics
 
+#### pitfall/
+
+Confirmed design pitfalls discovered through task investigations and code review.
+
+**Master File**: `pitfall/readme.md`
+
+**Instances**:
+- `001_url_join_absolute_path.md` — `Url::join` silently strips base URL prefix when path has a leading slash
+
 ### Navigation
 
 - Behavioral constraints: see `invariant/`
 - API usage and reference: see `api/001_reference.md`
 - Feature capability specs: see `feature/001_enterprise_reliability.md`
-- Feature availability and cargo flags: see `operation/001_features.md`
+- Feature flag catalog: see `collection/001_features.md`
+- Feature selection procedure: see `operation/001_features.md`
 - Design patterns: see `pattern/`
+- Confirmed design pitfalls: see `pitfall/`
 - Doc entity index: see `entities/`
 - Project overview: see `../readme.md`
 - Usage examples: see `../examples/`

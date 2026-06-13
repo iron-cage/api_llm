@@ -13,9 +13,8 @@
 use api_openai::ClientApiAccessors;
 use api_openai::
 {
-  client ::Client,
+  Client,
   error ::OpenAIError,
-  api ::realtime::{ RealtimeClient, ws::WsSession },
   components ::realtime_shared::
   {
     RealtimeSessionCreateRequest,
@@ -24,28 +23,34 @@ use api_openai::
     RealtimeClientEventConversationItemCreate,
     RealtimeResponseCreateParams,
     RealtimeClientEventResponseCreate,
+    RealtimeClientEvent,
     RealtimeServerEvent,
   },
 
 };
 
-use tracing_subscriber::{ EnvFilter, fmt }; // Added for logging
 use std::sync::{ Arc, Mutex }; // To share the response ID
 
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
   // Setup tracing for logging
-  fmt()
-  .with_env_filter( EnvFilter::from_default_env().add_directive( "api_openai=trace".parse().unwrap() ) )
-  .init();
+  tracing_subscriber::fmt::init();
 
   // Load environment variables
-  dotenv ::from_filename( "./secret/-secret.sh" ).ok();
 
   // 1. Create a new OpenAI client.
   tracing ::info!( "Initializing client..." );
-  let client = Client::new();
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 2. Create the request payload to initiate the session.
   //    May disable auto-response creation if explicitly triggering.
@@ -60,12 +65,12 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending request to OpenAI API to create session..." );
   // 3. Call the API endpoint to get session details.
-  let session = client.realtime().create( request ).await?;
+  let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let token = session.client_secret.value;
+  let _token = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
-  let session_client  = WsSession::connect( client.environment().clone(), Some( &token ) ).await?;
+  let session_client = client.realtime().connect_ws( &session.id ).await?;
 
   // --- Optional : Create a user message first to provide context ---
   let content = RealtimeConversationItemContent::former()
@@ -81,7 +86,7 @@ async fn main() -> Result< (), OpenAIError >
   .item( ci_to_create )
   .form();
   tracing ::info!( "Sending preliminary conversation.item.create event..." );
-  session_client.conversation_item_create( cic_create ).await?;
+  session_client.send_event( RealtimeClientEvent::ConversationItemCreate( cic_create ) ).await?;
   // Wait briefly for the item to be potentially processed server-side
   tokio ::time::sleep( tokio::time::Duration::from_millis( 100 ) ).await;
 
@@ -102,7 +107,7 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending response.create event..." );
   // 6. Send the response create event over the WebSocket.
-  session_client.response_create( rc_create ).await?;
+  session_client.send_event( RealtimeClientEvent::ResponseCreate( rc_create ) ).await?;
 
   // 7. Loop to read responses, specifically looking for the ResponseCreated confirmation.
   tracing ::info!( "Waiting for response.created confirmation..." );
@@ -111,7 +116,8 @@ async fn main() -> Result< (), OpenAIError >
 
   loop
   {
-    let response = session_client.read_event().await;
+    let response = session_client.recv_event().await.map( Some );
+    #[ allow( unreachable_patterns ) ]
     match response
     {
       Ok( Some( event ) ) =>
@@ -171,7 +177,7 @@ async fn main() -> Result< (), OpenAIError >
       Err( e ) =>
       {
         eprintln!( "\nError reading from WebSocket : {:?}", e );
-        return Err( e ); // Propagate the error
+        return Err( e.into() ); // Propagate the error
       }
     }
   }
@@ -182,7 +188,7 @@ async fn main() -> Result< (), OpenAIError >
     // Check if response ID was captured even if the loop broke on ResponseDone before created confirmation was logged/set
 if created_response_id.lock().unwrap().is_none()
 {
-      return Err( OpenAIError::WsInvalidMessage( "Did not receive expected response.created confirmation".to_string() ) );
+      return Err( OpenAIError::WsInvalidMessage( "Did not receive expected response.created confirmation".to_string() ).into() );
     }
     else
     {

@@ -135,7 +135,7 @@ async fn integration_test_authentication_with_embeddings()
     output_dimensionality: None,
   };
 
-  let response = client.models().by_name( "text-embedding-004" )
+  let response = client.models().by_name( "gemini-embedding-001" )
   .embed_content( &embed_request )
   .await
   .expect( "Valid authentication should allow embeddings" );

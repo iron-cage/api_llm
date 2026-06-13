@@ -72,7 +72,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   let response = client
   .models()
-  .by_name( "text-embedding-004" )
+  .by_name( "gemini-embedding-001" )
   .embed_content( &embed_request )
   .await?;
 
@@ -154,7 +154,7 @@ println!( "First 5 values : {:?}", &response.embedding.values[ ..5 ] );
 
     let response = client
     .models()
-    .by_name( "text-embedding-004" )
+    .by_name( "gemini-embedding-001" )
     .embed_content( &request )
     .await?;
 
@@ -236,7 +236,7 @@ println!( "   Text {}: \"{}\"", idx2 + 1, texts[ *idx2 ] );
 
   let query_response = client
   .models()
-  .by_name( "text-embedding-004" )
+  .by_name( "gemini-embedding-001" )
   .embed_content( &query_request )
   .await?;
 

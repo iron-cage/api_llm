@@ -1,27 +1,29 @@
-# Operation: Feature Flag Management
+# Operation: Feature Selection
 
 ### Scope
 
-- **Purpose**: Govern how Cargo feature flags are selected, combined, and verified for `api_huggingface` builds and deployments.
-- **Responsibility**: All contributors; feature flag additions or removals require updating this document and the `feature/` doc instance before merge.
-- **In Scope**: Feature selection procedures, combination rules, verification steps, feature tier classification.
-- **Out of Scope**: Source-level implementation details, API method signatures, testing methodology.
+- **Purpose**: Document the step-by-step procedure for selecting, combining, and verifying Cargo feature flags when integrating or building `api_huggingface`.
+- **Responsibility**: Cargo feature selection procedure — identification, verification, and rollback steps.
+- **In Scope**: Feature selection steps, combination rules, verification commands, rollback procedure.
+- **Out of Scope**: Feature flag catalog and tier classification (see `collection/001_features.md`), source-level implementation, API method signatures.
 
 ### Trigger
 
-Adding, removing, or changing any Cargo feature flag in `Cargo.toml`, or selecting features for a new integration of `api_huggingface`.
+Adding, removing, or changing any Cargo feature flag in `Cargo.toml`; or selecting features for a new integration of `api_huggingface`.
 
 ### Prerequisites
 
-- Cargo workspace with `api_huggingface` dependency
-- Understanding of which capability tier is needed (Tier 1 core or Tier 2 enterprise)
-- HuggingFace API key for builds that include `integration`
+| Condition | Verification |
+|-----------|--------------|
+| Cargo workspace with `api_huggingface` dependency configured | `Cargo.toml` or `Cargo.lock` present in workspace |
+| Feature catalog reviewed — Tier 1 vs. Tier 2 distinction understood | `collection/001_features.md` read and available |
+| HuggingFace API key available if `integration` feature is selected | `HUGGINGFACE_API_KEY` set in environment or `-secrets.sh` |
 
-### Steps
+### Procedure Steps
 
-1. Identify required capability tier: Tier 1 (core APIs) or Tier 2 (enterprise features).
+1. Identify required capability tier: Tier 1 (core APIs) or Tier 2 (enterprise features) — see `collection/001_features.md` for the full catalog.
 2. Select the minimum feature set: use `enabled` for types-only, `basic` for core API access, `full` for all features.
-3. Add optional capability features as needed (see Feature Reference below).
+3. Add optional capability features as needed from the catalog.
 4. Verify `integration` feature is present if running integration tests.
 5. Build with `RUSTFLAGS="-D warnings" cargo build --features <selected>` and confirm zero warnings.
 6. Run `cargo nextest run --features <selected>` to verify tests pass for the selected feature combination.
@@ -34,57 +36,17 @@ Build succeeds with zero warnings. All tests for the selected feature set pass. 
 
 Remove the newly added feature flag from `Cargo.toml`. Revert any capability-specific code guarded by the removed feature. Re-run build and tests to confirm clean state.
 
-### Feature Reference
+### Collections
 
-#### Convenience Bundles
+| File | Relationship |
+|------|--------------|
+| `collection/001_features.md` | Feature flag catalog referenced in Steps 1–3 |
 
-| Feature | Includes | Use Case |
-|---------|----------|----------|
-| `default` | `full` (alias) | Development and CI with all features |
-| `full` | `basic` + all enterprise + `integration` | Full capability build |
-| `basic` | `inference` + `embeddings` + `models` + `env-config` | Core APIs without enterprise features |
-| `enabled` | core serialization deps only | Types and serde only, no HTTP |
+### Features
 
-#### Tier 1 — Core API Features
-
-| Feature | Description |
-|---------|-------------|
-| `inference` | Text generation via `/models/{model_id}` |
-| `embeddings` | Embedding generation and feature extraction |
-| `models` | Model metadata and availability queries |
-| `vision` | Image classification, detection, captioning |
-| `audio` | ASR, TTS, audio classification, audio-to-audio |
-| `inference-streaming` | Server-sent event streaming for text generation |
-| `inference-parameters` | `InferenceParameters` for temperature, top-p, etc. |
-| `inference-retry` | Explicit retry logic with exponential backoff |
-| `streaming-control` | Pause, resume, cancel streaming operations |
-| `embeddings-similarity` | Cosine similarity between embedding vectors |
-| `embeddings-batch` | Batch embedding generation |
-| `model-constants` | `Models` struct with named model constants |
-| `env-config` | `HuggingFaceEnvironmentImpl` environment builder |
-| `sync` | Blocking wrappers around all async operations |
-| `logging` | `tracing` integration for request/response logging |
-
-#### Tier 2 — Enterprise Reliability Features
-
-| Feature | Description |
-|---------|-------------|
-| `reliability` | Base reliability module (required by all enterprise features) |
-| `circuit-breaker` | Failure detection with automatic open/close state |
-| `rate-limiting` | Token bucket rate limiter per second/minute/hour |
-| `failover` | Multi-endpoint failover with Priority, RoundRobin, Random, Sticky strategies |
-| `health-checks` | Background endpoint health monitoring |
-| `performance-metrics` | Request latency, throughput, and error rate tracking |
-| `caching` | LRU cache with TTL and eviction statistics |
-| `token-counting` | Token estimation with multiple counting strategies |
-| `dynamic-config` | Runtime configuration updates with watcher callbacks |
-
-#### Testing Features
-
-| Feature | Description |
-|---------|-------------|
-| `integration` | Enables real-API integration tests (requires `HUGGINGFACE_API_KEY`) |
-| `integration-tests` | Internal alias used by `integration` — do not use directly |
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Enterprise reliability features selected via this procedure |
 
 ### Invariants
 
@@ -97,11 +59,11 @@ Remove the newly added feature flag from `Cargo.toml`. Revert any capability-spe
 
 | File | Relationship |
 |------|--------------|
-| `Cargo.toml` | Canonical feature flag definitions — authoritative for all feature names above |
-| `src/lib.rs` | Feature-gated `pub mod` declarations matching the feature table |
+| `Cargo.toml` | Canonical feature flag definitions |
+| `src/lib.rs` | Feature-gated `pub mod` declarations |
 
 ### Tests
 
 | File | Relationship |
 |------|--------------|
-| `tests/docs/operation/01_features.md` | GWT spec scenarios for this doc instance |
+| `tests/docs/operation/01_features.md` | GWT spec scenarios for this procedure |

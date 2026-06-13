@@ -231,5 +231,81 @@ path = "examples/openai_cached_interactive_chat.rs"
 name = "openai_request_batching_demo"
 path = "examples/openai_request_batching_demo.rs"
 
-# NOTE: 19 broken example files tracked in -broken_examples_tracking.md
+# Responses API Examples
+[[example]]
+name = "openai_responses_get"
+path = "examples/openai_responses_get.rs"
+
+[[example]]
+name = "openai_responses_delete"
+path = "examples/openai_responses_delete.rs"
+
+[[example]]
+name = "openai_responses_list_input_items"
+path = "examples/openai_responses_list_input_items.rs"
+
+[[example]]
+name = "openai_responses_cancel"
+path = "examples/openai_responses_cancel.rs"
+
+[[example]]
+name = "openai_responses_update"
+path = "examples/openai_responses_update.rs"
+required-features = [ "enabled" ]
+
+# Realtime API Examples (require websocket feature)
+[[example]]
+name = "openai_realtime_conversation_item_create"
+path = "examples/openai_realtime_conversation_item_create.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_conversation_item_delete"
+path = "examples/openai_realtime_conversation_item_delete.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_conversation_item_retrieve"
+path = "examples/openai_realtime_conversation_item_retrieve.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_conversation_item_truncate"
+path = "examples/openai_realtime_conversation_item_truncate.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_input_audio_buffer_append"
+path = "examples/openai_realtime_input_audio_buffer_append.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_input_audio_buffer_clear"
+path = "examples/openai_realtime_input_audio_buffer_clear.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_input_audio_buffer_commit"
+path = "examples/openai_realtime_input_audio_buffer_commit.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_response_cancel"
+path = "examples/openai_realtime_response_cancel.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_response_create"
+path = "examples/openai_realtime_response_create.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_session_update"
+path = "examples/openai_realtime_session_update.rs"
+required-features = [ "websocket" ]
+
+[[example]]
+name = "openai_realtime_transcription_session_update"
+path = "examples/openai_realtime_transcription_session_update.rs"
+required-features = [ "websocket" ]
 

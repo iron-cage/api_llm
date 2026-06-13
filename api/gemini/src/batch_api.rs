@@ -218,7 +218,7 @@ impl< 'a > BatchApi< 'a >
   ///
   /// # Arguments
   ///
-  /// * `model` - Embedding model name (e.g., "text-embedding-004")
+  /// * `model` - Embedding model name (e.g., "gemini-embedding-001")
   /// * `texts` - Vec of text strings to embed
   ///
   /// # Returns

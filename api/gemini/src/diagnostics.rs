@@ -239,7 +239,7 @@ impl AsCurl for EmbedContentRequest
   #[ inline ]  
   fn as_curl_with_options( &self, options : &CurlOptions ) -> String
   {
-    let url = "https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent";
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent";
     let json_body = curl_helpers::safe_json_serialize( self );
     curl_helpers ::generate_curl_command( url, &json_body, options )
   }

@@ -90,20 +90,3 @@ where
   Ok( results )
   }
 }
-
-#[ cfg( test ) ]
-mod tests
-{
-  use super::*;
-
-  #[ test ]
-  fn test_detection_request_creation()
-  {
-  let request = DetectionRequest
-  {
-      inputs : "base64data".to_string(),
-  };
-
-  assert_eq!( request.inputs, "base64data" );
-  }
-}

@@ -44,14 +44,16 @@ This crate follows a **strict no-mockup policy** for all testing:
 
 ```
 tests/
-├── readme.md                              # This file - testing guide and policies
-├── docs/                                  # Behavioral spec files mirroring docs/ entity instances
-├── api_key_failure_test.rs               # API key validation and loud failure behavior
-├── audio_processing_tests.rs             # Audio content processing tests
+├── readme.md                               # This file - testing guide and policies
+├── docs/                                   # Behavioral spec files mirroring docs/ entity instances
+├── api_key_failure_tests.rs               # API key validation and loud failure behavior
+├── audio_processing_tests.rs              # Audio content processing tests
+├── buffered_streaming_tests.rs            # Buffered streaming feature tests
+├── cache_tests.rs                         # Request caching feature tests
 ├── code_execution_tests.rs               # Code execution feature integration tests
 ├── comprehensive_integration_tests.rs    # Extended real API testing scenarios
 ├── compression_tests.rs                  # HTTP compression feature integration tests
-├── config_optimization_test.rs           # Client configuration optimization tests
+├── config_optimization_tests.rs          # Client configuration optimization tests
 ├── cost_quota_tests.rs                   # Enterprise cost quota management tests
 ├── count_tokens_tests.rs                 # Real count tokens API functionality
 ├── dynamic_configuration_tests.rs        # Hot-reload config change tests
@@ -59,7 +61,7 @@ tests/
 ├── enhanced_rate_limiting_tests.rs       # Rate limiting enterprise feature tests
 ├── enhanced_retry_logic_tests.rs         # Retry logic with exponential backoff tests
 ├── enterprise_quota_management_tests.rs  # Quota enforcement tests
-├── example_validation_test.rs            # Documentation example validation
+├── example_validation_tests.rs           # Documentation example validation
 ├── failover_tests.rs                     # Multi-endpoint failover tests
 ├── health_checks_tests.rs                # Periodic health monitoring tests
 ├── integration_tests.rs                  # Core real API integration tests
@@ -69,7 +71,7 @@ tests/
 ├── structured_logging_tests.rs           # Logging and diagnostics tests
 ├── sync_api_tests.rs                     # Synchronous API wrapper tests
 ├── system_instructions_tests.rs          # System prompt configuration tests
-├── test_harness.rs                       # Shared test utilities and harness
+├── templates_tests.rs                    # Request template feature tests
 ├── websocket_streaming_tests.rs          # WebSocket bidirectional streaming tests
 ├── common/                               # Shared test infrastructure
 ├── deployment/                           # Deployment scenario tests
@@ -321,23 +323,44 @@ let client = match create_test_client()
 
 ### Current Test Coverage
 
-- **Total Tests**: 67 test functions across 10 test files
-- **Integration Tests**: 54 real API endpoint tests
-- **Unit Tests**: 13 component isolation tests
+- **Total Tests**: ~324 test functions across 35 test files
+- **Integration Tests**: real API endpoint tests (require `GEMINI_API_KEY`)
+- **Unit Tests**: pure unit tests (no API key required)
 - **Success Rate**: 100% (when API key is available)
 
 ### Test Categories Breakdown
 
-| Category | Count | Type | API Required |
-|----------|-------|------|--------------|
-| Core Integration | 13 | Real API | Yes |
-| Comprehensive Integration | 10 | Real API | Yes |
-| Count Tokens | 8 | Real API | Yes |
-| Sync API | 7 | Real API | Yes |
-| Batch Operations | 10 | Real API | Yes |
-| Example Validation | 14 | Real API | Yes |
-| Audio Processing | 5 | Real API | Yes |
-| Unit Tests | 13 | Pure Unit | No |
+| Category | File(s) | Count | Type | API Required |
+|----------|---------|-------|------|--------------|
+| Core Integration | `integration_tests.rs` | 13 | Real API | Yes |
+| Comprehensive Integration | `comprehensive_integration_tests.rs` | 16 | Real API | Yes |
+| Count Tokens | `count_tokens_tests.rs` | 8 | Real API | Yes |
+| Sync API | `sync_api_tests.rs` | 8 | Real API | Yes |
+| Enterprise Cost Quota | `cost_quota_tests.rs` | 26 | Real API | Yes |
+| Enterprise Quota Mgmt | `enterprise_quota_management_tests.rs` | 16 | Real API | Yes |
+| Example Validation | `example_validation_tests.rs` | 14 | Real API | Yes |
+| Audio Processing | `audio_processing_tests.rs` | 7 | Real API | Yes |
+| Code Execution | `code_execution_tests.rs` | 8 | Real API | Yes |
+| Compression | `compression_tests.rs` | 18 | Real API | Yes |
+| Dynamic Config | `dynamic_configuration_tests.rs` | 15 | Real API | Yes |
+| Failover | `failover_tests.rs` | 9 | Real API | Yes |
+| Health Checks | `health_checks_tests.rs` | 6 | Real API | Yes |
+| Model Comparison | `model_comparison_tests.rs` | 8 | Real API | Yes |
+| Streaming Control | `streaming_control_tests.rs` | 14 | Real API | Yes |
+| Streaming Optimization | `streaming_optimization_tests.rs` | 4 | Real API | Yes |
+| Structured Logging | `structured_logging_tests.rs` | 9 | Real API | Yes |
+| System Instructions | `system_instructions_tests.rs` | 5 | Real API | Yes |
+| WebSocket Streaming | `websocket_streaming_tests.rs` | 12 | Real API | Yes |
+| Circuit Breaker | `enhanced_circuit_breaker_tests.rs` | 7 | Unit | No |
+| Rate Limiting | `enhanced_rate_limiting_tests.rs` | 7 | Unit | No |
+| Retry Logic | `enhanced_retry_logic_tests.rs` | 7 | Unit | No |
+| Caching | `cache_tests.rs` | 6 | Unit | No |
+| API Key Failure | `api_key_failure_tests.rs` | 5 | Unit | No |
+| Buffered Streaming | `buffered_streaming_tests.rs` | 5 | Unit | No |
+| Templates | `templates_tests.rs` | 8 | Unit | No |
+| Deployment | `deployment/` | 26 | Mixed | Mixed |
+| Media API | `media_api/` | 20 | Real API | Yes |
+| Safety | `safety/` | 16 | Mixed | Mixed |
 
 ## 🔄 Continuous Integration
 

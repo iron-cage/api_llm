@@ -17,7 +17,6 @@
 
 #![ cfg( feature = "integration" ) ]
 
-#[ allow( clippy::duplicate_mod ) ]
 #[ path = "common/mod.rs" ] mod common;
 use common::create_integration_client;
 
@@ -132,7 +131,7 @@ async fn integration_test_embeddings_real_api()
   // Real API call for embeddings
   let result = client
   .models()
-  .by_name( "text-embedding-004" )
+  .by_name( "gemini-embedding-001" )
   .embed_content( &request )
   .await;
   
@@ -293,7 +292,7 @@ async fn integration_test_chat_completion_real_api()
       content: "What is 2+2? Answer with just the number.".to_string(),
     } ],
     model: "gemini-flash-latest".to_string(),
-    max_tokens: Some( 50 ),
+    max_tokens: None,
     temperature: Some( 0.1 ),
     ..Default::default()
   };
@@ -304,7 +303,11 @@ assert!( result.is_ok(), "Failed chat completion with real API: {:?}", result.er
   
   let response = result.unwrap();
   assert!( !response.choices.is_empty(), "No choices returned from real chat API" );
-assert!( response.choices[0].message.content.contains( '4' ), "Chat response incorrect : {}", response.choices[0].message.content );
+  let content = &response.choices[0].message.content;
+assert!( !content.is_empty(), "Chat response must not be empty — model returned no text content" );
+  // Verify the model answered the arithmetic correctly
+  let contains_answer = content.contains( '4' ) || content.to_lowercase().contains( "four" );
+assert!( contains_answer, "Chat response should contain '4' or 'four' for 2+2 question : {content}" );
 }
 
 // ==============================================================================

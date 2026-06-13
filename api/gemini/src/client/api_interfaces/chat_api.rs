@@ -246,12 +246,44 @@ impl ChatApi< '_ >
     
     for ( index, candidate ) in response.candidates.into_iter().enumerate()
     {
-      // Optimized content extraction with better error handling
-      let content = if let Some( first_part ) = candidate.content.parts.into_iter().next()
+      // Skip thinking parts (thought == true) — gemini-2.5+ returns internal reasoning
+      // steps before the final answer; only the answer parts belong in the response.
+      // Fix(PRB): when gemini-flash-latest (thinking model) returns the answer exclusively
+      // in thought parts with empty non-thinking parts, fall back to thinking text so the
+      // response is not empty.
+      // Root cause: PRB thought-filter skipped fallback path; non-thinking parts are empty
+      //   for simple queries on gemini-2.5-flash where answer is embedded in thinking.
+      // Pitfall: never use .unwrap_or_default() alone after thought filter — always fall back.
+      let parts = candidate.content.parts;
+      let content_opt = parts.iter()
+        .filter( |part| part.thought != Some( true ) )
+        .find_map( |part| part.text.as_ref().filter( |t| !t.is_empty() ) )
+        .cloned()
+        .or_else( || {
+          parts.iter()
+            .filter( |part| part.thought == Some( true ) )
+            .find_map( |part| part.text.as_ref().filter( |t| !t.is_empty() ) )
+            .cloned()
+        } );
+
+      // When both passes yield nothing, surface diagnostic info instead of silently
+      // returning empty string — empty chat content is always an API anomaly.
+      let content = match content_opt
       {
-        first_part.text.unwrap_or_else( String::new )
-      } else {
-        String::new()
+        Some( text ) => text,
+        None =>
+        {
+          let parts_diag : Vec< String > = parts.iter().enumerate().map( |( i, p )|
+            format!( "[{i}] thought={:?} text_len={}", p.thought, p.text.as_deref().map_or( 0, str::len ) )
+          ).collect();
+          return Err( crate::error::Error::ApiError( format!(
+            "Model '{}' candidate {index} returned no extractable text content. \
+             parts_count={} parts={parts_diag:?} finish_reason={:?}",
+            request.model,
+            parts.len(),
+            candidate.finish_reason.as_deref().unwrap_or( "none" ),
+          ) ) );
+        }
       };
 
       let message = ChatMessage

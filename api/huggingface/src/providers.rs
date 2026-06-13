@@ -15,89 +15,18 @@ mod private
   #[ cfg( feature = "env-config" ) ]
   use crate::environment::{ HuggingFaceEnvironment, EnvironmentInterface };
 
+  pub use crate::components::inference_shared::
+  {
+  ChatMessage,
+  ChatCompletionRequest,
+  ChatCompletionResponse,
+  ChatChoice,
+  ChatUsage as Usage,
+  ToolDefinition,
+  };
+
+  use crate::components::tools::Tool;
   use serde::{ Serialize, Deserialize };
-
-  /// Chat completion request for the Inference Providers API
-  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
-  pub struct ChatCompletionRequest
-  {
-  /// Model identifier (e.g., "meta-llama/Llama-2-7b-chat-hf")
-  pub model : String,
-  
-  /// List of messages in the conversation
-  pub messages : Vec< ChatMessage >,
-  
-  /// Maximum number of tokens to generate
-  #[ serde( skip_serializing_if = "Option::is_none" ) ]
-  pub max_tokens : Option< u32 >,
-  
-  /// Sampling temperature (0.0 to 2.0)
-  #[ serde( skip_serializing_if = "Option::is_none" ) ]
-  pub temperature : Option< f32 >,
-  
-  /// Top-p sampling parameter
-  #[ serde( skip_serializing_if = "Option::is_none" ) ]
-  pub top_p : Option< f32 >,
-  
-  /// Whether to stream the response
-  #[ serde( skip_serializing_if = "Option::is_none" ) ]
-  pub stream : Option< bool >,
-  }
-
-  pub use crate::components::inference_shared::ChatMessage;
-
-  /// Response from the chat completions endpoint
-  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
-  pub struct ChatCompletionResponse
-  {
-  /// Unique identifier for the completion
-  pub id : String,
-  
-  /// Object type (should be "chat.completion")
-  pub object : String,
-  
-  /// Unix timestamp of when the completion was created
-  pub created : u64,
-  
-  /// Model that was used for the completion
-  pub model : String,
-  
-  /// List of completion choices
-  pub choices : Vec< ChatChoice >,
-  
-  /// Usage statistics for the request
-  #[ serde( skip_serializing_if = "Option::is_none" ) ]
-  pub usage : Option< Usage >,
-  }
-
-  /// A single choice in the chat completion response
-  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
-  pub struct ChatChoice
-  {
-  /// Index of this choice in the list
-  pub index : u32,
-  
-  /// The generated message
-  pub message : ChatMessage,
-  
-  /// Reason why the generation finished
-  #[ serde( skip_serializing_if = "Option::is_none" ) ]
-  pub finish_reason : Option< String >,
-  }
-
-  /// Token usage statistics
-  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
-  pub struct Usage
-  {
-  /// Number of tokens in the prompt
-  pub prompt_tokens : u32,
-  
-  /// Number of tokens in the completion
-  pub completion_tokens : u32,
-  
-  /// Total number of tokens used
-  pub total_tokens : u32,
-  }
 
   /// Supported inference providers
   #[ derive( Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize ) ]
@@ -253,6 +182,8 @@ mod private
   temperature,
   top_p,
   stream : Some( false ), // Non-streaming for now
+  tools : None,
+  tool_choice : None,
       };
 
       let url = self.client.environment.endpoint_url( "chat/completions" )?;
@@ -367,13 +298,13 @@ mod private
   pub async fn chat_completion_with_tools(
       &self,
       model : impl AsRef< str >,
-      messages : Vec< crate::components::inference_shared::ChatMessage >,
-      tools : Vec< crate::components::tools::Tool >,
+      messages : Vec< ChatMessage >,
+      tools : Vec< Tool >,
       tool_choice : Option< String >,
       max_tokens : Option< u32 >,
       temperature : Option< f32 >,
       top_p : Option< f32 >,
-  ) -> Result< crate::components::inference_shared::ChatCompletionResponse >
+  ) -> Result< ChatCompletionResponse >
   {
       let model_id = model.as_ref();
 
@@ -392,11 +323,11 @@ mod private
       }
 
       // Convert tools to ToolDefinition format
-      let tool_definitions : Vec< crate::components::inference_shared::ToolDefinition > = tools
+      let tool_definitions : Vec< ToolDefinition > = tools
   .into_iter()
   .map( | tool |
   {
-          crate::components::inference_shared::ToolDefinition
+          ToolDefinition
           {
       tool_type : "function".to_string(),
       function : tool,
@@ -404,7 +335,7 @@ mod private
   } )
   .collect();
 
-      let request = crate::components::inference_shared::ChatCompletionRequest
+      let request = ChatCompletionRequest
       {
   model : model_id.to_string(),
   messages,
@@ -447,10 +378,11 @@ crate::mod_interface!
   {
   Providers,
   ChatCompletionRequest,
-  ChatCompletionResponse, 
+  ChatCompletionResponse,
   ChatMessage,
   ChatChoice,
   Usage,
+  ToolDefinition,
   InferenceProvider,
   };
 }

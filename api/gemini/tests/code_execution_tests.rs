@@ -44,6 +44,7 @@ let code_execution_config = CodeExecution {};
         function_response: None,
         file_data: None,
         video_metadata: None,
+        thought: None,
       } ],
       role: "user".to_string(),
     } ],

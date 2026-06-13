@@ -276,7 +276,7 @@ async fn test_performance_monitoring_logging()
   
   let client = create_logging_client();
   let models_api = client.models();
-  let model = models_api.by_name( "text-embedding-004" );
+  let model = models_api.by_name( "gemini-embedding-001" );
   
   // Perform operation that should be monitored
   let result = model.embed_text( "Performance monitoring test" ).await;
@@ -384,7 +384,7 @@ async fn test_batch_operations_logging()
   
   let client = create_logging_client();
   let models_api = client.models();
-  let model = models_api.by_name( "text-embedding-004" );
+  let model = models_api.by_name( "gemini-embedding-001" );
   
   let texts = vec![
   "Batch logging test 1",
@@ -471,7 +471,7 @@ async fn test_span_context_propagation()
   let result = async {
     let client = create_logging_client();
     let models_api = client.models();
-    let model = models_api.by_name( "text-embedding-004" );
+    let model = models_api.by_name( "gemini-embedding-001" );
   
     model.embed_text( "Context propagation test" ).await
   }.instrument( operation_span ).await;

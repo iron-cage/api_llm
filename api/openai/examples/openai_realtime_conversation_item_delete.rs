@@ -10,9 +10,8 @@ use api_openai::ClientApiAccessors;
 #[ allow( unused_imports ) ]
 use api_openai::
 {
-  client ::Client,
+  Client,
   error ::OpenAIError,
-  api ::realtime::{ RealtimeClient, ws::WsSession },
   components ::realtime_shared::
   {
     RealtimeSessionCreateRequest,
@@ -20,29 +19,35 @@ use api_openai::
     RealtimeConversationItem,
     RealtimeClientEventConversationItemCreate,
     RealtimeClientEventConversationItemDelete,
+    RealtimeClientEvent,
     RealtimeServerEvent,
   },
   components ::common::ModelIds,
 };
 
 
-use tracing_subscriber::{ EnvFilter, fmt }; // Added for logging
 use std::sync::{ Arc, Mutex }; // To share the item ID
 
 #[ tokio::main( flavor = "current_thread" ) ]
-async fn main() -> Result< (), OpenAIError >
+async fn main() -> Result< (), Box< dyn core::error::Error > >
 {
   // Setup tracing for logging
-  fmt()
-  .with_env_filter( EnvFilter::from_default_env().add_directive( "api_openai=trace".parse().unwrap() ) )
-  .init();
+  tracing_subscriber::fmt::init();
 
   // Load environment variables
-  dotenv ::from_filename( "./secret/-secret.sh" ).ok();
 
   // 1. Create a new OpenAI client.
   tracing ::info!( "Initializing client..." );
-  let client = Client::new();
+  let secret = api_openai::secret::Secret::load_with_fallbacks( "OPENAI_API_KEY" )
+    .expect( "Failed to load OPENAI_API_KEY. Please set environment variable or add to workspace secrets file." );
+  let env = api_openai::environment::OpenaiEnvironmentImpl::build(
+    secret,
+    None,
+    None,
+    api_openai::environment::OpenAIRecommended::base_url().to_string(),
+    api_openai::environment::OpenAIRecommended::realtime_base_url().to_string(),
+  ).expect( "Failed to create environment" );
+  let client = Client::build( env ).expect( "Failed to create client" );
 
   // 2. Create the request payload to initiate the session.
   tracing ::info!( "Building realtime session request..." );
@@ -53,12 +58,12 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending request to OpenAI API to create session..." );
   // 3. Call the API endpoint to get session details.
-  let session = client.realtime().create( request ).await?;
+  let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let token = session.client_secret.value;
+  let _token = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
-  let session_client  = WsSession::connect( client.environment().clone(), Some( &token ) ).await?;
+  let session_client = client.realtime().connect_ws( &session.id ).await?;
 
   // --- Create an item first to get its ID ---
   let item_id_to_delete = Arc::new( Mutex::new( None::< String > ) );
@@ -83,13 +88,14 @@ async fn main() -> Result< (), OpenAIError >
 
   tracing ::info!( "Sending conversation.item.create event to get an item ID..." );
   // 8. Send the create event over the WebSocket.
-  session_client.conversation_item_create( cic_create ).await?;
+  session_client.send_event( RealtimeClientEvent::ConversationItemCreate( cic_create ) ).await?;
 
   // 9. Loop to read responses, specifically looking for the creation confirmation.
   tracing ::info!( "Waiting for conversation.item.created confirmation to get ID..." );
   loop
   {
-    let response = session_client.read_event().await;
+    let response = session_client.recv_event().await.map( Some );
+    #[ allow( unreachable_patterns ) ]
     match response
     {
       Ok( Some( event ) ) =>
@@ -109,7 +115,7 @@ if let Some(id) = created_event.item.id
             else
             {
               eprintln!( "Created item did not have an ID!" );
-              return Err( OpenAIError::WsInvalidMessage("Created item missing ID".to_string()) );
+              return Err( OpenAIError::WsInvalidMessage( "Created item missing ID".to_string() ).into() );
             }
           }
           // Handle other events if necessary while waiting
@@ -119,7 +125,7 @@ if let Some(id) = created_event.item.id
       Err( e ) =>
       {
         eprintln!( "\nError reading from WebSocket : {:?}", e );
-        return Err( e );
+        return Err( e.into() );
       }
       _ => {}
     }
@@ -140,14 +146,15 @@ if item_id.is_none()
 
   tracing ::info!( item_id = %item_id, "Sending conversation.item.delete event..." );
   // 11. Send the delete event over the WebSocket.
-  session_client.conversation_item_delete( cid_delete ).await?;
+  session_client.send_event( RealtimeClientEvent::ConversationItemDelete( cid_delete ) ).await?;
 
   // 12. Loop to read responses, specifically looking for the deletion confirmation.
   tracing ::info!( "Waiting for conversation.item.deleted confirmation..." );
   let mut confirmation_received = false;
   loop
   {
-    let response = session_client.read_event().await;
+    let response = session_client.recv_event().await.map( Some );
+    #[ allow( unreachable_patterns ) ]
     match response
     {
       Ok( Some( event ) ) =>
@@ -181,7 +188,7 @@ if item_id.is_none()
       Err( e ) =>
       {
         eprintln!( "\nError reading from WebSocket : {:?}", e );
-        return Err( e ); // Propagate the error
+        return Err( e.into() ); // Propagate the error
       }
     }
   }
@@ -189,7 +196,7 @@ if item_id.is_none()
   if !confirmation_received
   {
     eprintln!("Loop finished without receiving conversation.item.deleted confirmation.");
-    return Err( OpenAIError::WsInvalidMessage( "Did not receive expected deletion confirmation".to_string() ) );
+    return Err( OpenAIError::WsInvalidMessage( "Did not receive expected deletion confirmation".to_string() ).into() );
   }
 
   Ok( () )

@@ -213,7 +213,7 @@ async fn example()
 | gemini-2.5-flash | 1M tokens | Yes | Latest stable |
 | gemini-1.5-pro | 1M tokens | Yes | Full capabilities |
 | gemini-1.5-flash | 1M tokens | Yes | Fast, cost-effective |
-| text-embedding-004 | - | No | Embeddings only |
+| gemini-embedding-001 | - | No | Embeddings only |
 
 ## Documentation
 

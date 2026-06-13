@@ -46,6 +46,11 @@ pub struct Part
   #[ serde( skip_serializing_if = "Option::is_none" ) ]
   /// Video metadata for video content
   pub video_metadata : Option< VideoMetadata >,
+
+  #[ serde( skip_serializing_if = "Option::is_none" ) ]
+  /// Whether this part is an internal thinking step (gemini-2.5+ thinking models).
+  /// Thinking parts should not be included in the user-visible response.
+  pub thought : Option< bool >,
 }
 
 /// Binary data with MIME type.

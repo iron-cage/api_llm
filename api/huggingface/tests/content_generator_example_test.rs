@@ -16,9 +16,11 @@ use api_huggingface::
   input::InferenceParameters,
   models::Models,
   },
-  secret::Secret,
 };
 use std::{ collections::HashMap, time::Instant };
+
+#[ cfg( feature = "integration" ) ]
+use api_huggingface::secret::Secret;
 
 #[ allow( missing_docs ) ]
 /// Content types supported by the generator
@@ -531,6 +533,7 @@ mod tests
   Client::build( env ).expect( "Failed to create client" )
   }
 
+  #[ cfg( feature = "integration" ) ]
   fn create_sample_templates() -> Vec< ContentTemplate >
   {
   vec!
