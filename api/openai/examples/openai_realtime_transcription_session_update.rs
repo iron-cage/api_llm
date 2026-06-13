@@ -119,7 +119,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             // Verify the updated fields if possible
             let updated_session = updated_event.session;
             let lang_matches = updated_session.input_audio_transcription.as_ref()
-            .map_or( false, | t | t.language.as_deref() == Some( new_language ) );
+            .is_some_and( | t | t.language.as_deref() == Some( new_language ) );
             let include_matches = updated_session.input_audio_transcription.as_ref()
             .and_then( | iat | iat.model.as_deref() ) == Some( new_model );
 

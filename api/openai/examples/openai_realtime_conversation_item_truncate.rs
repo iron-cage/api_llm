@@ -114,7 +114,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
           // println!( "{created_event:?}" ); // Reduce verbosity
           if let Some(id) = created_event.item.id
           {
-            println!("User message ID: {}", id);
+            println!( "User message ID: {id}" );
             *user_message_id_clone.lock().unwrap() = Some(id);
           }
           break; // User message confirmed, proceed to trigger response
@@ -168,7 +168,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
           println!( "\n--- Response Created ---" );
           // println!( "{created_event:?}" );
           let resp_id = created_event.response.id;
-          println!( "Response ID: {}", resp_id );
+          println!( "Response ID: {resp_id}" );
           *response_id_clone_for_listener.lock().unwrap() = Some( resp_id );
         }
         RealtimeServerEvent::ResponseOutputItemAdded( added_event ) =>
@@ -186,7 +186,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             {
               if let Some( id ) = added_event.item.id.clone()
               {
-                println!( "Captured potential assistant item ID: {}", id );
+                println!( "Captured potential assistant item ID: {id}" );
                 *assistant_item_id_clone.lock().unwrap() = Some( id );
                 // Don't break yet, wait for ResponseDone
               }
@@ -211,18 +211,12 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             {
               break;
             }
-            else
-            {
-              // Response finished, but we never saw an assistant item added?
-              tracing ::warn!( "Response finished, but no assistant item ID was captured." );
-              // Break here anyway, the next step will fail gracefully.
-              break;
-            }
+            // Response finished, but we never saw an assistant item added?
+            tracing ::warn!( "Response finished, but no assistant item ID was captured." );
+            // Break here anyway, the next step will fail gracefully.
+            break;
           }
-          else
-          {
-            println!( "Received ResponseDone for an unexpected response ID: {}", done_event.response.id );
-          }
+          println!( "Received ResponseDone for an unexpected response ID: {}", done_event.response.id );
         }
         // Handle deltas etc. - Reduce verbosity
         RealtimeServerEvent::ResponseTextDelta( _ ) |
@@ -237,7 +231,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() );
       }
     }
@@ -305,13 +299,13 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             // If the error relates to our request, treat it as a form of "completion" (though unsuccessful)
             if error_event.error.message.contains( &item_id_to_truncate ) || error_event.error.param.as_deref() == Some( "item_id" )
             {
-              eprintln!( "Server error likely related to the truncation request for item {}.", item_id_to_truncate );
+              eprintln!( "Server error likely related to the truncation request for item {item_id_to_truncate}." );
               // Break, but don't confirm success
               break;
             }
             else if error_event.error.param.as_deref() == Some( "audio_end_ms" )
             {
-              eprintln!( "Server error likely related to invalid audio_end_ms for item {}.", item_id_to_truncate );
+              eprintln!( "Server error likely related to invalid audio_end_ms for item {item_id_to_truncate}." );
               break;
             }
             else if error_event.error.message.contains( "truncate" )
@@ -331,7 +325,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }
@@ -339,7 +333,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   if !confirmation_received
   {
-    eprintln!( "Loop finished without receiving specific conversation.item.truncated confirmation for item {}.", item_id_to_truncate );
+    eprintln!( "Loop finished without receiving specific conversation.item.truncated confirmation for item {item_id_to_truncate}." );
     // Consider the case where an expected error was received
     // If the goal is just to test sending, maybe Ok(()) is fine even if an error occurred.
     // But for demonstrating successful truncation, we need the confirmation.

@@ -27,16 +27,16 @@ mod retry_calculation_tests
     let delay_3 = config.calculate_delay( 3 );
 
     // Attempt 0: 1000 * 2^0 = 1000ms
-    assert_eq!( delay_0, Duration::from_millis( 1000 ) );
+    assert_eq!( delay_0, Duration::from_secs( 1 ) );
 
     // Attempt 1: 1000 * 2^1 = 2000ms
-    assert_eq!( delay_1, Duration::from_millis( 2000 ) );
+    assert_eq!( delay_1, Duration::from_secs( 2 ) );
 
     // Attempt 2: 1000 * 2^2 = 4000ms
-    assert_eq!( delay_2, Duration::from_millis( 4000 ) );
+    assert_eq!( delay_2, Duration::from_secs( 4 ) );
 
     // Attempt 3: 1000 * 2^3 = 8000ms
-    assert_eq!( delay_3, Duration::from_millis( 8000 ) );
+    assert_eq!( delay_3, Duration::from_secs( 8 ) );
   }
 
   #[ tokio::test ]
@@ -50,7 +50,7 @@ mod retry_calculation_tests
     let delay = config.calculate_delay( 0 );
 
     // Should be at least base_delay (1000ms)
-    assert!( delay >= Duration::from_millis( 1000 ) );
+    assert!( delay >= Duration::from_secs( 1 ) );
 
     // Should be at most base_delay + jitter (1500ms)
     assert!( delay <= Duration::from_millis( 1500 ) );
@@ -69,6 +69,6 @@ mod retry_calculation_tests
     let delay = config.calculate_delay( 10 ); // 1000 * 2^10 = 1024000ms
 
     // Should be capped at max_delay
-    assert_eq!( delay, Duration::from_millis( 5000 ) );
+    assert_eq!( delay, Duration::from_secs( 5 ) );
   }
 }

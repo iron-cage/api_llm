@@ -6,4 +6,4 @@ GWT spec scenarios mirroring `docs/collection/` instances. Uses CL- ID prefix.
 
 | File | Purpose | Status |
 |------|---------|--------|
-| `01_features.md` | CL-01..CL-07 scenarios for `docs/collection/001_features.md` | ⏳ |
+| `01_features.md` | CL-01..CL-07 scenarios for `docs/collection/001_features.md` | ✅ |

@@ -1,4 +1,5 @@
 //! Example of listing input items for a response using the OpenAI Responses API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Demonstrates creating a response and listing its input items.
 //!

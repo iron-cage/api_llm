@@ -24,7 +24,7 @@ async fn test_client_timeout_configuration()
     .with_timeout( Duration::from_millis( 10 ) );
     
   let mut long_client = OllamaClient::new( "http://timeout.test:99999".to_string(), OllamaClient::recommended_timeout_fast() )
-    .with_timeout( Duration::from_millis( 1000 ) );
+    .with_timeout( Duration::from_secs( 1 ) );
   
   // Both should fail, but short timeout should fail faster
   let start = std::time::Instant::now();
@@ -40,8 +40,8 @@ async fn test_client_timeout_configuration()
   
   // Both should complete quickly since DNS resolution fails fast
   // Test that both clients can be configured with different timeouts
-  assert!( short_duration < Duration::from_millis( 5000 ) ); // Reasonable upper bound
-  assert!( long_duration < Duration::from_millis( 5000 ) ); // Reasonable upper bound
+  assert!( short_duration < Duration::from_secs( 5 ) ); // Reasonable upper bound
+  assert!( long_duration < Duration::from_secs( 5 ) ); // Reasonable upper bound
   
   // Real test is that they both fail gracefully regardless of timeout
 }
@@ -109,7 +109,7 @@ async fn test_client_configuration_persistence()
   let duration = start.elapsed();
   
   // Should still respect the timeout configuration
-  assert!( duration < Duration::from_millis( 1000 ), "Timeout configuration should persist" );
+  assert!( duration < Duration::from_secs( 1 ), "Timeout configuration should persist" );
 }
 
 #[ tokio::test ]

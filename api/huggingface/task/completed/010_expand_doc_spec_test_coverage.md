@@ -6,7 +6,7 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** ❓ (Unverified)
+- **State:** ✅ (Completed)
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** tests/
@@ -54,12 +54,12 @@ Execute in order. Do not skip or reorder steps.
 
 5. **Confirm Cargo.toml feature entries** — read `Cargo.toml` features section to confirm the exact `basic` and `default` entries. Record the exact strings used (feature names and quoted members) as assertion targets for `test_cl_06` and `test_cl_07`.
 
-6. **Read existing `tests/doc_spec_tests.rs`** — confirm the 38 existing functions (`grep -cE "^(async )?fn test_"` returns 38) and the exact position at the end of the PF section; this is the insertion point.
+6. **Read existing `tests/doc_spec_tests.rs`** — confirm the 38 existing functions (`grep -cE "^(async )?fn test_"` returns 38) and the exact position at the end of the PF section; this is the insertion point. Also read the `#[ cfg( feature = "integration" ) ]` use block at the top of the file (lines 8-15); `test_ap_07` requires adding `components::inference_shared::ChatMessage` to this block. Extend the block with `components::inference_shared::ChatMessage,` before the closing brace — this is an addition to the existing use block, not a modification of any existing function.
 
 7. **Add `test_ap_07`** — integration test for AP-07 (chat completion returns assistant reply):
    - Doc comment: `/// AP-07: Chat completion returns assistant reply`
    - Gates: `#[ cfg( feature = "integration" ) ]` then `#[ tokio::test ]`
-   - Body: call `inc::get_api_key_for_integration()`; build client; construct a single-element messages vec with `ChatMessage { role: "user".to_string(), content: "What is 2+2?".to_string() }`; call `client.providers().chat_completion( "meta-llama/Llama-3.3-70B-Instruct", messages, None, None, None ).await.expect( "chat_completion call should succeed" )`; assert `!response.choices[ 0 ].message.content.is_empty()`
+   - Body: call `inc::get_api_key_for_integration()`; build client via `build_integration_client()`; construct a single-element messages vec: `vec![ ChatMessage { role: "user".to_string(), content: "What is 2+2?".to_string(), tool_calls: None, tool_call_id: None } ]`; call `client.providers().chat_completion( "meta-llama/Llama-3.3-70B-Instruct", messages, None, None, None ).await.expect( "chat_completion call should succeed" )`; assert `!response.choices[ 0 ].message.content.is_empty()`
 
 8. **Add `test_fe_06`** — static analysis for FE-06 (no cross-module shared state):
    - Doc comment: `/// FE-06: Enterprise feature modules do not share global static state`
@@ -88,7 +88,7 @@ Execute in order. Do not skip or reorder steps.
 
 | # | Scenario ID | Input | Config Under Test | Expected Behavior |
 |---|------------|-------|-------------------|-------------------|
-| T01 | AP-07 | `ChatMessage { role: "user", content: "What is 2+2?" }`, model `meta-llama/Llama-3.3-70B-Instruct` | `#[cfg(integration)]` + `#[tokio::test]`; `chat_completion(model, messages, None, None, None)` on live Router API | Returns `ChatCompletionResponse` with `choices[0].message.content` non-empty; no panic |
+| T01 | AP-07 | `ChatMessage { role: "user", content: "What is 2+2?", tool_calls: None, tool_call_id: None }`, model `meta-llama/Llama-3.3-70B-Instruct` | `#[cfg(integration)]` + `#[tokio::test]`; `chat_completion(model, messages, None, None, None)` on live Router API | Returns `ChatCompletionResponse` with `choices[0].message.content` non-empty; no panic |
 | T02 | FE-06 | `src/reliability/circuit_breaker.rs`, `src/reliability/rate_limiter.rs`, `src/cache/implementation.rs` | `std::fs::read_to_string`; cross-module `use` path search | No file contains `use` paths importing from a sibling enterprise module; each module is self-contained |
 | T03 | CL-06 | `Cargo.toml`, `basic` feature line | `std::fs::read_to_string`; substring search on feature line | `basic` line contains all 4 Core features; no enterprise or integration feature names present in the line |
 | T04 | CL-07 | `Cargo.toml`, `default` feature line | `std::fs::read_to_string`; exact substring match | File contains `default = ["full"]` confirming single-member alias |
@@ -177,8 +177,40 @@ Execute in order. Do not skip or reorder steps.
 | `tests/docs/feature/` | Test spec docs | Unchanged — FE-06 scenario already defined in `01_enterprise_reliability.md` |
 | `tests/docs/collection/` | Test spec docs | Unchanged — CL-06, CL-07 scenarios already defined in `01_features.md` |
 
+## Verification Findings
+
+**First MAAV run — 2026-06-13** | Implementation Readiness FAIL
+
+| Finding | Location | Issue | Fix Applied |
+|---------|----------|-------|-------------|
+| F1 | Work Procedure step 7, Test Matrix T01 | `client.providers().chat(messages, model)` — method `chat` does not exist in `src/providers.rs`; actual method is `chat_completion(model, messages, max_tokens, temperature, top_p)` with model as first argument | Step 3 updated with confirmed signature; step 7 updated to `chat_completion("meta-llama/Llama-3.3-70B-Instruct", messages, None, None, None)`; T01 updated with correct call |
+| F2 | `tests/docs/api/01_reference.md` AP-07 When clause | Spec used `client.providers().chat(messages, model)` — wrong method name and wrong argument order | AP-07 When clause updated to `client.providers().chat_completion(model, messages, None, None, None)` |
+
+**Second MAAV run — 2026-06-13** | Implementation Readiness FAIL
+
+| Finding | Location | Issue | Fix Applied |
+|---------|----------|-------|-------------|
+| F3 | Work Procedure step 7 | `ChatMessage { role: ..., content: ... }` struct literal omits required fields `tool_calls: Option<Vec<ToolCall>>` and `tool_call_id: Option<String>` — struct has no `Default` impl; compile error without all 4 fields | Step 7 updated to `ChatMessage { role: ..., content: ..., tool_calls: None, tool_call_id: None }`; T01 updated |
+| F4 | Work Procedure (missing step) | No instruction to extend the `#[cfg(feature = "integration")]` use block with `ChatMessage` import; test_ap_07 uses `ChatMessage` but the existing use block only imports `Client`, `HuggingFaceEnvironmentImpl`, `Secret`, `HuggingFaceError` — unresolved name compile error | Step 6 extended with explicit instruction to add `components::inference_shared::ChatMessage` to the existing integration use block |
+
 ## History
 
 *(append-only — newest entry last; never edit or remove past entries)*
 
 - **2026-06-13** `CREATED` — Task filed after doc_tsk normalization session added AP-07, FE-06, CL-06, CL-07 spec scenarios with zero implementing functions. Extends the same target file as task 008 (Related: 008) and task 009 (Related: 009); those tasks' Out of Scope explicitly excluded new scenarios added after their execution. No dedup match (Case A — all prior similar tasks are Completed).
+- **2026-06-13** `REVISED` — First MAAV (4 agents) returned 1 FAIL (Implementation Readiness): `src/providers.rs` has no `chat()` method — the actual method is `chat_completion(model, messages, None, None, None)` with model as the first argument. AP-07 spec in `tests/docs/api/01_reference.md` also used the wrong method name — fixed to `client.providers().chat_completion(model, messages, None, None, None)`. Applied fixes to Work Procedure step 3 and step 7, Test Matrix T01, and Related Documentation.
+- **2026-06-13** `REVISED` — Second MAAV (4 agents) returned 1 FAIL (Implementation Readiness): (1) `ChatMessage` has 4 fields (`role`, `content`, `tool_calls`, `tool_call_id`) — struct literal in step 7 only specified 2, causing compile error; fixed to include all 4 with `None` for the optional pair. (2) No instruction to add `ChatMessage` to the existing integration use block — fixed by extending step 6 with an explicit import block amendment instruction. Applied fixes to step 6, step 7, and Test Matrix T01.
+- **2026-06-13** `VERIFIED` — Third MAAV gate passed (4 independent subagents). State → 🎯 (Verified).
+- **2026-06-13** `EXECUTED` — 4 functions inserted into `tests/doc_spec_tests.rs` before Helpers section. Edit 1: `ChatMessage` added to integration use block. Edit 2: `test_ap_07`, `test_fe_06`, `test_cl_06`, `test_cl_07` inserted. `grep -cE` → 42. `cargo nextest run -E 'test(test_fe_06)|test(test_cl_06)|test(test_cl_07)'` → 3/3 PASS. Full unit suite (473 tests) → 473/473 PASS. Status readmes updated to ✅. State → ✅ (Completed).
+
+## Verification Record
+
+**Date:** 2026-06-13
+**Method:** MAAV — 4 independent parallel Agent subagents (third run, after two REVISED passes)
+
+| Dimension | Result | Summary |
+|-----------|--------|---------|
+| Scope Coherence | PASS | In Scope: 1 file, 4 named functions, concrete insertion point. Out of Scope: 5 explicit exclusions covering realistic drift areas. End-state: 3 machine-verifiable shell commands. No contradictions found. |
+| MOST Goal Quality | PASS | M: gap stated with specific session and scenario IDs. O: 3 exact grep/cargo commands with expected outputs. S: bounded to single file (`tests/doc_spec_tests.rs`). T: 16-item checklist + 3 measurements + 4 anti-faking checks independently executable. |
+| Value / YAGNI | PASS | All 4 scenarios confirmed in committed spec files; zero implementing functions confirmed by grep. Prior tasks 008/009 explicitly exclude these scenarios. No speculative work. |
+| Implementation Readiness | PASS | Baseline 38 confirmed. `chat_completion` signature confirmed (model first, then messages, 3 Option params). `ChatMessage` 4-field struct literal confirmed in step 7. Step 6 import-block amendment instruction present. All 3 FE-06 source files confirmed to exist. CL-06 targets `basic` feature line specifically. CL-07 asserts exact `default = ["full"]` literal. Test Matrix T01-T04 present. |

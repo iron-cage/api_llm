@@ -155,7 +155,7 @@ async fn test_secret_expiration()
   assert!(secret_store.get("temp_secret").unwrap().is_some());
   
   // Wait for expiration
-  tokio ::time::sleep(tokio::time::Duration::from_millis(2000)).await;
+  tokio ::time::sleep(tokio::time::Duration::from_secs(2)).await;
   
   // Secret should be expired and unavailable
   assert!(secret_store.get("temp_secret").unwrap().is_none());

@@ -12,6 +12,7 @@ use api_huggingface::
   environment::HuggingFaceEnvironmentImpl,
   secret::Secret,
   error::HuggingFaceError,
+  components::inference_shared::ChatMessage,
 };
 
 #[ cfg( feature = "integration" ) ]
@@ -860,6 +861,94 @@ fn test_pf_04()
       }
     }
   }
+}
+
+// ============================================================================
+// AP-07 / FE-06 / CL-06 / CL-07 — Added 2026-06-13
+// ============================================================================
+
+/// AP-07: Chat completion returns assistant reply (integration).
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn test_ap_07()
+{
+  let client = build_integration_client();
+  let messages = vec![
+    ChatMessage
+    {
+      role : "user".to_string(),
+      content : "What is 2+2?".to_string(),
+      tool_calls : None,
+      tool_call_id : None,
+    }
+  ];
+  let response = client.providers().chat_completion(
+    "meta-llama/Llama-3.3-70B-Instruct",
+    messages,
+    None,
+    None,
+    None,
+  ).await.expect( "AP-07: chat_completion should succeed" );
+  assert!(
+    !response.choices.first()
+      .expect( "AP-07: response must contain at least one choice" )
+      .message.content.is_empty(),
+    "AP-07: assistant reply content must be non-empty"
+  );
+}
+
+/// FE-06: Enterprise feature modules do not share global static state.
+#[ test ]
+fn test_fe_06()
+{
+  let cb_src = std::fs::read_to_string(
+    format!( "{}/src/reliability/circuit_breaker.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FE-06: Should read src/reliability/circuit_breaker.rs" );
+  let rl_src = std::fs::read_to_string(
+    format!( "{}/src/reliability/rate_limiter.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FE-06: Should read src/reliability/rate_limiter.rs" );
+  let cache_src = std::fs::read_to_string(
+    format!( "{}/src/cache/implementation.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FE-06: Should read src/cache/implementation.rs" );
+  assert!( !cb_src.contains( "rate_limiter" ), "FE-06: circuit_breaker must not import from rate_limiter" );
+  assert!( !cb_src.contains( "crate::cache" ), "FE-06: circuit_breaker must not import from cache" );
+  assert!( !rl_src.contains( "circuit_breaker" ), "FE-06: rate_limiter must not import from circuit_breaker" );
+  assert!( !rl_src.contains( "crate::cache" ), "FE-06: rate_limiter must not import from cache" );
+  assert!( !cache_src.contains( "reliability" ), "FE-06: cache/implementation must not import from reliability" );
+}
+
+/// CL-06: basic bundle composes exactly inference, embeddings, models, and env-config.
+#[ test ]
+fn test_cl_06()
+{
+  let cargo = std::fs::read_to_string(
+    format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-06: Should read Cargo.toml" );
+  let basic_line = cargo
+    .lines()
+    .find( |l| l.trim_start().starts_with( "basic" ) && l.contains( '=' ) )
+    .expect( "CL-06: Cargo.toml must define a basic feature" );
+  assert!( basic_line.contains( "\"inference\"" ), "CL-06: basic must include inference" );
+  assert!( basic_line.contains( "\"embeddings\"" ), "CL-06: basic must include embeddings" );
+  assert!( basic_line.contains( "\"models\"" ), "CL-06: basic must include models" );
+  assert!( basic_line.contains( "\"env-config\"" ), "CL-06: basic must include env-config" );
+  assert!( !basic_line.contains( "\"circuit-breaker\"" ), "CL-06: basic must not include circuit-breaker" );
+  assert!( !basic_line.contains( "\"rate-limiting\"" ), "CL-06: basic must not include rate-limiting" );
+  assert!( !basic_line.contains( "\"failover\"" ), "CL-06: basic must not include failover" );
+  assert!( !basic_line.contains( "\"integration\"" ), "CL-06: basic must not include integration" );
+}
+
+/// CL-07: default feature is an alias for full.
+#[ test ]
+fn test_cl_07()
+{
+  let cargo = std::fs::read_to_string(
+    format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-07: Should read Cargo.toml" );
+  assert!(
+    cargo.contains( "default = [\"full\"]" ),
+    "CL-07: default must list only full as its single member"
+  );
 }
 
 // ============================================================================
