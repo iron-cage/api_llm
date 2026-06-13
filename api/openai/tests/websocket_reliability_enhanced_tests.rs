@@ -1,3 +1,4 @@
+#![ cfg( feature = "websocket" ) ]
 //! Enhanced WebSocket Reliability Tests
 //!
 //! This module provides comprehensive testing for WebSocket reliability features including:

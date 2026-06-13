@@ -11,8 +11,130 @@ mod private
   #[ cfg( feature = "error-handling" ) ]
   use chrono;
 
-  // Include type definitions from enhanced_types.rs
-  include!( "enhanced_types.rs" );
+
+/// Enhanced error with context and classification
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct EnhancedAnthropicError
+{
+  /// Error type classification
+  error_type : ErrorType,
+  /// Error message
+  message : String,
+  /// Error context information
+  context : Option< ErrorContext >,
+  /// Error classification
+  class : ErrorClass,
+  /// Error severity
+  severity : ErrorSeverity,
+  /// Whether error is transient
+  is_transient : bool,
+  /// Stack trace information
+  stack_trace : Vec< String >,
+  /// Request correlation ID
+  correlation_id : Option< String >,
+  /// Request ID
+  request_id : Option< String >,
+}
+
+/// Error context information
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct ErrorContext
+{
+  /// Operation name
+  operation : String,
+  /// Request ID
+  request_id : String,
+  /// Additional context data
+  context_data : std::collections::HashMap< String, String >,
+  /// Timestamp
+  timestamp : chrono::DateTime< chrono::Utc >,
+}
+
+/// Timeout error details
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct TimeoutError
+{
+  /// Timeout type
+  timeout_type : TimeoutType,
+  /// Timeout duration
+  duration : Duration,
+  /// Error message
+  message : String,
+}
+
+/// Network error details
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct NetworkError
+{
+  /// Network error type
+  error_type : NetworkErrorType,
+  /// Error message
+  message : String,
+  /// Additional error details
+  details : Option< String >,
+}
+/// Custom error type for domain-specific errors
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct CustomError
+{
+  /// Error name
+  name : String,
+  /// Error message
+  message : String,
+  /// Error severity
+  severity : ErrorSeverity,
+}
+
+/// Error chain for cause relationships
+#[ derive( Debug, Clone ) ]
+pub struct ErrorChain
+{
+  /// Primary error
+  primary : CustomError,
+  /// Causing errors
+  causes : Vec< AnthropicError >,
+  /// Context
+  context : String,
+}
+
+/// Chained error result
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct ChainedError
+{
+  /// Chain length
+  chain_length : u32,
+  /// Root cause
+  root_cause : String,
+  /// Immediate cause
+  immediate_cause : String,
+  /// Context
+  context : String,
+}
+
+/// Request context for operations
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct RequestContext
+{
+  /// Correlation ID
+  correlation_id : String,
+  /// Request sequence
+  request_sequence : u32,
+}
+
+impl RequestContext
+{
+  /// Correlation ID for this request
+  pub fn correlation_id( &self ) -> &str
+  {
+    &self.correlation_id
+  }
+
+  /// Request sequence number
+  pub fn request_sequence( &self ) -> u32
+  {
+    self.request_sequence
+  }
+}
 
   // Implementation of ErrorContext
   impl ErrorContext
@@ -386,9 +508,6 @@ mod private
       }
     }
   }
-
-  // Include helper struct implementations
-  include!( "enhanced_impls.rs" );
 }
 
 crate::mod_interface!
@@ -400,31 +519,9 @@ crate::mod_interface!
     ErrorContext,
     TimeoutError,
     NetworkError,
-    ErrorParser,
-    ErrorMapper,
-    ErrorClassifier,
-    NetworkErrorClassifier,
-    NetworkErrorClassification,
-    ErrorRecovery,
-    BackoffCalculator,
-    BackoffStrategyDetails,
-    CredentialHintGenerator,
-    RequestContext,
-    ErrorSerializer,
-    ErrorLogger,
-    ErrorMetrics,
-    CorrelationTracker,
-    ErrorLocalizer,
-    RecoveryStrategy,
-    ActionableError,
-    BatchError,
-    TimeoutClassification,
-    CredentialHints,
-    LogEntry,
-    CorrelationSummary,
-    LocalizedError,
     CustomError,
     ErrorChain,
     ChainedError,
+    RequestContext,
   };
 }

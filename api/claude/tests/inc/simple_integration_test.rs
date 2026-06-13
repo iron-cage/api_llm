@@ -18,6 +18,7 @@ use super::*;
 // UNIT TESTS - INTEGRATION TEST STRUCTURES
 // ============================================================================
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_integration_test_request_construction()
 {
@@ -47,6 +48,7 @@ async fn test_integration_test_request_construction()
   println!( "✅ Integration test request construction works" );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_integration_test_message_construction()
 {
@@ -75,9 +77,8 @@ async fn test_integration_test_message_construction()
 // MESSAGES API INTEGRATION TESTS
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_messages_basic_text_generation()
 {
   let client = the_module::Client::from_workspace()
@@ -100,8 +101,7 @@ async fn integration_messages_basic_text_generation()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Basic message API call must work : {err}" ),
   };
@@ -126,9 +126,8 @@ async fn integration_messages_basic_text_generation()
   println!( "   Content : {content_text}" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_messages_with_system_prompt()
 {
   let client = the_module::Client::from_workspace()
@@ -151,8 +150,7 @@ async fn integration_messages_with_system_prompt()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: System prompt API call must work : {err}" ),
   };
@@ -171,9 +169,8 @@ async fn integration_messages_with_system_prompt()
   println!( "   Word count : {word_count}" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_messages_conversation_flow()
 {
   let client = the_module::Client::from_workspace()
@@ -200,8 +197,7 @@ async fn integration_messages_conversation_flow()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Conversation API call must work : {err}" ),
   };
@@ -221,9 +217,9 @@ async fn integration_messages_conversation_flow()
 // TOOL CALLING INTEGRATION TESTS  
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "tools" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_tool_calling_basic()
 {
   let client = the_module::Client::from_workspace()
@@ -252,8 +248,7 @@ async fn integration_tool_calling_basic()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Tool calling API call must work : {err}" ),
   };
@@ -280,9 +275,8 @@ async fn integration_tool_calling_basic()
 // ERROR HANDLING INTEGRATION TESTS
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_error_handling_invalid_model()
 {
   let client = the_module::Client::from_workspace()
@@ -305,11 +299,7 @@ async fn integration_error_handling_invalid_model()
   match result
   {
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
-    {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      println!( "  Error handling test would validate invalid model detection with sufficient credits" );
-      return;
-    },
+      panic!( "INTEGRATION: Credit balance exhausted — top up account to run tests : {}", api_err.message ),
     Err( error ) => {
       // This is the expected path - invalid model should cause an error
       assert!( error.to_string().to_lowercase().contains( "model" ),
@@ -327,9 +317,8 @@ async fn integration_error_handling_invalid_model()
 // PERFORMANCE INTEGRATION TESTS
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_performance_response_time()
 {
   let client = the_module::Client::from_workspace()
@@ -354,8 +343,7 @@ async fn integration_performance_response_time()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Performance test must work : {err}" ),
   };

@@ -9,12 +9,13 @@ use super::*;
 mod sync_api_functionality_tests
 {
   use super::*;
-  use std::time::{ Duration, Instant };
+  use core::time::Duration;
+  use std::time::Instant;
   use the_module::{ Message, CreateMessageRequest };
 
   /// Test basic sync client construction and configuration
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
-  #[ ignore = "Requires workspace secrets file" ]
 fn test_sync_client_construction()
   {
     use the_module::SyncClient;
@@ -27,7 +28,7 @@ fn test_sync_client_construction()
     // Root cause : Silent skip when env var missing created false positive test pass
     // Previous : if let Ok(secret) silently skipped test when ANTHROPIC_API_KEY unset
     // Fixed : .expect() fails loudly with clear message
-    // Pitfall : Never use conditional skip - fail loudly or use #[ ignore ] with permission
+    // Pitfall : Never use conditional skip - always fail loudly with .expect()
 
     // Test construction with explicit secret
     let secret = std::env::var( "ANTHROPIC_API_KEY" )
@@ -45,8 +46,8 @@ fn test_sync_client_construction()
   }
 
   /// Test sync message creation and sending
+#[ cfg( feature = "integration" ) ]
   #[ test ]
-#[ ignore = "Requires workspace secrets file" ]
 fn test_sync_message_operations()
   {
     use the_module::{ SyncClient, CreateMessageRequest, Message };
@@ -87,8 +88,8 @@ fn test_sync_message_operations()
   }
 
   /// Test sync message with system prompts
+#[ cfg( feature = "integration" ) ]
   #[ test ]
-#[ ignore = "Requires workspace secrets file" ]
 fn test_sync_message_with_system_prompt()
   {
     use the_module::{ SyncClient, CreateMessageRequest };
@@ -111,22 +112,17 @@ fn test_sync_message_with_system_prompt()
 
     let response = client.create_message( &request );
 
-    match response
+    if let Ok( message_response ) = response
     {
-      Ok( message_response ) => {
-        assert!( !message_response.content.is_empty(), "Should have response content" );
-        // System prompt should influence the response but not appear in content
-        assert!( message_response.content.len() >= 1, "Should have at least one content block" );
-      }
-      Err( _ ) => {
-        // Expected if API key not available
-      }
+      assert!( !message_response.content.is_empty(), "Should have response content" );
+      // System prompt should influence the response but not appear in content
     }
+    // Expected if API key not available
   }
 
   /// Test sync conversation flow
+#[ cfg( feature = "integration" ) ]
   #[ test ]
-#[ ignore = "Requires workspace secrets file" ]
 fn test_sync_conversation_flow()
   {
     use the_module::{ SyncClient, CreateMessageRequest, Message };
@@ -159,21 +155,17 @@ fn test_sync_conversation_flow()
 
     let response2 = client.create_message( &request2 );
 
-    match response2
+    if let Ok( message2 ) = response2
     {
-      Ok( message2 ) => {
-        assert!( !message2.content.is_empty(), "Should respond to conversation" );
-        // Response should reference the name (though this is probabilistic)
-      }
-      Err( _ ) => {
-        // Expected if API key not available
-      }
+      assert!( !message2.content.is_empty(), "Should respond to conversation" );
+      // Response should reference the name (though this is probabilistic)
     }
+    // Expected if API key not available
   }
 
   /// Test sync client with different models
+#[ cfg( feature = "integration" ) ]
   #[ test ]
-#[ ignore = "Requires workspace secrets file" ]
 fn test_sync_client_multiple_models()
   {
     use the_module::{ SyncClient, CreateMessageRequest };
@@ -194,22 +186,18 @@ fn test_sync_client_multiple_models()
       let response = client.create_message( &request );
 
       // Should work with all models or fail consistently
-      match response
+      if let Ok( message_response ) = response
       {
-        Ok( message_response ) => {
-          assert!( !message_response.content.is_empty(), "Response should have content for {}", model );
-          assert_eq!( message_response.model, model, "Response should indicate correct model" );
-        }
-        Err( _ ) => {
-          // Expected if model not available or API key not set
-        }
+        assert!( !message_response.content.is_empty(), "Response should have content for {model}" );
+        assert_eq!( message_response.model, model, "Response should indicate correct model" );
       }
+      // Expected if model not available or API key not set
     }
   }
 
   /// Test sync client timeout handling
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
-  #[ ignore = "Requires workspace secrets file" ]
 fn test_sync_client_timeout_configuration()
   {
     use the_module::SyncClientBuilder;
@@ -247,10 +235,10 @@ fn test_sync_client_timeout_configuration()
     // Should timeout quickly or succeed very fast
     assert!( elapsed < Duration::from_secs( 5 ), "Should timeout or complete quickly" );
 
-    if response.is_err()
+    if let Err( err ) = response
     {
       // Timeout error expected
-      let error_msg = response.unwrap_err().to_string();
+      let error_msg = err.to_string();
       assert!( error_msg.to_lowercase().contains( "timeout" ) ||
                error_msg.to_lowercase().contains( "deadline" ),
                "Error should indicate timeout" );
@@ -261,19 +249,18 @@ fn test_sync_client_timeout_configuration()
 mod sync_api_runtime_tests
 {
   use super::*;
-  use std::{ thread, sync::{ Arc, Mutex }, time::{ Duration, Instant } };
+  use core::time::Duration;
+  use std::{ thread, sync::{ Arc, Mutex }, time::Instant };
 
   /// Test sync client thread safety
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
   fn test_sync_client_thread_safety()
   {
     use the_module::SyncClient;
 
-    let client = match SyncClient::from_env()
-    {
-      Ok( c ) => Arc::new( c ),
-      Err( _ ) => return, // Skip if no API key
-    };
+    let client = Arc::new( SyncClient::from_env()
+      .expect( "INTEGRATION: API key must be available for thread safety test" ) );
 
     let results = Arc::new( Mutex::new( Vec::new() ) );
     let mut handles = vec![];
@@ -288,7 +275,7 @@ mod sync_api_runtime_tests
         use the_module::CreateMessageRequest;
 
         let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
-        request.add_user_message( &format!( "Thread {} says hello!", i ) );
+        request.add_user_message( &format!( "Thread {i} says hello!" ) );
         request.set_max_tokens( 20 );
 
         let response = client_clone.create_message( &request );
@@ -327,32 +314,23 @@ mod sync_api_runtime_tests
 
     // Test client creation with custom runtime
     let client_result = SyncClient::with_runtime( runtime, "test-key" );
-
-    match client_result
+    if let Ok( c ) = client_result
     {
-      Ok( client ) => {
-        // Test that client works with custom runtime
-        assert!( !client.get_api_key().is_empty(), "Client should have API key" );
-      }
-      Err( _ ) => {
-        // Expected with test key
-      }
+      assert!( !c.get_api_key().is_empty(), "Client should have API key" );
     }
-
+    // else: test key rejected at construction — expected behavior
     // Runtime should clean up automatically when dropped
   }
 
   /// Test blocking behavior consistency
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
   fn test_blocking_behavior_consistency()
   {
     use the_module::{ SyncClient, CreateMessageRequest };
 
-    let client = match SyncClient::from_env()
-    {
-      Ok( c ) => c,
-      Err( _ ) => return, // Skip if no API key
-    };
+    let client = SyncClient::from_env()
+      .expect( "INTEGRATION: API key must be available for blocking behavior test" );
 
     let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
     request.add_user_message( "Count to 3" );
@@ -362,16 +340,11 @@ mod sync_api_runtime_tests
     let response = client.create_message( &request );
     let elapsed = start.elapsed();
 
-    // Sync operation should block until completion
-    match response
+    // Sync operation should block until completion; timing assertions only if call succeeds
+    if response.is_ok()
     {
-      Ok( _ ) => {
-        assert!( elapsed > Duration::from_millis( 100 ), "Should take some time to complete" );
-        assert!( elapsed < Duration::from_secs( 30 ), "Should complete in reasonable time" );
-      }
-      Err( _ ) => {
-        // Network error or API key issue
-      }
+      assert!( elapsed > Duration::from_millis( 100 ), "Should take some time to complete" );
+      assert!( elapsed < Duration::from_secs( 30 ), "Should complete in reasonable time" );
     }
   }
 }
@@ -379,57 +352,47 @@ mod sync_api_runtime_tests
 mod sync_api_integration_tests
 {
   use super::*;
-  use std::time::{ Duration, Instant };
+  use core::time::Duration;
+  use std::time::Instant;
 
   /// Test sync to async interoperability
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
   fn test_sync_async_interoperability()
   {
     use the_module::{ SyncClient, Client, CreateMessageRequest };
 
-    // Test that sync and async clients can coexist
-    let sync_client_result = SyncClient::from_env();
-    let async_client_result = Client::from_env();
+    // Both sync and async clients must be constructable simultaneously
+    let sync_client = SyncClient::from_env()
+      .expect( "INTEGRATION: API key must be available for sync interoperability test" );
+    let async_client = Client::from_env()
+      .expect( "INTEGRATION: API key must be available for async interoperability test" );
 
-    match (sync_client_result, async_client_result)
-    {
-      (Ok( sync_client ), Ok( async_client )) => {
-        // Both clients should be able to work independently
-        assert!( sync_client.has_api_key() == async_client.api_key().is_some(),
-                 "Both clients should have same API key status" );
+    // Both clients must agree on key presence
+    assert!( sync_client.has_api_key() == async_client.api_key().is_some(),
+             "Both clients should have same API key status" );
 
-        // Test sync request
-        let mut sync_request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
-        sync_request.add_user_message( "Hello from sync!" );
-        sync_request.set_max_tokens( 20 );
+    // Verify sync client can make a request while async client exists
+    let mut sync_request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
+    sync_request.add_user_message( "Hello from sync!" );
+    sync_request.set_max_tokens( 20 );
 
-        let sync_response = sync_client.create_message( &sync_request );
+    let sync_response = sync_client.create_message( &sync_request );
+    assert!( sync_response.is_ok() || sync_response.is_err(), "Sync client must complete" );
 
-        // Test async request in sync context
-        let mut async_request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
-        async_request.add_user_message( "Hello from async!" );
-        async_request.set_max_tokens( 20 );
-
-        // We can't test async in sync context easily, but we can verify structure
-        assert!( sync_response.is_ok() || sync_response.is_err(), "Sync should complete" );
-      }
-      _ => {
-        // Expected if no API key configured
-      }
-    }
+    // async_client unused past this point — just verifying coexistence compiles and constructs
+    drop( async_client );
   }
 
   /// Test sync client performance characteristics
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
   fn test_sync_client_performance_overhead()
   {
     use the_module::{ SyncClient, CreateMessageRequest };
 
-    let client = match SyncClient::from_env()
-    {
-      Ok( c ) => c,
-      Err( _ ) => return, // Skip if no API key
-    };
+    let client = SyncClient::from_env()
+      .expect( "INTEGRATION: API key must be available for performance overhead test" );
 
     let mut times = Vec::new();
 
@@ -468,8 +431,8 @@ mod sync_api_integration_tests
   }
 
   /// Test sync error handling and propagation
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
-  #[ ignore = "Requires workspace secrets file" ]
 fn test_sync_error_handling()
   {
     use the_module::{ SyncClient, CreateMessageRequest };
@@ -479,7 +442,9 @@ fn test_sync_error_handling()
 
     match invalid_client
     {
-      Ok( client ) => {
+      Err( _ ) => { /* invalid key correctly rejected at construction */ }
+      Ok( client ) =>
+      {
         let mut request = CreateMessageRequest::new( "claude-3-5-haiku-20241022" );
         request.add_user_message( "Hello!" );
         request.set_max_tokens( 10 );
@@ -498,9 +463,6 @@ fn test_sync_error_handling()
                  error_msg.contains( "unauthorized" ),
                  "Error should indicate authentication issue : {error}" );
       }
-      Err( _ ) => {
-        // Expected - invalid key should be rejected at construction
-      }
     }
 
     // Fix(issue-hygiene-005): Fail loudly when client unavailable for invalid model test
@@ -517,9 +479,8 @@ fn test_sync_error_handling()
 
     let response = client.create_message( &request );
 
-    if response.is_err()
+    if let Err( error ) = response
     {
-      let error = response.unwrap_err();
       let error_msg = error.to_string().to_lowercase();
 
       // Should indicate model-related error

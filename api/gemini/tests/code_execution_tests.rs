@@ -4,9 +4,11 @@
 //! including mathematical computations, data analysis, error handling, and execution
 //! result validation. All tests use real API calls following the no-mockup policy.
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::
 {
-  client ::Client,
   models ::
   {
     GenerateContentRequest, Content, Part, Tool, CodeExecution,
@@ -15,22 +17,6 @@ use api_gemini::
 };
 use tokio::time::{ timeout, Duration };
 use serde_json::Value;
-
-/// Create a test client using the API key from workspace secrets or environment.
-///
-/// This uses `Client::new()` which attempts to load GEMINI_API_KEY from:
-/// 1. Workspace secrets : `secret/-secrets.sh` (workspace_tools 0.6.0)
-/// 2. Environment variable : `GEMINI_API_KEY`
-///
-/// Tests will FAIL EXPLICITLY (not skip) if the API key cannot be loaded.
-/// This is intentional - silent skipping masks configuration issues and creates
-/// false confidence in CI/CD pipelines.
-///
-/// Note : workspace_tools 0.6.0 uses `secret/` (visible directory, NO dot prefix)
-fn create_test_client() -> Client
-{
-  Client::new().unwrap()
-}
 
 /// Create a code execution request with specified configuration.
 ///
@@ -162,7 +148,7 @@ fn find_function_responses( response: &api_gemini::models::GenerateContentRespon
 /// Test basic Python code execution
 async fn test_basic_code_execution() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let prompt = "Please write and execute Python code to calculate the factorial of 5 and print the result.";
 
@@ -232,7 +218,7 @@ println!( "Testing basic code execution : {}", prompt );
 /// Test mathematical computation with code execution
 async fn test_mathematical_computation() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let prompt = "Write Python code to calculate the first 10 prime numbers and display them.";
 
@@ -302,7 +288,7 @@ println!( "Testing mathematical computation : {}", prompt );
 /// Test code execution with data analysis
 async fn test_data_analysis_execution() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let prompt = "Create a Python list of 10 random numbers, calculate their mean, median, and standard deviation, and display the results.";
 
@@ -368,7 +354,7 @@ println!( "Testing data analysis execution : {}", prompt );
 /// Test code execution error handling
 async fn test_code_execution_error_handling() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let prompt = "Write Python code that intentionally causes a division by zero error, then fix it with proper error handling.";
 
@@ -454,7 +440,7 @@ println!( "Testing error handling : {}", prompt );
 /// Test code execution with timeout configuration
 async fn test_execution_timeout_handling() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   // Create a task that should complete within a short timeout
   let prompt = "Write Python code to calculate the sum of numbers from 1 to 100 and print the result.";
@@ -534,7 +520,7 @@ println!( "Testing timeout handling with short timeout : {}", prompt );
 /// Test network access configuration
 async fn test_network_access_configuration() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   // Test with network disabled (should be default and safer)
   let prompt = "Write Python code to make a simple HTTP request to httpbin.org/get and print the response. Handle any network errors gracefully.";
@@ -612,11 +598,11 @@ println!( "Testing network access configuration : {}", prompt );
 /// Test multiple code execution requests in sequence
 async fn test_sequential_code_execution() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   println!( "Testing sequential code execution" );
 
-  let tasks = vec![
+  let tasks = [
   "Calculate 2^10 and print the result",
   "Create a list [1,2,3,4,5] and print its length",
   "Define a function to check if a number is even and test it with 42",
@@ -683,7 +669,7 @@ println!( "Executing task {}: {}", i + 1, task );
 /// Test code execution with different complexity levels
 async fn test_execution_complexity_levels() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   println!( "Testing different complexity levels" );
 

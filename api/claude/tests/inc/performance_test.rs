@@ -229,9 +229,8 @@ async fn test_concurrent_request_construction_performance()
 // INTEGRATION TESTS - REAL API PERFORMANCE
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_performance_api_response_time()
 {
   let client = the_module::Client::from_workspace()
@@ -256,8 +255,7 @@ async fn integration_performance_api_response_time()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Performance test API call must work : {err}" ),
   };
@@ -278,9 +276,8 @@ async fn integration_performance_api_response_time()
   println!( "   Output tokens : {}", response.usage.output_tokens );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_performance_concurrent_api_requests()
 {
   let client = the_module::Client::from_workspace()
@@ -340,8 +337,7 @@ async fn integration_performance_concurrent_api_requests()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "Concurrent request 1 must succeed : {err}" ),
   };
@@ -351,8 +347,7 @@ async fn integration_performance_concurrent_api_requests()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "Concurrent request 2 must succeed : {err}" ),
   };
@@ -362,8 +357,7 @@ async fn integration_performance_concurrent_api_requests()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "Concurrent request 3 must succeed : {err}" ),
   };

@@ -2,6 +2,7 @@
 name          = "api_openai_compatible"
 version       = "0.2.0"
 edition       = "2021"
+rust-version.workspace = true
 authors       = [ "Kostiantyn Mysnyk <wandalen@obox.systems>" ]
 license       = "MIT"
 readme        = "readme.md"
@@ -23,7 +24,7 @@ all-features = false
 
 [features]
 default     = [ "full" ]
-full        = [ "enabled", "streaming", "sync_api" ]
+full        = [ "enabled", "integration", "streaming", "sync_api" ]
 enabled     = [
   "dep:error_tools",
   "dep:mod_interface",

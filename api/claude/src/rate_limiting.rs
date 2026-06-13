@@ -122,7 +122,6 @@ mod private
 
   /// Rate limiter state
   #[ derive( Debug, Clone ) ]
-  #[ allow( dead_code ) ]
   struct RateLimiterState
   {
     tokens : f64,
@@ -136,8 +135,6 @@ mod private
     requests_allowed : u64,
     requests_blocked : u64,
     total_tokens_consumed : u64,
-    #[ allow( dead_code ) ]
-    start_time : Option< Instant >,
   }
 
   impl RateLimiterMetrics
@@ -199,7 +196,6 @@ mod private
   pub struct RateLimiter
   {
     config : RateLimiterConfig,
-    #[ allow( dead_code ) ]
     state : Arc< Mutex< RateLimiterState > >,
     metrics : Arc< Mutex< RateLimiterMetrics > >,
   }
@@ -217,7 +213,6 @@ mod private
           last_refill : now,
         } ) ),
         metrics : Arc::new( Mutex::new( RateLimiterMetrics {
-          start_time : Some( now ),
           requests_allowed : 0,
           requests_blocked : 0,
           total_tokens_consumed : 0,
@@ -515,7 +510,6 @@ mod private
           requests_allowed,
           requests_blocked,
           total_tokens_consumed,
-          start_time : Some( now ),
         } ) ),
       } )
     }
@@ -636,9 +630,7 @@ mod private
   #[ derive( Debug, Clone ) ]
   pub struct AdaptiveRateLimiter
   {
-    #[ allow( dead_code ) ]
     config : AdaptiveRateLimiterConfig,
-    #[ allow( dead_code ) ]
     current_rate : Arc< Mutex< f64 > >,
   }
 

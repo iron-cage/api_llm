@@ -12,7 +12,6 @@ pub mod cache;
 pub mod content;
 pub mod streaming;
 pub mod chat;
-pub mod comparison;
 pub mod search;
 pub mod function;
 pub mod code_execution;

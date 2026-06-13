@@ -1,11 +1,22 @@
-# API Coverage
+# API: Coverage
 
-This document provides comprehensive API coverage documentation for the api_gemini crate.
+### Scope
 
-## Core API Endpoints
+- **Purpose**: Document the complete set of Gemini API endpoints and features implemented in api_gemini
+- **Responsibility**: Map every public API endpoint to its async/sync status, test count, and URL pattern
+- **In Scope**: Core endpoints, advanced API families, enterprise features, feature flags, test statistics
+- **Out of Scope**: Implementation internals, usage patterns, protocol wire format, configuration procedures
+
+### Abstract
+
+api_gemini covers 100% of the Gemini REST API surface through a thin async client. Every major endpoint family is implemented with comprehensive test coverage. All async operations have typed request and response structs; sync variants are available for blocking contexts via the `sync_api` feature.
+
+### Operations
+
+#### Core Endpoints
 
 | Feature | Async | Sync | Tests | Endpoint |
-|---------|-------|------|--------|----------|
+|---------|-------|------|-------|----------|
 | List Models | ✅ | ✅ | 18/18 | `GET /v1beta/models` |
 | Get Model | ✅ | ✅ | 12/12 | `GET /v1beta/models/{model}` |
 | Generate Content | ✅ | ✅ | 45/45 | `POST /v1beta/models/{model}:generateContent` |
@@ -15,10 +26,10 @@ This document provides comprehensive API coverage documentation for the api_gemi
 | Count Tokens | ✅ | ✅ | 24/24 | `POST /v1beta/models/{model}:countTokens` |
 | Cached Content | ✅ | ✅ | 16/16 | `POST /v1beta/cachedContents` |
 
-## Advanced API Families
+#### Advanced API Families
 
 | Feature | Status | Tests | Description |
-|---------|--------|--------|-------------|
+|---------|--------|-------|-------------|
 | Google Search Grounding | ✅ | 8/8 | Real-time web search with citations |
 | Enhanced Function Calling | ✅ | 8/8 | Advanced modes (AUTO/ANY/NONE) with precise control |
 | System Instructions | ✅ | 8/8 | Structured model behavior control |
@@ -26,10 +37,10 @@ This document provides comprehensive API coverage documentation for the api_gemi
 | Model Tuning | ✅ | 12/12 | Fine-tuning with hyperparameters |
 | Tuned Models CRUD | ✅ | 6/6 | Create, list, get, delete tuned models |
 
-## Enterprise Features
+#### Enterprise Features
 
 | Feature | Status | Tests | Description |
-|---------|--------|--------|-------------|
+|---------|--------|-------|-------------|
 | Retry Logic | ✅ | 6/6 | Exponential backoff with configurable attempts |
 | Circuit Breaker | ✅ | 5/5 | Fault tolerance for unreliable services |
 | Rate Limiting | ✅ | 6/6 | Request rate control and quota management |
@@ -50,19 +61,7 @@ This document provides comprehensive API coverage documentation for the api_gemi
 | Request Templates | ✅ | 8/8 | Reusable configurations |
 | Buffered Streaming | ✅ | 5/5 | Smooth UX streaming |
 
-## API Surface Coverage: 100%
-
-All major Gemini API families and endpoints are fully implemented with comprehensive testing.
-
-## Test Statistics
-
-- **Total Tests**: 485 passing (382 nextest + 103 doctests)
-- **Pass Rate**: 100%
-- **Warning-Free**: Zero compilation warnings
-- **Clippy Clean**: Perfect compliance with pedantic lints
-- **Doc Coverage**: 100% for public APIs
-
-## Feature Flags
+#### Feature Flags
 
 | Flag | Status | Description |
 |------|--------|-------------|
@@ -70,8 +69,42 @@ All major Gemini API families and endpoints are fully implemented with comprehen
 | `compression` | Core Complete | Gzip, Deflate, Brotli algorithms |
 | `full` | Available | Enables all optional features |
 
-## Related Documentation
+### Error Handling
 
-- **[Usage Examples](usage_examples.md)** - Comprehensive code examples
-- **[Testing](testing.md)** - Test organization and coverage
-- **[Cookbook](cookbook.md)** - Recipe patterns
+All operations return `Result<T, api_gemini::Error>`. Error categories:
+- Authentication failure: invalid or missing API key
+- Rate limiting: 429 responses from the Gemini API
+- Network timeout: configurable per-request timeout (default 30 seconds)
+- API error responses: mapped to structured `ApiError` with HTTP status and message body
+- Deserialization failure: unexpected response shapes from API version mismatches
+
+### Compatibility Guarantees
+
+- API version: `v1beta` (crate v0.5.0)
+- Endpoint URLs are configurable via environment configuration for future version migration
+- `batch_operations` is infrastructure-ready; pending Gemini API general availability release
+- Breaking changes in the Gemini API response schema require crate updates; no automatic shimming
+
+### Test Statistics
+
+- **Pass Rate**: All tests pass when `GEMINI_API_KEY` is available
+- **Warning-Free**: Zero compilation warnings enforced via `RUSTFLAGS="-D warnings"`
+- **Doc Coverage**: 100% for public APIs
+
+### Sources
+
+| File | Relationship |
+|------|-------------|
+| `src/models/api/content_generation/api_impl.rs` | Core generate_content implementation |
+| `src/enterprise/` | Enterprise feature implementations |
+| `src/components/` | Request/response type definitions |
+
+### Tests
+
+| File | Relationship |
+|------|-------------|
+| `tests/inc/comprehensive_integration_test.rs` | Core endpoint integration tests |
+| `tests/inc/enhanced_function_calling_test.rs` | Function calling and tool use tests |
+| `tests/inc/streaming_test.rs` | Streaming and WebSocket tests |
+| `tests/inc/embeddings_test.rs` | Embedding endpoint tests |
+| `tests/inc/model_management_test.rs` | Model listing and retrieval tests |

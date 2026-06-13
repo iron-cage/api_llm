@@ -398,6 +398,14 @@ mod private
     }
   }
 
+  impl Default for DynamicConfigBuilder
+  {
+    fn default() -> Self
+    {
+      Self::new()
+    }
+  }
+
   /// Configuration update operation in progress
   #[ derive( Debug ) ]
   pub struct ConfigUpdate
@@ -458,13 +466,16 @@ mod private
     }
   }
 
+  /// List of registered configuration change listeners
+  type ConfigListeners = Arc< RwLock< Vec< Box< dyn Fn( ConfigChangeEvent ) + Send + Sync > > > >;
+
   /// Configuration management interface for the client with optimizations
   #[ allow( missing_debug_implementations ) ] // Cannot derive Debug due to function pointers
   pub struct ConfigManager
   {
     client : crate::client::Client,
     history : Arc< RwLock< Vec< ConfigHistoryEntry > > >, // RwLock for better read concurrency
-    listeners : Arc< RwLock< Vec< Box< dyn Fn( ConfigChangeEvent ) + Send + Sync > > > >,
+    listeners : ConfigListeners,
     options : ConfigManagerOptions,
     metrics : Arc< ConfigMetrics >,
     last_cleanup : Arc< Mutex< Instant > >, // Track when cleanup was last performed

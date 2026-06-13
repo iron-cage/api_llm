@@ -6,7 +6,6 @@ mod private
 {
   use std::collections::HashMap;
   use core::time::{ Duration };
-  use std::time::Instant;
   use std::fmt::Write;
   use serde::{ Serialize, Deserialize };
 
@@ -43,21 +42,14 @@ mod private
   #[ derive( Debug, Clone ) ]
   struct RequestInfo
   {
-    id : String,
-    start_time : Instant,
     status : RequestStatus,
   }
 
   /// Information about a completed request
   #[ derive( Debug, Clone ) ]
-  #[ allow( dead_code ) ]
   struct CompletedRequestInfo
   {
-    id : String,
-    start_time : Instant,
-    end_time : Instant,
     status : RequestStatus,
-    result : Option< RequestResult >,
   }
 
   impl RequestTracker
@@ -80,14 +72,10 @@ mod private
     pub fn start_request( &mut self, request_id : impl Into< String > ) -> String
     {
       let id = request_id.into();
-      let request_info = RequestInfo
+      self.active_requests.insert( id.clone(), RequestInfo
       {
-        id : id.clone(),
-        start_time : Instant::now(),
         status : RequestStatus::InProgress,
-      };
-
-      self.active_requests.insert( id.clone(), request_info );
+      } );
       id
     }
 
@@ -116,20 +104,14 @@ mod private
 
     /// Complete a request
     #[ inline ]
-    pub fn complete_request( &mut self, request_id : &str, result : RequestResult )
+    pub fn complete_request( &mut self, request_id : &str )
     {
-      if let Some( request ) = self.active_requests.remove( request_id )
+      if self.active_requests.remove( request_id ).is_some()
       {
-        let completed_info = CompletedRequestInfo
+        self.completed_requests.insert( request_id.to_string(), CompletedRequestInfo
         {
-          id : request.id,
-          start_time : request.start_time,
-          end_time : Instant::now(),
           status : RequestStatus::Completed,
-          result : Some( result ),
-        };
-
-        self.completed_requests.insert( request_id.to_string(), completed_info );
+        } );
       }
     }
   }

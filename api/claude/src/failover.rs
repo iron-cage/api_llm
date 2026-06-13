@@ -407,7 +407,7 @@ mod private
       let available_endpoints : Vec< &FailoverEndpoint > = self.endpoints
         .iter()
         .filter( | e | e.is_available() )
-        .filter( | e | context.is_none_or( | ctx | !ctx.was_endpoint_tried( &e.id ) ) )
+        .filter( | e | context.map_or( true, | ctx | !ctx.was_endpoint_tried( &e.id ) ) )
         .collect();
 
       if available_endpoints.is_empty()
@@ -451,9 +451,11 @@ mod private
     fn select_random( endpoints : &[ &FailoverEndpoint ] ) -> Option< FailoverEndpoint >
     {
       use std::collections::hash_map::RandomState;
-      use std::hash::BuildHasher;
+      use std::hash::{ BuildHasher, Hash, Hasher };
 
-      let hash = RandomState::new().hash_one( Instant::now() );
+      let mut hasher = RandomState::new().build_hasher();
+      Instant::now().hash( &mut hasher );
+      let hash = hasher.finish();
       let index = usize::try_from( hash ).unwrap_or( 0 ) % endpoints.len();
       endpoints.get( index ).map( | e | ( *e ).clone() )
     }

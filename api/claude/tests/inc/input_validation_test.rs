@@ -615,9 +615,8 @@ fn test_system_instructions_valid()
 // INTEGRATION TESTS - VALIDATION BEFORE API CALLS
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_validation_prevents_invalid_requests()
 {
   // Test that validation prevents invalid requests from reaching the API
@@ -649,9 +648,8 @@ async fn integration_validation_prevents_invalid_requests()
   println!( "✅ Validation prevents invalid requests!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_validation_allows_valid_requests()
 {
   // Test that validation allows valid requests
@@ -682,8 +680,7 @@ async fn integration_validation_allows_valid_requests()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Valid request must work : {err}" ),
   };

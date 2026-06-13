@@ -16,6 +16,7 @@ mod private
 #[ derive( Debug, Clone, Serialize, Deserialize, PartialEq ) ]
 pub struct EnterpriseConfig
 {
+  #[ cfg( feature = "retry-logic" ) ]
   retry : Option< crate::retry_logic::RetryConfig >,
   #[ cfg( feature = "circuit-breaker" ) ]
   circuit_breaker : Option< crate::circuit_breaker::CircuitBreakerConfig >,
@@ -43,6 +44,7 @@ impl EnterpriseConfig
   pub fn validate( &self ) -> Result< (), String >
   {
     // Validate retry config
+    #[ cfg( feature = "retry-logic" ) ]
     if let Some( ref retry ) = self.retry
     {
       if !retry.is_valid()
@@ -75,12 +77,21 @@ impl EnterpriseConfig
   }
 
   /// Check if retry is enabled
+  #[ cfg( feature = "retry-logic" ) ]
   pub fn retry_enabled( &self ) -> bool
   {
     self.retry.is_some()
   }
 
+  /// Check if retry is enabled (stub when feature disabled)
+  #[ cfg( not( feature = "retry-logic" ) ) ]
+  pub fn retry_enabled( &self ) -> bool
+  {
+    false
+  }
+
   /// Get retry configuration
+  #[ cfg( feature = "retry-logic" ) ]
   pub fn retry_config( &self ) -> Option< &crate::retry_logic::RetryConfig >
   {
     self.retry.as_ref()
@@ -161,6 +172,7 @@ impl EnterpriseConfig
 #[ derive( Debug, Clone ) ]
 pub struct EnterpriseConfigBuilder
 {
+  #[ cfg( feature = "retry-logic" ) ]
   retry : Option< crate::retry_logic::RetryConfig >,
   #[ cfg( feature = "circuit-breaker" ) ]
   circuit_breaker : Option< crate::circuit_breaker::CircuitBreakerConfig >,
@@ -179,6 +191,7 @@ impl EnterpriseConfigBuilder
   {
     Self
     {
+      #[ cfg( feature = "retry-logic" ) ]
       retry : None,
       #[ cfg( feature = "circuit-breaker" ) ]
       circuit_breaker : None,
@@ -192,6 +205,7 @@ impl EnterpriseConfigBuilder
   }
 
   /// Configure retry logic
+  #[ cfg( feature = "retry-logic" ) ]
   #[ must_use ]
   pub fn with_retry( mut self, config : crate::retry_logic::RetryConfig ) -> Self
   {
@@ -240,6 +254,7 @@ impl EnterpriseConfigBuilder
   {
     EnterpriseConfig
     {
+      #[ cfg( feature = "retry-logic" ) ]
       retry : self.retry,
       #[ cfg( feature = "circuit-breaker" ) ]
       circuit_breaker : self.circuit_breaker,
@@ -267,12 +282,16 @@ impl EnterpriseConfigBuilder
   /// Create a conservative enterprise profile (high safety, low performance impact)
   pub fn conservative() -> EnterpriseConfig
   {
-    let mut builder = Self::new()
-      .with_retry( crate::retry_logic::RetryConfig::new()
+    let mut builder = Self::new();
+
+    #[ cfg( feature = "retry-logic" ) ]
+    {
+      builder = builder.with_retry( crate::retry_logic::RetryConfig::new()
         .with_max_attempts( 3 )
         .with_initial_delay( Duration::from_millis( 100 ) )
         .with_max_delay( Duration::from_secs( 5 ) )
         .with_backoff_multiplier( 2.0 ) );
+    }
 
     #[ cfg( feature = "circuit-breaker" ) ]
     {
@@ -287,12 +306,16 @@ impl EnterpriseConfigBuilder
   /// Create a balanced enterprise profile (moderate safety and performance)
   pub fn balanced() -> EnterpriseConfig
   {
-    let mut builder = Self::new()
-      .with_retry( crate::retry_logic::RetryConfig::new()
+    let mut builder = Self::new();
+
+    #[ cfg( feature = "retry-logic" ) ]
+    {
+      builder = builder.with_retry( crate::retry_logic::RetryConfig::new()
         .with_max_attempts( 5 )
         .with_initial_delay( Duration::from_millis( 50 ) )
         .with_max_delay( Duration::from_secs( 10 ) )
         .with_backoff_multiplier( 2.0 ) );
+    }
 
     #[ cfg( feature = "circuit-breaker" ) ]
     {
@@ -314,12 +337,16 @@ impl EnterpriseConfigBuilder
   /// Create an aggressive enterprise profile (maximum reliability features)
   pub fn aggressive() -> EnterpriseConfig
   {
-    let mut builder = Self::new()
-      .with_retry( crate::retry_logic::RetryConfig::new()
+    let mut builder = Self::new();
+
+    #[ cfg( feature = "retry-logic" ) ]
+    {
+      builder = builder.with_retry( crate::retry_logic::RetryConfig::new()
         .with_max_attempts( 10 )
         .with_initial_delay( Duration::from_millis( 25 ) )
         .with_max_delay( Duration::from_secs( 30 ) )
         .with_backoff_multiplier( 2.5 ) );
+    }
 
     #[ cfg( feature = "circuit-breaker" ) ]
     {

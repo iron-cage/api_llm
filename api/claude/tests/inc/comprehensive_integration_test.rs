@@ -54,9 +54,8 @@ fn find_secret_and_workspace_root() -> Option< ( std::path::PathBuf, std::path::
   }
 }
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn test_comprehensive_integration()
 {
     // INTEGRATION TEST - STRICT FAILURE POLICY: NO GRACEFUL FALLBACKS
@@ -71,8 +70,7 @@ fn test_comprehensive_integration()
 
     // MANDATORY REQUIREMENT: Secret file must exist with real API key
     assert!(secret_file.exists(),
-        "INTEGRATION FAILURE: Secret file must exist at {:?} - no fake keys allowed",
-        secret_file);
+        "INTEGRATION FAILURE: Secret file must exist at {secret_file:?} - no fake keys allowed");
 
     println!("✅ Workspace structure verified");
     println!("   📁 Root : {}", workspace_root.display());

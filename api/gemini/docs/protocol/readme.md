@@ -1,33 +1,14 @@
-# Protocol Design Collection
+# Protocol Doc Entity
 
-## Collection Scope
+### Scope
 
-This collection documents protocol design and implementation details for the api_gemini crate, including:
-- Streaming API format discovery and resolution
-- Protocol-level implementation decisions
-- API communication patterns and debugging insights
-- Format specifications and parsing strategies
+- **Purpose**: Specify the wire-level communication protocols used by the api_gemini crate.
+- **Responsibility**: Master file listing all protocol spec instances with ID, name, and protocol scope.
+- **In Scope**: Streaming wire format, HTTP headers, JSON array structure, buffering strategy.
+- **Out of Scope**: Client-level streaming control features (see `feature/`), usage patterns (see `operation/`), investigation history (see `investigations/`).
 
-## Responsibility
+### Overview Table
 
-This table documents all instances in this collection, ensuring Complete Entity Coverage.
-
-| Instance | Purpose |
-|----------|---------|
-| `001_streaming_format.md` | Gemini streaming API format discovery - problem statement, investigation, resolution from SSE to JSON array buffering |
-
-## Overview
-
-| ID | Protocol Component | Category | Complexity | Status |
-|----|-------------------|----------|------------|--------|
-| 001 | Streaming Format | Investigation | High | Resolved |
-
-## Collection Principles
-
-- **Abstract First**: Documentation focuses on protocol understanding and decisions, not implementation
-- **Instance Granularity**: Each protocol aspect documented in separate NNN-prefixed file
-- **Complete Coverage**: All protocol documents listed in Responsibility Table
-
-## Navigation
-
-- For streaming API format discovery and resolution: see `001_streaming_format.md`
+| ID | Name | Purpose | Status |
+|----|------|---------|--------|
+| 001 | [`001_streaming_format.md`](001_streaming_format.md) | JSON array streaming protocol specification | ✅ |

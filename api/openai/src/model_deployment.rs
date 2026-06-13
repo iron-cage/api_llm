@@ -634,12 +634,9 @@ mod private
       // Validate deployment strategy
       match &config.strategy
       {
-        DeploymentStrategy::BlueGreen { traffic_split } =>
+        DeploymentStrategy::BlueGreen { traffic_split } if *traffic_split > 100 =>
         {
-          if *traffic_split > 100
-          {
-            errors.push( "Traffic split cannot be greater than 100%".to_string() );
-          }
+          errors.push( "Traffic split cannot be greater than 100%".to_string() );
         }
         DeploymentStrategy::Canary { initial_traffic, final_traffic, .. } =>
         {

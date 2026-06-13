@@ -68,7 +68,7 @@ impl< T > StreamBuffer< T >
   {
     match self
     {
-      Self::Vector( vec ) => vec.drain( .. ).collect(),
+      Self::Vector( vec ) => std::mem::take( vec ),
       Self::Circular( deque ) => deque.drain( .. ).collect(),
       Self::Chunked { chunks, current_chunk, .. } => {
         let mut all_items = Vec::new();
@@ -76,7 +76,7 @@ impl< T > StreamBuffer< T >
         {
           all_items.extend( chunk );
         }
-        all_items.extend( current_chunk.drain( .. ) );
+        all_items.append( current_chunk );
         all_items
       },
     }

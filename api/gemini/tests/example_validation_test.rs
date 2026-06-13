@@ -1,23 +1,10 @@
 //! Tests to validate that examples use the API correctly
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::{ client::Client, models::* };
 use serde_json::json;
-
-/// Create client for integration tests - REQUIRES real API key
-/// Fails immediately if no valid API key is found
-fn create_integration_client() -> Client
-{
-  Client::new().unwrap_or_else( |err| {
-    panic!( 
-    "\n❌ INTEGRATION TEST FAILURE: No valid API key found!\n\
-    \n🔑 Required: Set GEMINI_API_KEY environment variable or create secret/gemini_api_key file\n\
-    \n📋 This integration test validates API structure with real API calls\n\
-    \n🚫 No API key available from any source\n\
-    \n💡 For unit tests only (no API), run: cargo test --no-default-features\n\
-  \nOriginal error : {err:?}" 
-    );
-  })
-}
 
 #[ test ]
 fn test_chat_example_structure()

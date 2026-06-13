@@ -1,62 +1,63 @@
-# Documentation
+# docs
 
-## Purpose
+### Purpose
 
-This directory contains detailed API documentation and feature reference for the api_huggingface crate, organized into design collections following documentation.rulebook.md standards.
+This directory contains technical documentation for the `api_huggingface` crate, organized into design collections following doc.rulebook.md standards. Documentation is structured by design dimension (invariant/, api/, operation/, pattern/) with each collection containing a master file (`readme.md`) and NNN-prefixed instance files.
 
-Documentation is structured by design dimensions (api/, operation/, etc.) with each collection containing:
-- Master file (`readme.md`) with Collection Scope and Responsibility Table
-- Instance files with NNN identifiers (001, 002, etc.)
-
-## Responsibility
-
-This table documents all entities in the docs/ directory, ensuring Complete Entity Coverage.
+### Responsibility
 
 | Path | Purpose |
 |------|---------|
-| `readme.md` | Master documentation file with navigation and Complete Entity Coverage |
+| `readme.md` | Master documentation index with navigation and Complete Entity Coverage |
+| `invariant/` | Non-negotiable behavioral constraints — thin client principle, testing standards |
 | `api/` | API design collection - comprehensive API reference, endpoints, usage patterns |
 | `operation/` | Operational procedures collection - feature management, cargo features, status tracking |
+| `pattern/` | Design pattern specifications — module organization (mod_interface) |
 
-## Collections
+### Collections
 
-### api/
+#### invariant/
 
-API design, endpoints, and usage patterns for the api_huggingface crate.
+Non-negotiable behavioral constraints.
+
+**Master File**: `invariant/readme.md`
+
+**Instances**:
+- `001_thin_client_principle.md` — No automatic behaviors; all client actions must be explicit
+- `002_testing_standards.md` — No-mock mandate and loud-failure requirement for all integration tests
+
+#### api/
+
+API design, endpoints, and usage patterns.
 
 **Master File**: `api/readme.md`
 
 **Instances**:
-- `001_reference.md` - Comprehensive API reference covering client operations, models, environment config, error handling
+- `001_reference.md` — Comprehensive API reference covering client operations, models, environment config, error handling
 
-### operation/
+#### operation/
 
 Operational procedures for feature management and configuration.
 
 **Master File**: `operation/readme.md`
 
 **Instances**:
-- `001_features.md` - Complete feature tables, cargo features documentation, feature tier classification
+- `001_features.md` — Complete feature tables, cargo features documentation, feature tier classification
 
-## Navigation
+#### pattern/
 
-**For API Usage**:
-- Start with main `readme.md` for quick start
-- Reference `api/001_reference.md` for detailed API patterns
-- Check `operation/001_features.md` for feature availability
+Design pattern specifications.
 
-**For Implementation Details**:
-- See `spec.md` for requirements and architecture
-- See source code documentation for implementation decisions
-- See `tests/` for usage examples and edge cases
+**Master File**: `pattern/readme.md`
 
-## Documentation Principles
+**Instances**:
+- `001_module_organization.md` — mod_interface pattern and module structure conventions
 
-- **API Reference**: HOW to use the library (usage patterns, examples)
-- **Features**: WHAT functionality is available (status, cargo flags)
-- **Specification**: WHY design decisions were made (requirements, architecture)
-- **Collections**: Organized by design dimension (api, operation, pattern, protocol, etc.)
-- **Abstract First**: Documentation focuses on concepts, not implementation details
-- **Complete Coverage**: All documents listed in Responsibility Tables
+### Navigation
 
-This separation ensures each document has clear purpose and audience.
+- Behavioral constraints: see `invariant/`
+- API usage and reference: see `api/001_reference.md`
+- Feature availability and cargo flags: see `operation/001_features.md`
+- Design patterns: see `pattern/`
+- Project overview: see `../readme.md`
+- Usage examples: see `../examples/`

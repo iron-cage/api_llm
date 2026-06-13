@@ -14,26 +14,8 @@
 
 #![allow(missing_docs)]
 
-use api_gemini::{
-  client ::Client,
-  models ::*,
-};
+use api_gemini::models::*;
 use std::collections::HashMap;
-
-/// Create client for advanced safety controls tests.
-///
-/// This uses `Client::new()` which attempts to load GEMINI_API_KEY from:
-/// 1. Workspace secrets : `secret/-secrets.sh` (workspace_tools 0.6.0)
-/// 2. Environment variable : `GEMINI_API_KEY`
-///
-/// Tests will FAIL EXPLICITLY (not skip) if the API key cannot be loaded.
-/// This is intentional - silent skipping masks configuration issues.
-///
-/// Note : workspace_tools 0.6.0 uses `secret/` (visible directory, NO dot prefix)
-fn create_test_client() -> Client
-{
-  Client::new().unwrap()
-}
 
 /// Advanced safety control data structures for testing
 /// These would be real API structures once advanced safety APIs are implemented

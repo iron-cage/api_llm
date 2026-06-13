@@ -14,9 +14,8 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn test_fallback_behavior_integration()
 {
     // INTEGRATION TEST - STRICT FAILURE POLICY: NO GRACEFUL FALLBACKS

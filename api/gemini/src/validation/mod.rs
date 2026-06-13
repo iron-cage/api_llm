@@ -95,14 +95,8 @@ impl core::error::Error for ValidationError
 {
 }
 
-/// Maximum number of models that can be compared in a single request.
-const MAX_MODELS_TO_COMPARE: usize = 10;
-
 /// Maximum number of requests in a batch token counting operation.
 const MAX_BATCH_TOKEN_REQUESTS: usize = 100;
-
-/// Maximum number of model names for status checking.
-const MAX_MODEL_STATUS_REQUESTS: usize = 50;
 
 /// Maximum number of allowed function names in function calling config.
 const MAX_ALLOWED_FUNCTION_NAMES: usize = 100;
@@ -189,7 +183,7 @@ fn validate_content( content : &Content ) -> Result< (), ValidationError >
 /// Returns `Ok(())` if the part is valid, or a validation error.
 fn validate_part( part : &Part ) -> Result< (), ValidationError >
 {
-  let has_text = part.text.as_ref().map_or( false, |t| !t.trim().is_empty() );
+  let has_text = part.text.as_ref().is_some_and( |t| !t.trim().is_empty() );
   let has_inline_data = part.inline_data.is_some();
   let has_function_call = part.function_call.is_some();
   let has_function_response = part.function_response.is_some();

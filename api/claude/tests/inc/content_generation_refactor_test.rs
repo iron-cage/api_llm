@@ -274,9 +274,9 @@ mod content_generation_disabled_tests
 // INTEGRATION TESTS - REAL API CONTENT GENERATION REFACTOR
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "content-generation" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_content_generation_refactor_real_api()
 {
   let client = the_module::Client::from_workspace()
@@ -300,8 +300,7 @@ async fn integration_content_generation_refactor_real_api()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Content generation must work : {err}" ),
   };

@@ -1,22 +1,9 @@
 //! Test to verify integration tests fail properly when no API key is available
 
-use api_gemini::client::Client;
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
 
-/// Create client for integration tests - REQUIRES real API key
-/// Fails immediately if no valid API key is found
-fn create_integration_client() -> Client
-{
-  Client::new().unwrap_or_else( |err| {
-    panic!( 
-    "\n❌ INTEGRATION TEST FAILURE: No valid API key found!\n\
-    \n🔑 Required: Set GEMINI_API_KEY environment variable or create secret/gemini_api_key file\n\
-    \n📋 This integration test validates authentication with real API calls\n\
-    \n🚫 No API key available from any source\n\
-    \n💡 For unit tests only (no API), run: cargo test --no-default-features\n\
-  \nOriginal error : {err:?}" 
-    );
-  })
-}
+use api_gemini::client::Client;
 
 /// Test that demonstrates proper failure when no API key is available
 #[ test ]

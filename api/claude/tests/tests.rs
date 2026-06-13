@@ -2,17 +2,6 @@
 //!
 //! MANDATORY INTEGRATION TEST REQUIREMENTS FOR ALL TESTS:
 
-// Strategic clippy configuration for comprehensive test suite
-#![allow(clippy::std_instead_of_core)]
-#![allow(clippy::uninlined_format_args)]
-#![allow(clippy::float_cmp)]
-#![allow(clippy::single_match_else)]
-#![allow(clippy::manual_let_else)]
-#![allow(clippy::unnecessary_unwrap)]
-#![allow(clippy::manual_range_contains)]
-#![allow(clippy::clone_on_copy)]
-#![allow(clippy::doc_markdown)]
-#![allow(clippy::len_zero)]
 //! - These tests use REAL Anthropic API endpoints - NO MOCKING ALLOWED
 //! - Tests MUST FAIL IMMEDIATELY if API secrets are not available (no graceful fallbacks)
 //! - Tests MUST FAIL IMMEDIATELY on network connectivity issues

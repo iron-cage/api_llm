@@ -1,33 +1,16 @@
-# Pattern Design Collection
+# Pattern Doc Entity
 
-## Collection Scope
+### Scope
 
-This collection documents reusable implementation patterns for the api_gemini crate, including:
-- Quick response patterns for simple text generation
-- Error-resilient patterns with graceful degradation
-- Batch processing patterns with rate limiting
-- Common usage patterns and best practices
+- **Purpose**: Document reusable structural patterns for common api_gemini usage scenarios.
+- **Responsibility**: Master file listing all pattern instances with ID, name, and pattern scope.
+- **In Scope**: Architectural patterns addressing distinct failure modes or operational constraints — each pattern covers one problem/solution/applicability context.
+- **Out of Scope**: Step-by-step API call procedures (see `operation/002_usage_examples.md`), enterprise feature configuration (see `feature/002_enterprise_reliability.md`), protocol wire format (see `protocol/`).
 
-## Responsibility
+### Overview Table
 
-This table documents all instances in this collection, ensuring Complete Entity Coverage.
-
-| Instance | Purpose |
-|----------|---------|
-| `001_patterns.md` | Reusable code patterns for common Gemini API use cases - quick response, error handling, batch processing |
-
-## Overview
-
-| ID | Pattern Name | Category | Complexity | Status |
-|----|--------------|----------|------------|--------|
-| 001 | Patterns | Documentation | Medium | Active |
-
-## Collection Principles
-
-- **Abstract First**: Documentation focuses on pattern concepts and usage, not implementation details
-- **Instance Granularity**: Each pattern category documented in separate NNN-prefixed file
-- **Complete Coverage**: All pattern documents listed in Responsibility Table
-
-## Navigation
-
-- For implementation patterns and code examples: see `001_patterns.md`
+| ID | Name | Purpose | Status |
+|----|------|---------|--------|
+| 001 | [Quick Response](001_quick_response.md) | Single-call generation; all errors propagate to caller as Result | ✅ |
+| 002 | [Error-Resilient](002_error_resilient.md) | Generation with error-variant-to-fallback-string mapping; absorbs error signal | ✅ |
+| 003 | [Batch Processing](003_batch_processing.md) | Sequential paced loop for rate-limited bulk prompt workloads | ✅ |

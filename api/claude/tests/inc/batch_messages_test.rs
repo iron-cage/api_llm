@@ -173,7 +173,6 @@ mod batch_api_tests
 
   #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
 async fn integration_batch_create_and_retrieve()
   {
     // This test requires real API credentials
@@ -214,7 +213,6 @@ async fn integration_batch_create_and_retrieve()
 
   #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
 async fn integration_batch_list()
   {
     let client = the_module::Client::from_workspace()
@@ -230,7 +228,6 @@ async fn integration_batch_list()
 
   #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
 async fn integration_batch_validation_errors()
   {
     let client = the_module::Client::from_workspace()
@@ -254,7 +251,6 @@ async fn integration_batch_validation_errors()
 
   #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
 async fn integration_batch_retrieve_invalid_id()
   {
     let client = the_module::Client::from_workspace()

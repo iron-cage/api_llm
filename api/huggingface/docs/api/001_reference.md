@@ -329,4 +329,3 @@ println!( "Debug: {}", curl_command );
 
 - [Features Overview](features.md) - Complete feature list and status
 - [Examples](../examples/readme.md) - Working code examples
-- [Specification](../spec.md) - Detailed technical specification

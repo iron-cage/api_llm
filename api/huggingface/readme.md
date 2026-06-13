@@ -211,7 +211,6 @@ Get your API key from [huggingface.co/settings/tokens](https://huggingface.co/se
 - **[Features Overview](docs/features.md)** - Feature list and cargo features
 - **[API Reference](docs/api_reference.md)** - Comprehensive API documentation
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/huggingface/examples)** - Working code examples
-- **[Specification](spec.md)** - Detailed technical specification
 
 ## Dependencies
 
@@ -248,7 +247,6 @@ This section documents all files and directories in the crate root, ensuring Com
 | `tests/` | Comprehensive test suite with NO MOCKING policy |
 | `examples/` | API usage examples demonstrating Hugging Face API features |
 | `docs/` | Technical documentation organized in design collections (api/, operation/) |
-| `spec.md` | Crate specification and requirements |
 | `Cargo.toml` | Crate metadata and dependency configuration |
 | `readme.md` | Crate overview, quick start, API documentation, and this Responsibility Table |
 | `license` | MIT license text |
@@ -259,4 +257,3 @@ This section documents all files and directories in the crate root, ensuring Com
 - **[HuggingFace Hub](https://huggingface.co/)** - Model discovery
 - **[API Tokens](https://huggingface.co/settings/tokens)** - Get your API key
 - **[Inference API Docs](https://huggingface.co/docs/api-inference)** - Official documentation
-- **[Specification](spec.md)** - Technical specification

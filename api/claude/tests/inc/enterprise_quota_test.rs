@@ -19,7 +19,7 @@ mod enterprise_quota_tests
     assert_eq!( metrics.request_count, 0 );
     assert_eq!( metrics.input_tokens, 0 );
     assert_eq!( metrics.output_tokens, 0 );
-    assert_eq!( metrics.total_cost, 0.0 );
+    assert!( metrics.total_cost.abs() < f64::EPSILON );
     assert_eq!( metrics.total_tokens(), 0 );
   }
 
@@ -32,7 +32,7 @@ mod enterprise_quota_tests
     assert_eq!( metrics.request_count, 1 );
     assert_eq!( metrics.input_tokens, 100 );
     assert_eq!( metrics.output_tokens, 50 );
-    assert_eq!( metrics.total_cost, 0.5 );
+    assert!( ( metrics.total_cost - 0.5_f64 ).abs() < f64::EPSILON );
     assert_eq!( metrics.total_tokens(), 150 );
 
     // Record another
@@ -40,7 +40,7 @@ mod enterprise_quota_tests
     assert_eq!( metrics.request_count, 2 );
     assert_eq!( metrics.input_tokens, 300 );
     assert_eq!( metrics.output_tokens, 150 );
-    assert_eq!( metrics.total_cost, 1.5 );
+    assert!( ( metrics.total_cost - 1.5_f64 ).abs() < f64::EPSILON );
   }
 
   #[ test ]
@@ -78,24 +78,24 @@ mod enterprise_quota_tests
   fn test_cost_calculator_sonnet()
   {
     let pricing = CostCalculator::for_model( "claude-3-5-sonnet-latest" );
-    assert_eq!( pricing.input_cost_per_million, 3.0 );
-    assert_eq!( pricing.output_cost_per_million, 15.0 );
+    assert!( ( pricing.input_cost_per_million - 3.0_f64 ).abs() < f64::EPSILON );
+    assert!( ( pricing.output_cost_per_million - 15.0_f64 ).abs() < f64::EPSILON );
   }
 
   #[ test ]
   fn test_cost_calculator_opus()
   {
     let pricing = CostCalculator::for_model( "claude-3-opus-20240229" );
-    assert_eq!( pricing.input_cost_per_million, 15.0 );
-    assert_eq!( pricing.output_cost_per_million, 75.0 );
+    assert!( ( pricing.input_cost_per_million - 15.0_f64 ).abs() < f64::EPSILON );
+    assert!( ( pricing.output_cost_per_million - 75.0_f64 ).abs() < f64::EPSILON );
   }
 
   #[ test ]
   fn test_cost_calculator_haiku()
   {
     let pricing = CostCalculator::for_model( "claude-3-haiku-latest" );
-    assert_eq!( pricing.input_cost_per_million, 0.25 );
-    assert_eq!( pricing.output_cost_per_million, 1.25 );
+    assert!( ( pricing.input_cost_per_million - 0.25_f64 ).abs() < f64::EPSILON );
+    assert!( ( pricing.output_cost_per_million - 1.25_f64 ).abs() < f64::EPSILON );
   }
 
   #[ test ]

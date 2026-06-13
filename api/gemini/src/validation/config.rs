@@ -127,7 +127,7 @@ pub fn validate_system_instruction( instruction : &SystemInstruction ) -> Result
 
   // System instruction should primarily contain text
   let has_text_part = instruction.parts.iter().any( |part|
-    part.text.as_ref().map_or( false, |t| !t.trim().is_empty() )
+    part.text.as_ref().is_some_and( |t| !t.trim().is_empty() )
   );
 
   if !has_text_part

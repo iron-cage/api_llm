@@ -486,7 +486,7 @@ mod private
       }
 
       let mut top_endpoints : Vec< _ > = endpoint_counts.into_iter().collect();
-      top_endpoints.sort_by( |a, b| b.1.cmp( &a.1 ) );
+      top_endpoints.sort_by_key( |&( _, count )| core::cmp::Reverse( count ) );
 
       // Count error types
       let mut error_counts : HashMap<  String, u64  > = HashMap::new();
@@ -499,7 +499,7 @@ mod private
       }
 
       let mut error_summary : Vec< _ > = error_counts.into_iter().collect();
-      error_summary.sort_by( |a, b| b.1.cmp( &a.1 ) );
+      error_summary.sort_by_key( |&( _, count )| core::cmp::Reverse( count ) );
 
       DiagnosticsReport
       {

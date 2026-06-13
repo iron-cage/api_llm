@@ -7,7 +7,7 @@ This document outlines the comprehensive testing strategy for the HuggingFace AP
 ## Testing Philosophy
 
 The testing approach follows Test-Driven Development (TDD) principles with emphasis on:
-- **Specification Compliance**: All tests validate behavior defined in `spec.md`
+- **Specification Compliance**: All tests validate behavior defined in `docs/invariant/` and `docs/feature/`
 - **Error Path Coverage**: Comprehensive testing of failure scenarios
 - **API Contract Validation**: Ensuring correct integration with HuggingFace API
 - **Performance Verification**: Validating response times and resource usage

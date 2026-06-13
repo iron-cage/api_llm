@@ -59,12 +59,12 @@ where
 
   // Create instances for each configured feature
   #[ cfg( feature = "rate_limiting" ) ]
-  let rate_limiter = full_client.to_rate_limiting_config().map( |config| RateLimit::new( config ) );
+  let rate_limiter = full_client.to_rate_limiting_config().map( RateLimit::new );
   #[ cfg( not( feature = "rate_limiting" ) ) ]
   let rate_limiter : Option< () > = None;
 
   #[ cfg( feature = "circuit_breaker" ) ]
-  let circuit_breaker = full_client.to_circuit_breaker_config().map( |config| CircuitBreaker::new( config ) );
+  let circuit_breaker = full_client.to_circuit_breaker_config().map( CircuitBreaker::new );
   #[ cfg( not( feature = "circuit_breaker" ) ) ]
   let circuit_breaker : Option< () > = None;
 
@@ -94,6 +94,8 @@ where
 }
 
 /// Execute an HTTP request with enterprise reliability features (rate limiting, circuit breaker, retry, caching)
+// too_many_arguments: each parameter corresponds to one distinct enterprise feature; no natural grouping possible
+#[ allow( clippy::too_many_arguments ) ]
 pub( crate ) async fn execute_with_enterprise_features< T, R >
 (
   client : &reqwest::Client,

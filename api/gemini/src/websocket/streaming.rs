@@ -238,7 +238,7 @@ impl< 'a > WebSocketStreamingApi< 'a >
   pub fn get_controller( &self, session_id : &str ) -> Option< StreamController >
   {
     self.manager.get_session( session_id )
-      .map( | session | StreamController::new( session ) )
+      .map( StreamController::new )
   }
 
   /// Close a streaming session

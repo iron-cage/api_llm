@@ -14,6 +14,7 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_image_content_structure()
 {
@@ -35,6 +36,7 @@ async fn test_image_content_structure()
   assert!( !image_content.source.data.is_empty() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_image_source_types()
 {
@@ -65,6 +67,7 @@ async fn test_image_source_types()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_mixed_content_message()
 {
@@ -94,6 +97,7 @@ async fn test_mixed_content_message()
   assert_eq!( message.content.len(), 2 ); // Text + Image
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_image_only_message()
 {
@@ -120,6 +124,7 @@ async fn test_image_only_message()
   assert_eq!( message.content.len(), 1 );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_multiple_images_message()
 {
@@ -157,6 +162,7 @@ async fn test_multiple_images_message()
   assert_eq!( message.content[0].r#type(), "text" );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_vision_api_request()
 {
@@ -188,6 +194,7 @@ async fn test_vision_api_request()
   assert_eq!( request.messages[0].content.len(), 2 ); // Text + Image
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_vision_conversation_flow()
 {
@@ -232,6 +239,7 @@ async fn test_vision_conversation_flow()
   assert_eq!( request.messages[2].content.len(), 1 );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_image_content_serialization()
 {
@@ -257,6 +265,7 @@ async fn test_image_content_serialization()
   assert!( json.contains( "\"data\":\"test123\"" ) );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_image_content_deserialization()
 {
@@ -278,6 +287,7 @@ async fn test_image_content_deserialization()
   assert!( !image_content.source.data.is_empty() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_vision_with_tools()
 {
@@ -329,6 +339,7 @@ async fn test_vision_with_tools()
 
 // Removed test_vision_api_call - used fake API keys
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_image_validation()
 {
@@ -363,6 +374,7 @@ async fn test_image_validation()
   assert_eq!( invalid_media_type.source.media_type, "invalid/type" );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_large_image_handling()
 {
@@ -387,6 +399,7 @@ async fn test_large_image_handling()
   assert!( json.len() > 1000 );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_vision_with_streaming()
 {
@@ -418,6 +431,7 @@ async fn test_vision_with_streaming()
   assert_eq!( request.messages[0].content.len(), 2 );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_mixed_content_serialization()
 {
@@ -450,9 +464,9 @@ async fn test_mixed_content_serialization()
 // INTEGRATION TESTS - REAL API VISION SUPPORT
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "vision" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_vision_real_image_processing()
 {
   let client = the_module::Client::from_workspace()
@@ -486,8 +500,7 @@ async fn integration_vision_real_image_processing()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Vision API call must work : {err}" ),
   };
@@ -519,9 +532,9 @@ async fn integration_vision_real_image_processing()
   println!( "   Output tokens : {}", response.usage.output_tokens );
 }
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "vision" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_vision_mixed_content_real_api()
 {
   let client = the_module::Client::from_workspace()
@@ -555,8 +568,7 @@ async fn integration_vision_mixed_content_real_api()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Mixed content vision API call must work : {err}" ),
   };

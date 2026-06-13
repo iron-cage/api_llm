@@ -16,7 +16,7 @@
 //!
 //! Follows the "Thin Client, Rich API" principle: every method maps to exactly
 //! one API endpoint, zero automatic decision-making, explicit control over all
-//! operations. See workspace `spec.md` for governing principles.
+//! operations. See `docs/invariant/` at the workspace root for governing principles.
 
 #[ cfg( feature = "enabled" ) ]
 use mod_interface::mod_interface;

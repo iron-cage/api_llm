@@ -93,7 +93,7 @@ pub enum StreamSessionState
 }
 
 /// Session-specific metrics
-#[ derive( Debug, Clone, Serialize, Deserialize, PartialEq ) ]
+#[ derive( Debug, Clone, Serialize, Deserialize, PartialEq, Default ) ]
 pub struct SessionMetrics
 {
   /// Total messages sent in this session
@@ -112,23 +112,6 @@ pub struct SessionMetrics
   pub last_activity : Option< u64 >,
   /// Error count
   pub error_count : u32,
-}
-
-impl Default for SessionMetrics
-{
-  fn default() -> Self
-  {
-    Self {
-      messages_sent : 0,
-      messages_received : 0,
-      bytes_sent : 0,
-      bytes_received : 0,
-      uptime_seconds : 0,
-      reconnection_count : 0,
-      last_activity : None,
-      error_count : 0,
-    }
-  }
 }
 
 /// Enhanced streaming metrics that combine basic and optimized metrics

@@ -133,7 +133,7 @@ where
       None
     };
 
-    let result = loop
+    loop
     {
       tokio ::select! {
         // Handle control commands with response tracking
@@ -190,7 +190,7 @@ where
                 }
                 if should_exit
                 {
-                  break ();
+                  break;
                 }
 
                 // Update metrics atomically
@@ -230,7 +230,7 @@ where
               }
 
               let _ = response_tx.send( Ok( () ) );
-              break (); // Exit task
+              break; // Exit task
             },
 
             Some( StreamCommand::GetState( tx ) ) => {
@@ -254,7 +254,7 @@ where
               }
             },
 
-            None => break (), // Control channel closed
+            None => break, // Control channel closed
           }
         },
 
@@ -272,7 +272,7 @@ where
 
                 if data_tx.send( Ok( data ) ).is_err()
                 {
-                  break (); // Receiver dropped
+                  break; // Receiver dropped
                 }
               },
               Some( Err( error ) ) => {
@@ -282,7 +282,7 @@ where
                   metrics.state_changes.fetch_add( 1, Ordering::Relaxed );
                 }
                 let _ = data_tx.send( Err( error ) );
-                break ();
+                break;
               },
               None => {
                 state.store( StreamState::Completed.to_u8(), Ordering::Release );
@@ -290,7 +290,7 @@ where
                 {
                   metrics.state_changes.fetch_add( 1, Ordering::Relaxed );
                 }
-                break (); // Stream ended
+                break; // Stream ended
               },
             }
           } else {
@@ -322,7 +322,7 @@ where
                     metrics.state_changes.fetch_add( 1, Ordering::Relaxed );
                     metrics.buffer_overflows.fetch_add( 1, Ordering::Relaxed );
                   }
-                  break ();
+                  break;
                 }
               },
               Some( Err( error ) ) => {
@@ -332,7 +332,7 @@ where
                   metrics.state_changes.fetch_add( 1, Ordering::Relaxed );
                 }
                 buffer.push( Err( error ) );
-                break ();
+                break;
               },
               None => {
                 state.store( StreamState::Completed.to_u8(), Ordering::Release );
@@ -340,7 +340,7 @@ where
                 {
                   metrics.state_changes.fetch_add( 1, Ordering::Relaxed );
                 }
-                break ();
+                break;
               },
             }
           }
@@ -358,7 +358,7 @@ where
               {
                 metrics.state_changes.fetch_add( 1, Ordering::Relaxed );
               }
-              break ();
+              break;
             }
           }
         },
@@ -369,14 +369,12 @@ where
           let current_state = StreamState::from_u8( state.load( Ordering::Relaxed ) );
           if current_state == StreamState::TimedOut
           {
-            break (); // Timeout was triggered
+            break; // Timeout was triggered
           }
         },
       }
-    };
-
+    }
     // Timeout task is automatically cleaned up when dropped
-    result
   }
 
   /// Spawn a timeout monitoring task for event-driven timeout handling
@@ -663,7 +661,7 @@ impl< 'a > StreamingControlApi< 'a >
     _request : &crate::models::GenerateContentRequest
   ) -> Result< ControllableStream< crate::models::StreamingResponse >, crate::error::Error >
   {
-    // qqq : Implement streaming functionality once API structure is clarified
+    // qqq : Implement streaming functionality once API structure is clarified (task/verified/004)
     Err( crate::error::Error::ApiError( "Streaming functionality not yet implemented".to_string() ) )
   }
 
@@ -877,7 +875,7 @@ impl< 'a > StreamControlStreamBuilder< 'a >
   #[ cfg( feature = "streaming" ) ]
   pub async fn create( self ) -> Result< ControllableStream< crate::models::StreamingResponse >, crate::error::Error >
   {
-    // qqq : Implement streaming functionality once API structure is clarified
+    // qqq : Implement streaming functionality once API structure is clarified (task/verified/004)
     Err( crate::error::Error::ApiError( "Streaming functionality not yet implemented".to_string() ) )
   }
 }

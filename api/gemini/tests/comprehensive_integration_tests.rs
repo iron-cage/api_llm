@@ -15,6 +15,10 @@
 //! All tests use real API tokens and make actual HTTP requests.
 
 
+#[ allow( clippy::duplicate_mod ) ]
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::
 {
   client ::Client,
@@ -26,21 +30,6 @@ use core::time::Duration;
 use tokio::time::timeout;
 use futures::StreamExt;
 
-/// Create client for integration tests - REQUIRES real API key
-/// Fails immediately if no valid API key is found
-fn create_integration_client() -> Client
-{
-  // Integration tests MUST have real API key - no fallback or conditional logic
-  Client::new().unwrap_or_else( |err| {
-    panic!(
-    "\n❌ INTEGRATION TEST FAILURE: No valid API key found!\n\
-    \n🔑 Required: Set GEMINI_API_KEY environment variable or create secret/gemini_api_key file\n\
-    \n📋 Integration tests run by default and CANNOT be silently skipped\n\
-  \n🚫 Error details : {err:?}\n\
-    \n💡 To run only unit tests: cargo test --no-default-features\n"
-    )
-  })
-}
 
 // ==============================================================================
 // CORE API INTEGRATION TESTS

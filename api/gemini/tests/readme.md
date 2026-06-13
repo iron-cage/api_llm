@@ -44,17 +44,37 @@ This crate follows a **strict no-mockup policy** for all testing:
 
 ```
 tests/
-├── readme.md                          # This file - testing guide and policies
-├── tests.rs                          # Main test module coordinator
-├── api_key_failure_test.rs           # API key validation and error handling
-├── integration_tests.rs              # Core real API integration tests
-├── comprehensive_integration_tests.rs # Extended real API testing scenarios
-├── count_tokens_tests.rs             # Real count tokens API functionality
-├── sync_api_tests.rs                 # Synchronous API wrapper tests
-├── example_validation_test.rs        # Documentation example validation
-├── batch_operations_tests.rs         # Batch processing functionality
-├── audio_processing_tests.rs         # Audio content processing tests
-└── structured_logging_tests.rs       # Logging and diagnostics tests
+├── readme.md                              # This file - testing guide and policies
+├── docs/                                  # Behavioral spec files mirroring docs/ entity instances
+├── api_key_failure_test.rs               # API key validation and loud failure behavior
+├── audio_processing_tests.rs             # Audio content processing tests
+├── code_execution_tests.rs               # Code execution feature integration tests
+├── comprehensive_integration_tests.rs    # Extended real API testing scenarios
+├── compression_tests.rs                  # HTTP compression feature integration tests
+├── config_optimization_test.rs           # Client configuration optimization tests
+├── cost_quota_tests.rs                   # Enterprise cost quota management tests
+├── count_tokens_tests.rs                 # Real count tokens API functionality
+├── dynamic_configuration_tests.rs        # Hot-reload config change tests
+├── enhanced_circuit_breaker_tests.rs     # Circuit breaker enterprise feature tests
+├── enhanced_rate_limiting_tests.rs       # Rate limiting enterprise feature tests
+├── enhanced_retry_logic_tests.rs         # Retry logic with exponential backoff tests
+├── enterprise_quota_management_tests.rs  # Quota enforcement tests
+├── example_validation_test.rs            # Documentation example validation
+├── failover_tests.rs                     # Multi-endpoint failover tests
+├── health_checks_tests.rs                # Periodic health monitoring tests
+├── integration_tests.rs                  # Core real API integration tests
+├── model_comparison_tests.rs             # Model comparison feature tests
+├── streaming_control_tests.rs            # Stream pause/resume/cancel tests
+├── streaming_optimization_tests.rs       # Streaming performance tests
+├── structured_logging_tests.rs           # Logging and diagnostics tests
+├── sync_api_tests.rs                     # Synchronous API wrapper tests
+├── system_instructions_tests.rs          # System prompt configuration tests
+├── test_harness.rs                       # Shared test utilities and harness
+├── websocket_streaming_tests.rs          # WebSocket bidirectional streaming tests
+├── common/                               # Shared test infrastructure
+├── deployment/                           # Deployment scenario tests
+├── media_api/                            # Media file management tests
+└── safety/                               # Safety settings and filtering tests
 ```
 
 ## 🎯 Test Categories
@@ -360,7 +380,6 @@ Integration tests require real API access:
 ## 📚 References
 
 - [Main README Testing Section](../readme.md#testing)
-- [Specification Testing Strategy](../spec.md#testing-strategy-implemented)
 - [Google Gemini API Documentation](https://ai.google.dev/api/rest)
 
 ---

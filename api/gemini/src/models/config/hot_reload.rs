@@ -133,6 +133,8 @@ impl HotReloadManager
   /// # Returns
   ///
   /// Returns a handle that stops hot-reloading when dropped.
+  // await_holding_lock: sources guard dropped at block exit (line ~165) before tokio::spawn
+  #[ allow( clippy::await_holding_lock ) ]
   pub async fn start_hot_reloading< F >(
     &self,
     on_config_update : F
@@ -284,7 +286,7 @@ impl HotReloadManager
     }
 
     // Sort by priority (higher priority first)
-    configs.sort_by( | a, b | b.1.cmp( &a.1 ) );
+    configs.sort_by_key( | b | std::cmp::Reverse( b.1 ) );
 
     // Start with the lowest priority as base
     let mut merged_config = configs.last().unwrap().0.clone();
@@ -433,7 +435,7 @@ impl HotReloadMetrics
       no_change_reloads : self.no_change_reloads.load( Ordering::Relaxed ),
       success_rate : self.success_rate(),
       is_active : self.is_active(),
-      last_reload_time : self.last_reload_time.lock().unwrap().clone(),
+      last_reload_time : *self.last_reload_time.lock().unwrap(),
     }
   }
 }

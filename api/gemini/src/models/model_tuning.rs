@@ -184,6 +184,14 @@ mod private
     }
   }
 
+  impl Default for HyperparameterConfigBuilder
+  {
+    fn default() -> Self
+    {
+      Self::new()
+    }
+  }
+
   impl HyperparameterConfig
   {
     /// Create a new hyperparameter config builder
@@ -307,6 +315,14 @@ mod private
       }
 
       Ok( self.config )
+    }
+  }
+
+  impl Default for LoRAConfigBuilder
+  {
+    fn default() -> Self
+    {
+      Self::new()
     }
   }
 

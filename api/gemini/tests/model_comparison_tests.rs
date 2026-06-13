@@ -2,9 +2,11 @@
 //!
 //! Tests for model comparison and A/B testing functionality.
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::
 {
-  client ::Client,
   GenerateContentRequest,
   Content,
   Part,
@@ -13,7 +15,7 @@ use api_gemini::
 #[ tokio::test ]
 async fn test_comparator_creation()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let _comparator = client.comparator();
 
   // Comparator created successfully via client.comparator() method
@@ -24,7 +26,7 @@ async fn test_comparator_creation()
 #[ tokio::test ]
 async fn test_compare_models_sequential()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let comparator = client.comparator();
 
   let request = GenerateContentRequest
@@ -53,7 +55,7 @@ async fn test_compare_models_sequential()
 #[ tokio::test ]
 async fn test_compare_models_parallel()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let comparator = client.comparator();
 
   let request = GenerateContentRequest
@@ -84,7 +86,7 @@ async fn test_compare_models_parallel()
 #[ tokio::test ]
 async fn test_comparison_fastest_slowest()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let comparator = client.comparator();
 
   let request = GenerateContentRequest
@@ -124,7 +126,7 @@ async fn test_comparison_fastest_slowest()
 #[ tokio::test ]
 async fn test_comparison_token_counts()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let comparator = client.comparator();
 
   let request = GenerateContentRequest
@@ -161,7 +163,7 @@ async fn test_comparison_token_counts()
 #[ tokio::test ]
 async fn test_parallel_comparison_speed()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let comparator = client.comparator();
 
   let request = GenerateContentRequest
@@ -196,7 +198,7 @@ async fn test_parallel_comparison_speed()
 #[ tokio::test ]
 async fn test_average_response_time_calculation()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let comparator = client.comparator();
 
   let request = GenerateContentRequest
@@ -229,7 +231,7 @@ async fn test_average_response_time_calculation()
 #[ tokio::test ]
 async fn test_comparison_error_handling()
 {
-  let client = Client::new().expect( "Failed to create client" );
+  let client = create_integration_client();
   let comparator = client.comparator();
 
   let request = GenerateContentRequest

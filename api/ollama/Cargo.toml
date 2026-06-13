@@ -2,6 +2,7 @@
 name = "api_ollama"
 version = "0.2.0"
 edition = "2021"
+rust-version.workspace = true
 authors = [
   "Kostiantyn Mysnyk <wandalen@obox.systems>",
 ]
@@ -29,7 +30,7 @@ default = [ "full" ]
 # The master switch that activates all dependencies
 enabled = [ "dep:reqwest", "dep:serde", "dep:serde_json", "dep:tokio", "dep:futures-core", "dep:futures-util", "dep:error_tools", "dep:mod_interface" ]
 # The 'full' feature enables all other features, including 'enabled'
-full = [ "enabled", "streaming", "integration", "authentication", "advanced", "workspace", "secret_management", "embeddings", "builder_patterns", "retry_logic", "vision_support", "tool_calling", "integration_tests", "circuit_breaker", "general_diagnostics", "model_details", "sync_api", "failover", "health_checks", "dynamic_config", "streaming_control", "websocket_streaming", "model_tuning", "model_deployment", "rate_limiting", "retry", "request_caching", "audio_processing", "count_tokens", "cached_content", "batch_operations", "safety_settings", "structured_logging", "input_validation", "enhanced_function_calling", "model_comparison", "request_templates", "buffered_streaming", "compression", "enterprise_quota", "curl_diagnostics" ]
+full = [ "enabled", "streaming", "integration", "authentication", "advanced", "workspace", "secret_management", "embeddings", "builder_patterns", "vision_support", "tool_calling", "integration_tests", "circuit_breaker", "general_diagnostics", "model_details", "sync_api", "failover", "health_checks", "dynamic_config", "streaming_control", "websocket_streaming", "model_tuning", "model_deployment", "rate_limiting", "retry", "request_caching", "audio_processing", "count_tokens", "cached_content", "batch_operations", "safety_settings", "structured_logging", "input_validation", "enhanced_function_calling", "model_comparison", "request_templates", "buffered_streaming", "compression", "enterprise_quota", "curl_diagnostics" ]
 # Feature for streaming responses
 streaming = []
 # Feature for running integration tests with real API
@@ -46,8 +47,6 @@ secret_management = []
 embeddings = []
 # Feature for builder patterns
 builder_patterns = []
-# Feature for retry logic with exponential backoff
-retry_logic = [ "dep:fastrand" ]
 # Feature for vision support with image inputs
 vision_support = [ "dep:base64" ]
 # Feature for tool calling and function invocation
@@ -128,7 +127,6 @@ fastrand = { workspace = true, optional = true }
 base64 = { workspace = true, optional = true }
 workspace_tools = { workspace = true, features = [ "secrets" ], optional = true }
 url = { workspace = true, optional = true }
-tempfile = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
 tokio-tungstenite = { workspace = true, optional = true }
 futures-channel = { workspace = true, optional = true }

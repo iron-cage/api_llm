@@ -203,7 +203,6 @@ The crate uses `workspace_tools` for secret management with automatic fallback c
 
 - **[API Reference](docs/api_reference.md)** - Complete API documentation
 - **[OpenAPI Summary](docs/openapi_endpoints_summary.md)** - Endpoint reference
-- **[Specification](spec.md)** - Detailed project specification
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/xai/examples)** - Real-world usage examples
 
 ## Project Structure
@@ -233,7 +232,6 @@ This section documents the complete project layout with each entity's responsibi
 | Entity | Responsibility | Scope |
 |--------|----------------|-------|
 | `readme.md` | Project overview and onboarding | Quick start, architecture overview, feature summary |
-| `spec.md` | Formal specification | Complete requirements, design, governance |
 
 #### Temporary Files & Working Directories
 
@@ -279,6 +277,5 @@ MIT
 
 ## Links
 
-- **[Specification](spec.md)** - Technical specification
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/xai/examples)** - Usage examples
 - **[API Reference](docs/api_reference.md)** - Complete documentation

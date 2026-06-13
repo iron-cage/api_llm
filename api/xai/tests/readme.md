@@ -120,6 +120,6 @@ e2e/
 
 ## Related Documentation
 
-- See `../spec.md` for functional requirements
+- See `../docs/invariant/` for behavioral invariants and requirements
 - See `../examples/` for usage examples
 - See source code (`../src/`) for implementation details

@@ -14,8 +14,8 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
+#[ test ]
 fn test_function_calling_tool_choice_format()
 {
     // Test that ToolChoice::Auto is properly formatted for the API
@@ -60,9 +60,8 @@ fn test_function_calling_tool_choice_format()
     println!("   Serialized as : {tool_choice}");
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn test_function_calling_real_api_basic()
 {
     // Test that function calling works with real API

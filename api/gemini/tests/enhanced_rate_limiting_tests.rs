@@ -24,7 +24,6 @@ mod rate_limiting_execution_tests
 
     // At this point, we can only test that the client builds successfully
     // Actual rate limiting execution testing will require implementing the rate limiting logic in task 170
-    assert!( true, "Client with rate limiting configuration built successfully" );
   }
 
   /// Test that rate limiting metrics can be enabled
@@ -39,7 +38,6 @@ mod rate_limiting_execution_tests
     .expect( "Failed to build client" );
 
     // Test that metrics configuration is accepted
-    assert!( true, "Client with rate limiting metrics configuration built successfully" );
   }
 
   /// Test that requests per second can be configured
@@ -53,7 +51,6 @@ mod rate_limiting_execution_tests
     .expect( "Failed to build client" );
 
     // Test that requests per second configuration is accepted
-    assert!( true, "Client with requests per second configuration built successfully" );
   }
 
   /// Test that bucket size can be configured
@@ -68,7 +65,6 @@ mod rate_limiting_execution_tests
     .expect( "Failed to build client" );
 
     // Test that bucket size configuration is accepted
-    assert!( true, "Client with bucket size configuration built successfully" );
   }
 
   /// Test that rate limiting algorithm can be configured
@@ -83,7 +79,6 @@ mod rate_limiting_execution_tests
     .expect( "Failed to build client" );
 
     // Test that algorithm configuration is accepted
-    assert!( true, "Client with algorithm configuration built successfully" );
   }
 
   /// Test that all rate limiting parameters can be combined
@@ -100,7 +95,6 @@ mod rate_limiting_execution_tests
     .expect( "Failed to build client" );
 
     // Test that comprehensive rate limiting configuration is accepted
-    assert!( true, "Client with comprehensive rate limiting configuration built successfully" );
   }
 }
 
@@ -120,6 +114,5 @@ mod rate_limiting_disabled_tests
     .expect( "Failed to build client" );
 
     // Client should build successfully without rate limiting features when feature disabled
-    assert!( true, "Client built successfully without rate limiting feature" );
   }
 }

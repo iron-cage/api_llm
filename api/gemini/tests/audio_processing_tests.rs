@@ -12,9 +12,11 @@
 //! All tests use feature gating and validate actual API responses.
 
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::
 {
-  client ::Client,
   models ::*,
   error ::Error,
 };
@@ -24,8 +26,7 @@ use api_gemini::
 #[ cfg( feature = "integration" ) ]
 async fn test_audio_transcription_mp3()
 {
-  let client = Client::new()
-  .expect( "Failed to create client for audio transcription test" );
+  let client = create_integration_client();
   
   let models_api = client.models();
   let model = models_api.by_name( "gemini-1.5-pro" );
@@ -110,8 +111,7 @@ async fn test_audio_transcription_mp3()
 #[ cfg( feature = "integration" ) ]
 async fn test_audio_analysis_wav()
 {
-  let client = Client::new()
-  .expect( "Failed to create client for audio analysis test" );
+  let client = create_integration_client();
   
   let models_api = client.models();
   let model = models_api.by_name( "gemini-1.5-pro" );
@@ -191,8 +191,7 @@ async fn test_audio_analysis_wav()
 #[ cfg( feature = "integration" ) ]
 async fn test_multiple_audio_formats()
 {
-  let client = Client::new()
-  .expect( "Failed to create client for multi-format audio test" );
+  let client = create_integration_client();
   
   let models_api = client.models();
   let model = models_api.by_name( "gemini-1.5-pro" );
@@ -273,8 +272,7 @@ async fn test_multiple_audio_formats()
 #[ cfg( feature = "integration" ) ]
 async fn test_audio_safety_filtering()
 {
-  let client = Client::new()
-  .expect( "Failed to create client for audio safety test" );
+  let client = create_integration_client();
   
   let models_api = client.models();
   let model = models_api.by_name( "gemini-1.5-pro" );
@@ -355,8 +353,7 @@ async fn test_audio_safety_filtering()
 #[ cfg( feature = "integration" ) ]
 async fn test_large_audio_file()
 {
-  let client = Client::new()
-  .expect( "Failed to create client for large audio test" );
+  let client = create_integration_client();
   
   let models_api = client.models();
   let model = models_api.by_name( "gemini-1.5-pro" );
@@ -429,8 +426,7 @@ async fn test_large_audio_file()
 #[ cfg( feature = "integration" ) ]
 async fn test_invalid_audio_format()
 {
-  let client = Client::new()
-  .expect( "Failed to create client for invalid audio test" );
+  let client = create_integration_client();
   
   let models_api = client.models();
   let model = models_api.by_name( "gemini-1.5-pro" );
@@ -498,8 +494,7 @@ async fn test_invalid_audio_format()
 
 async fn test_batch_audio_processing()
 {
-  let client = Client::new()
-  .expect( "Failed to create client for batch audio test" );
+  let client = create_integration_client();
   
   let models_api = client.models();
   let model = models_api.by_name( "gemini-1.5-pro" );

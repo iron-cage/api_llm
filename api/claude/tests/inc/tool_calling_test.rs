@@ -14,6 +14,7 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_definition_structure()
 {
@@ -40,6 +41,7 @@ async fn test_tool_definition_structure()
   assert!( tool.input_schema.is_object() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_use_content_structure()
 {
@@ -58,6 +60,7 @@ async fn test_tool_use_content_structure()
   assert!( tool_use.input.is_object() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_result_content_structure()
 {
@@ -76,6 +79,7 @@ async fn test_tool_result_content_structure()
   assert!( !tool_result.is_error.unwrap() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_result_error_structure()
 {
@@ -93,6 +97,7 @@ async fn test_tool_result_error_structure()
   assert!( tool_result.content.contains( "timeout" ) );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_message_with_tool_definitions()
 {
@@ -136,6 +141,7 @@ async fn test_message_with_tool_definitions()
   assert_eq!( request.tools.as_ref().unwrap()[1].name, "calculate_math" );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_choice_none()
 {
@@ -154,6 +160,7 @@ async fn test_tool_choice_none()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_choice_auto()
 {
@@ -172,6 +179,7 @@ async fn test_tool_choice_auto()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_choice_specific_tool()
 {
@@ -195,6 +203,7 @@ async fn test_tool_choice_specific_tool()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_message_content_with_tool_use()
 {
@@ -219,6 +228,7 @@ async fn test_message_content_with_tool_use()
   // Tool use content should be serialized as part of message content
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_message_content_with_tool_result()
 {
@@ -242,6 +252,7 @@ async fn test_message_content_with_tool_result()
   assert_eq!( message.content.len(), 1 );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_calling_conversation_flow()
 {
@@ -299,6 +310,7 @@ async fn test_tool_calling_conversation_flow()
 // MOCKUP TEST REMOVED: This test used fake API keys and expected to fail.
 // TODO: Add real integration test for tool calling with from_workspace() credentials
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_definition_json_serialization()
 {
@@ -325,6 +337,7 @@ async fn test_tool_definition_json_serialization()
   assert!( json.contains( "\"properties\"" ) );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_use_json_serialization()
 {
@@ -345,6 +358,7 @@ async fn test_tool_use_json_serialization()
   assert!( json.contains( "\"input\":" ) );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_multiple_tools_with_different_schemas()
 {
@@ -401,6 +415,7 @@ async fn test_multiple_tools_with_different_schemas()
   assert!( db_tool.input_schema.get( "properties" ).unwrap().get( "timeout" ).unwrap().get( "default" ).is_some() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_calling_with_streaming()
 {
@@ -432,6 +447,7 @@ async fn test_tool_calling_with_streaming()
   assert!( request.tool_choice.is_some() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_tool_validation_errors()
 {
@@ -462,9 +478,9 @@ async fn test_tool_validation_errors()
 // INTEGRATION TESTS - REAL API TOOL CALLING
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "tools" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_tool_calling_real_math_tool()
 {
   let client = the_module::Client::from_workspace()
@@ -508,8 +524,7 @@ async fn integration_tool_calling_real_math_tool()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Tool calling request must work : {err}" ),
   };
@@ -542,9 +557,9 @@ async fn integration_tool_calling_real_math_tool()
   }
 }
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "tools" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_tool_calling_multiple_tools()
 {
   let client = the_module::Client::from_workspace()
@@ -595,8 +610,7 @@ async fn integration_tool_calling_multiple_tools()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Multiple tools request must work : {err}" ),
   };

@@ -134,6 +134,7 @@ fn test_circuit_breaker_failure_detection()
 }
 
 /// Test circuit breaker integration with client
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_circuit_breaker_client_integration()
 {

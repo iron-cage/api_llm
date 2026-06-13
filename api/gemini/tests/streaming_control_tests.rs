@@ -177,7 +177,7 @@ mod integration_tests
     // Create a test stream with more data to test buffering
     use futures::stream::StreamExt;
   let test_data : Vec< String > = ( 1..=10 ).map( |i| format!( "buffer_test_{}", i ) ).collect();
-    let delayed_stream = stream::iter( test_data.clone().into_iter().map( |s| Ok( s ) ) )
+    let delayed_stream = stream::iter( test_data.clone().into_iter().map( Ok ) )
     .then( |item| async move {
       tokio ::time::sleep( Duration::from_millis( 30 ) ).await;
       item
@@ -272,7 +272,7 @@ mod integration_tests
     // Create a test stream
     use futures::stream::StreamExt;
   let test_data : Vec< String > = ( 1..=20 ).map( |i| format!( "concurrent_{}", i ) ).collect();
-    let delayed_stream = stream::iter( test_data.into_iter().map( |s| Ok( s ) ) )
+    let delayed_stream = stream::iter( test_data.into_iter().map( Ok ) )
     .then( |item| async move {
       tokio ::time::sleep( Duration::from_millis( 40 ) ).await;
       item

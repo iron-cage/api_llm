@@ -155,8 +155,8 @@ fn test_health_metrics_empty()
   assert_eq!( metrics.degraded_count, 0 );
   assert_eq!( metrics.unhealthy_count, 0 );
   assert_eq!( metrics.average_response_time_ms, 0 );
-  assert_eq!( metrics.healthy_percentage(), 0.0 );
-  assert_eq!( metrics.available_percentage(), 0.0 );
+  assert!( metrics.healthy_percentage().abs() < f64::EPSILON );
+  assert!( metrics.available_percentage().abs() < f64::EPSILON );
 }
 
 /// Test health metrics with single result
@@ -183,8 +183,8 @@ fn test_health_metrics_single_result()
   assert_eq!( metrics.average_response_time_ms, 300 );
   assert_eq!( metrics.min_response_time_ms, 300 );
   assert_eq!( metrics.max_response_time_ms, 300 );
-  assert_eq!( metrics.healthy_percentage(), 100.0 );
-  assert_eq!( metrics.available_percentage(), 100.0 );
+  assert!( ( metrics.healthy_percentage() - 100.0_f64 ).abs() < f64::EPSILON );
+  assert!( ( metrics.available_percentage() - 100.0_f64 ).abs() < f64::EPSILON );
 }
 
 /// Test health metrics with multiple results
@@ -270,8 +270,8 @@ fn test_health_metrics_percentages()
   ];
 
   let metrics = the_module::HealthMetrics::from_results( &all_healthy );
-  assert_eq!( metrics.healthy_percentage(), 100.0 );
-  assert_eq!( metrics.available_percentage(), 100.0 );
+  assert!( ( metrics.healthy_percentage() - 100.0_f64 ).abs() < f64::EPSILON );
+  assert!( ( metrics.available_percentage() - 100.0_f64 ).abs() < f64::EPSILON );
 
   // All unhealthy
   let all_unhealthy = vec![
@@ -286,8 +286,8 @@ fn test_health_metrics_percentages()
   ];
 
   let metrics = the_module::HealthMetrics::from_results( &all_unhealthy );
-  assert_eq!( metrics.healthy_percentage(), 0.0 );
-  assert_eq!( metrics.available_percentage(), 0.0 );
+  assert!( metrics.healthy_percentage().abs() < f64::EPSILON );
+  assert!( metrics.available_percentage().abs() < f64::EPSILON );
 
   // Mixed with degraded
   let mixed = vec![
@@ -310,8 +310,8 @@ fn test_health_metrics_percentages()
   ];
 
   let metrics = the_module::HealthMetrics::from_results( &mixed );
-  assert_eq!( metrics.healthy_percentage(), 0.0 );
-  assert_eq!( metrics.available_percentage(), 100.0 );
+  assert!( metrics.healthy_percentage().abs() < f64::EPSILON );
+  assert!( ( metrics.available_percentage() - 100.0_f64 ).abs() < f64::EPSILON );
 }
 
 /// Test health check configuration serialization

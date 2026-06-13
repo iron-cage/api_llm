@@ -42,5 +42,5 @@ This table documents all instances in this collection, ensuring Complete Entity 
 ## Related Collections
 
 - See `../readme.md` for docs/ directory organization
-- See `../../spec/` for formal technical specifications
+- See `../invariant/` for behavioral constraints and governing principles
 - See `../../tests/readme.md` for test documentation

@@ -69,7 +69,7 @@
 //!
 //! // Create a simple message
 //! let request = CreateMessageRequest::builder()
-//!   .model( "claude-sonnet-4-5-20250929".to_string() )
+//!   .model( "claude-sonnet-4-6".to_string() )
 //!   .max_tokens( 1000 )
 //!   .messages( vec![
 //!     Message {

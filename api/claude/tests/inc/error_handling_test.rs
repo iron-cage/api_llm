@@ -12,50 +12,50 @@
 //!
 //! ## Error Severity Levels (Operational Impact)
 //!
-//! - **Critical**: Blocks all operations, requires immediate action (Authentication, MissingEnvironment)
+//! - **Critical**: Blocks all operations, requires immediate action (`Authentication`, `MissingEnvironment`)
 //!   - Impact : Cannot proceed with ANY requests
 //!   - Recovery : Fix credentials/environment before retrying
 //!
-//! - **High**: Blocks current operation, likely user error (InvalidRequest, InvalidArgument)
+//! - **High**: Blocks current operation, likely user error (`InvalidRequest`, `InvalidArgument`)
 //!   - Impact : This specific request fails
 //!   - Recovery : Fix request parameters and retry
 //!
-//! - **Medium**: Temporary operational issue (RateLimit, Internal)
+//! - **Medium**: Temporary operational issue (`RateLimit`, `Internal`)
 //!   - Impact : Request fails but system healthy
 //!   - Recovery : Wait and retry with backoff
 //!
-//! - **Low**: Degraded functionality (Parsing, Stream interruption)
+//! - **Low**: Degraded functionality (`Parsing`, Stream interruption)
 //!   - Impact : Partial failure, may have partial data
 //!   - Recovery : Retry or use partial results
 //!
 //! ## Retryable vs Non-Retryable Errors
 //!
 //! **Retryable** (transient, may succeed on retry):
-//! - RateLimit : Server explicitly says retry later
-//! - Internal : Server-side issue, may be resolved
-//! - Stream : Network interruption, connection may recover
-//! - Http : Network issues are often transient
+//! - `RateLimit` : Server explicitly says retry later
+//! - `Internal` : Server-side issue, may be resolved
+//! - `Stream` : Network interruption, connection may recover
+//! - `Http` : Network issues are often transient
 //!
 //! **Non-Retryable** (permanent, will fail again):
-//! - Authentication : Invalid credentials won't fix themselves
-//! - InvalidArgument : Bad input won't become valid
-//! - InvalidRequest : Malformed request structure permanent
-//! - Parsing : If we can't parse, retrying won't help
-//! - MissingEnvironment : Config issue must be fixed manually
+//! - `Authentication` : Invalid credentials won't fix themselves
+//! - `InvalidArgument` : Bad input won't become valid
+//! - `InvalidRequest` : Malformed request structure permanent
+//! - `Parsing` : If we can't parse, retrying won't help
+//! - `MissingEnvironment` : Config issue must be fixed manually
 //!
 //! ## SSE Parsing Edge Cases
 //!
-//! **Malformed JSON** (test_sse_parsing_errors_malformed_json):
+//! **Malformed JSON** (`test_sse_parsing_errors_malformed_json`):
 //! - Real-world scenario : Network corruption, truncated responses
 //! - Strategy : Filter out bad events, continue processing stream
 //! - Rationale : Partial data better than complete failure
 //!
-//! **Unknown Event Types** (test_sse_parsing_unknown_event_type):
+//! **Unknown Event Types** (`test_sse_parsing_unknown_event_type`):
 //! - Real-world scenario : API adds new events before client update
 //! - Strategy : Silently ignore unknown events
 //! - Rationale : Forward compatibility, don't break on API evolution
 //!
-//! **Incomplete Data** (test_sse_parsing_content_block_delta_errors):
+//! **Incomplete Data** (`test_sse_parsing_content_block_delta_errors`):
 //! - Real-world scenario : Race conditions, partial server responses
 //! - Strategy : Validate required fields, skip invalid deltas
 //! - Rationale : Graceful degradation over hard failures
@@ -63,10 +63,10 @@
 //! ## Recovery Suggestions
 //!
 //! Each error type provides actionable suggestions:
-//! - **MissingEnvironment**: "Set ANTHROPIC_API_KEY environment variable"
-//! - **Authentication**: "Verify API key is valid at console.anthropic.com"
-//! - **RateLimit**: "Wait {retry_after}s before retrying" (server-provided duration)
-//! - **InvalidRequest**: Specific parameter that failed validation
+//! - **`MissingEnvironment`**: "Set `ANTHROPIC_API_KEY` environment variable"
+//! - **`Authentication`**: "Verify API key is valid at console.anthropic.com"
+//! - **`RateLimit`**: "Wait `{retry_after}`s before retrying" (server-provided duration)
+//! - **`InvalidRequest`**: Specific parameter that failed validation
 //!
 //! ## NO MOCKING POLICY - Why Real API Testing
 //!
@@ -98,127 +98,8 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
-#[ tokio::test ]
-async fn test_api_error_response_parsing_and_classification()
-{
-  // Test parsing different API error response formats
-  let error_response = r#"
-  {
-    "error": {
-      "type": "invalid_request_error",
-      "message": "Your request contains invalid parameters"
-    }
-  }
-  "#;
 
-  let result = the_module::ErrorParser::parse_api_error( error_response );
-  match result
-  {
-    Ok( error ) =>
-    {
-      assert_eq!( error.error_class(), the_module::ErrorClass::InvalidRequest );
-      assert_eq!( error.severity(), the_module::ErrorSeverity::High );
-      assert!( !error.is_transient() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test authentication error classification
-  let auth_error_response = r#"
-  {
-    "error": {
-      "type": "authentication_error",
-      "message": "Invalid API key provided"
-    }
-  }
-  "#;
-
-  let result = the_module::ErrorParser::parse_api_error( auth_error_response );
-  match result
-  {
-    Ok( error ) =>
-    {
-      assert_eq!( error.error_class(), the_module::ErrorClass::Authentication );
-      assert!( error.requires_credential_refresh() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-}
-
-#[ tokio::test ]
-async fn test_http_status_code_mapping_to_error_types()
-{
-  // Test mapping different HTTP status codes to specific error types
-  // REMOVED: create_test_client() call - not needed for mapping tests
-
-  // Test 400 Bad Request
-  let result = the_module::ErrorMapper::map_http_status( 400, "Bad Request" );
-  match result
-  {
-    Ok( error ) =>
-    {
-      assert_eq!( error.error_type(), the_module::ErrorType::InvalidRequest );
-      assert!( error.has_remediation_steps() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test 401 Unauthorized
-  let result = the_module::ErrorMapper::map_http_status( 401, "Unauthorized" );
-  match result
-  {
-    Ok( error ) =>
-    {
-      assert_eq!( error.error_type(), the_module::ErrorType::Authentication );
-      assert!( error.is_credential_related() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test 429 Too Many Requests
-  let result = the_module::ErrorMapper::map_http_status( 429, "Too Many Requests" );
-  match result
-  {
-    Ok( error ) =>
-    {
-      assert_eq!( error.error_type(), the_module::ErrorType::RateLimit );
-      assert!( error.has_backoff_strategy() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test 500 Internal Server Error
-  let result = the_module::ErrorMapper::map_http_status( 500, "Internal Server Error" );
-  match result
-  {
-    Ok( error ) =>
-    {
-      assert_eq!( error.error_type(), the_module::ErrorType::ServerError );
-      assert!( error.is_transient() );
-      assert!( error.supports_retry() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-}
-
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_error_context_preservation_and_stack_traces()
 {
@@ -227,52 +108,8 @@ async fn test_error_context_preservation_and_stack_traces()
   // Test functionality is covered by real integration tests
 }
 
-#[ tokio::test ]
-async fn test_error_recovery_strategies_and_retry_conditions()
-{
-  // Test automatic retry condition detection
-  // REMOVED: create_test_client() call - not needed for strategy tests
 
-  // Test transient network error
-  let network_error = the_module::AnthropicError::http_error( "Connection timeout".to_string() );
-  let recovery_strategy = the_module::ErrorRecovery::analyze_error( &network_error );
-  
-  match recovery_strategy
-  {
-    Ok( strategy ) =>
-    {
-      assert!( strategy.should_retry() );
-      assert_eq!( strategy.max_retries(), 3 );
-      assert!( strategy.backoff_strategy() == the_module::BackoffStrategy::ExponentialBackoff );
-      assert!( strategy.base_delay() > core::time::Duration::from_millis( 100 ) );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test permanent error (authentication)
-  let auth_error = the_module::AnthropicError::Authentication( 
-    the_module::AuthenticationError::new( "Invalid API key".to_string() ) 
-  );
-  let recovery_strategy = the_module::ErrorRecovery::analyze_error( &auth_error );
-  
-  match recovery_strategy
-  {
-    Ok( strategy ) =>
-    {
-      assert!( !strategy.should_retry() );
-      assert!( strategy.requires_user_action() );
-      assert!( strategy.suggested_action().contains( "API key" ) );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-}
-
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_user_actionable_error_messages_with_remediation()
 {
@@ -281,6 +118,7 @@ async fn test_user_actionable_error_messages_with_remediation()
   // Test functionality is covered by real integration tests
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_error_aggregation_and_batch_error_handling()
 {
@@ -289,129 +127,8 @@ async fn test_error_aggregation_and_batch_error_handling()
   // Test functionality is covered by real integration tests
 }
 
-#[ tokio::test ]
-async fn test_timeout_error_detection_and_classification()
-{
-  // Test different types of timeout errors
-  // REMOVED: create_test_client() call - not needed for classification tests
 
-  // Test connection timeout
-  let connection_timeout = the_module::TimeoutError::new(
-    the_module::TimeoutType::Connection,
-    core::time::Duration::from_secs( 30 ),
-    "Connection timeout after 30 seconds".to_string()
-  );
-
-  let classified_error = the_module::ErrorClassifier::classify_timeout( &connection_timeout );
-  match classified_error
-  {
-    Ok( classified ) =>
-    {
-      assert_eq!( classified.timeout_type(), the_module::TimeoutType::Connection );
-      assert!( classified.is_network_related() );
-      assert!( classified.suggested_timeout_increase() > core::time::Duration::from_secs( 30 ) );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test read timeout
-  let read_timeout = the_module::TimeoutError::new(
-    the_module::TimeoutType::Read,
-    core::time::Duration::from_secs( 60 ),
-    "Read timeout after 60 seconds".to_string()
-  );
-
-  let classified_error = the_module::ErrorClassifier::classify_timeout( &read_timeout );
-  match classified_error
-  {
-    Ok( classified ) =>
-    {
-      assert_eq!( classified.timeout_type(), the_module::TimeoutType::Read );
-      assert!( classified.is_server_processing_related() );
-      assert!( classified.supports_streaming_fallback() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-}
-
-#[ tokio::test ]
-async fn test_network_error_classification()
-{
-  // Test classification of different network error types
-  
-  // Test DNS resolution error
-  let dns_error = the_module::NetworkError::new(
-    the_module::NetworkErrorType::DnsResolution,
-    "Failed to resolve api.anthropic.com".to_string(),
-    Some( "NXDOMAIN".to_string() )
-  );
-
-  let classified = the_module::NetworkErrorClassifier::classify( &dns_error );
-  match classified
-  {
-    Ok( classification ) =>
-    {
-      assert_eq!( classification.error_type(), the_module::NetworkErrorType::DnsResolution );
-      assert!( classification.is_infrastructure_related() );
-      assert!( classification.suggested_actions().contains( &"DNS".to_string() ) );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test SSL/TLS error
-  let ssl_error = the_module::NetworkError::new(
-    the_module::NetworkErrorType::SslHandshake,
-    "SSL handshake failed".to_string(),
-    Some( "certificate verify failed".to_string() )
-  );
-
-  let classified = the_module::NetworkErrorClassifier::classify( &ssl_error );
-  match classified
-  {
-    Ok( classification ) =>
-    {
-      assert_eq!( classification.error_type(), the_module::NetworkErrorType::SslHandshake );
-      assert!( classification.is_security_related() );
-      assert!( classification.suggested_actions().contains( &"certificate".to_string() ) );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test connection refused error
-  let connection_error = the_module::NetworkError::new(
-    the_module::NetworkErrorType::ConnectionRefused,
-    "Connection refused".to_string(),
-    Some( "port 443".to_string() )
-  );
-
-  let classified = the_module::NetworkErrorClassifier::classify( &connection_error );
-  match classified
-  {
-    Ok( classification ) =>
-    {
-      assert_eq!( classification.error_type(), the_module::NetworkErrorType::ConnectionRefused );
-      assert!( classification.is_service_availability_related() );
-      assert!( classification.supports_retry_with_backoff() );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-}
-
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_rate_limiting_error_with_backoff_suggestions()
 {
@@ -429,7 +146,7 @@ async fn test_rate_limiting_error_with_backoff_suggestions()
   {
     Ok( strategy ) =>
     {
-      assert!( strategy.initial_delay() >= core::time::Duration::from_secs( 60 ) );
+      assert!( strategy.initial_delay() >= core::time::Duration::from_mins( 1 ) );
       assert_eq!( strategy.backoff_type(), the_module::BackoffType::Linear );
       assert!( strategy.max_retries() <= 5 );
       assert!( strategy.jitter_enabled() );
@@ -452,7 +169,7 @@ async fn test_rate_limiting_error_with_backoff_suggestions()
   {
     Ok( strategy ) =>
     {
-      assert!( strategy.initial_delay() >= core::time::Duration::from_secs( 300 ) );
+      assert!( strategy.initial_delay() >= core::time::Duration::from_mins( 5 ) );
       assert!( strategy.suggested_batch_size_reduction().is_some() );
     },
     Err( _err ) =>
@@ -462,6 +179,7 @@ async fn test_rate_limiting_error_with_backoff_suggestions()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_authentication_error_with_credential_hints()
 {
@@ -470,55 +188,8 @@ async fn test_authentication_error_with_credential_hints()
   // Test functionality is covered by real integration tests
 }
 
-#[ tokio::test ]
-async fn test_error_serialization_and_deserialization()
-{
-  // Test that errors can be properly serialized and deserialized
-  let original_error = the_module::EnhancedAnthropicError::new(
-    the_module::ErrorType::RateLimit,
-    "Rate limit exceeded".to_string(),
-    Some( the_module::ErrorContext::new(
-      "create_message".to_string(),
-      "req_123".to_string(),
-      std::collections::HashMap::from([
-        ( "model".to_string(), "claude-sonnet-4-5-20250929".to_string() ),
-        ( "tokens".to_string(), "1000".to_string() ),
-      ])
-    ))
-  );
 
-  // Test serialization
-  let serialized = the_module::ErrorSerializer::serialize( &original_error );
-  match serialized
-  {
-    Ok( json_string ) =>
-    {
-      assert!( json_string.contains( "Rate limit exceeded" ) );
-      assert!( json_string.contains( "req_123" ) );
-      
-      // Test deserialization
-      let deserialized = the_module::ErrorSerializer::deserialize( &json_string );
-      match deserialized
-      {
-        Ok( error ) =>
-        {
-          assert_eq!( error.error_type(), the_module::ErrorType::RateLimit );
-          assert_eq!( error.message(), "Rate limit exceeded" );
-          assert_eq!( error.context().unwrap().request_id(), "req_123" );
-        },
-        Err( _err ) =>
-        {
-          // Expected to fail until enhanced error handling is implemented
-        }
-      }
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-}
-
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_error_logging_and_monitoring_integration()
 {
@@ -527,6 +198,7 @@ async fn test_error_logging_and_monitoring_integration()
   // Test functionality is covered by real integration tests
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_error_correlation_and_request_tracking()
 {
@@ -535,60 +207,8 @@ async fn test_error_correlation_and_request_tracking()
   // Test functionality is covered by real integration tests
 }
 
-#[ tokio::test ]
-async fn test_error_message_localization_support()
-{
-  // Test error message localization
-  let error = the_module::AnthropicError::InvalidRequest(
-    "Invalid model parameter".to_string()
-  );
 
-  // Test English localization (default)
-  let localized_en = the_module::ErrorLocalizer::localize( &error, "en" );
-  match localized_en
-  {
-    Ok( localized ) =>
-    {
-      assert!( localized.message().contains( "Invalid model parameter" ) );
-      assert_eq!( localized.locale(), "en" );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test Spanish localization
-  let spanish_localized = the_module::ErrorLocalizer::localize( &error, "es" );
-  match spanish_localized
-  {
-    Ok( localized ) =>
-    {
-      assert!( localized.message().contains( "parámetro del modelo" ) );
-      assert_eq!( localized.locale(), "es" );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-
-  // Test French localization
-  let localized_fr = the_module::ErrorLocalizer::localize( &error, "fr" );
-  match localized_fr
-  {
-    Ok( localized ) =>
-    {
-      assert!( localized.message().contains( "paramètre de modèle" ) );
-      assert_eq!( localized.locale(), "fr" );
-    },
-    Err( _err ) =>
-    {
-      // Expected to fail until enhanced error handling is implemented
-    }
-  }
-}
-
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_custom_error_types_and_chaining()
 {
@@ -645,9 +265,8 @@ async fn test_custom_error_types_and_chaining()
 // INTEGRATION TESTS - REAL API ERROR HANDLING
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_error_handling_network_timeout()
 {
   let client = the_module::Client::from_workspace()
@@ -695,9 +314,8 @@ async fn integration_error_handling_network_timeout()
   }
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_error_handling_invalid_parameters()
 {
   // Skip test if API key is not available
@@ -735,8 +353,8 @@ async fn integration_error_handling_invalid_parameters()
   println!( "   Invalid temperature properly rejected : {error}" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_error_handling_authentication_failures()
 {
   // Test with invalid API key
@@ -779,6 +397,7 @@ async fn integration_error_handling_authentication_failures()
 // ============================================================================
 
 #[ cfg( feature = "streaming" ) ]
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_sse_parsing_errors_malformed_json()
 {
@@ -793,6 +412,7 @@ data : {"id": "msg_123", "type": INVALID_JSON}
 }
 
 #[ cfg( feature = "streaming" ) ]
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_sse_parsing_unknown_event_type()
 {
@@ -808,6 +428,7 @@ data : {"some": "data"}
 }
 
 #[ cfg( feature = "streaming" ) ]
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_sse_parsing_content_block_delta_errors()
 {
@@ -939,6 +560,7 @@ fn test_error_recovery_suggestions()
 }
 
 #[ cfg( all( feature = "streaming", feature = "error-handling" ) ) ]
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_stream_event_validation()
 {

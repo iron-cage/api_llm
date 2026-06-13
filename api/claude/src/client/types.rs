@@ -14,8 +14,9 @@ mod private
   #[ cfg( not( feature = "error-handling" ) ) ]
   type AnthropicError = error_tools::Error;
   
+  use super::super::system_instructions::orphan::{ CacheControl, SystemContent };
   use crate::{ secret::Secret, messages::Message };
-  
+
   #[ cfg( feature = "tools" ) ]
   use crate::messages::{ ToolDefinition, ToolChoice };
   use serde::{ Serialize, Deserialize };
@@ -26,9 +27,9 @@ mod private
   /// Standard API version header value (no longer a magic default)
   pub const ANTHROPIC_API_VERSION : &str = "2023-06-01";
   /// Standard user agent string (no longer a magic default)
-  pub const ANTHROPIC_USER_AGENT : &str = "anthropic-rust-client/0.1.0";
+  pub const ANTHROPIC_USER_AGENT : &str = "anthropic-rust-client/0.4.0";
   /// Current recommended model (no longer a magic default)
-  pub const RECOMMENDED_MODEL : &str = "claude-sonnet-4-5-20250929";
+  pub const RECOMMENDED_MODEL : &str = "claude-sonnet-4-6";
   /// Minimum allowed `max_tokens` value
   pub const MIN_MAX_TOKENS : u32 = 1;
   /// Maximum allowed `max_tokens` value
@@ -138,57 +139,254 @@ mod private
     }
   }
 
-  // Builder implementation in types_builders.rs
-  include!( "types_builders.rs" );
-
-  /// Cache control configuration for prompt caching
-  ///
-  /// Anthropic Prompt Caching allows caching of large context (system prompts, documents, etc.)
-  /// to reduce costs (~90% savings on cached tokens) and improve latency.
-  #[ derive( Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize ) ]
-  pub struct CacheControl
+  impl ClientConfigBuilder
   {
-    /// Cache type - currently only "ephemeral" is supported (5-minute TTL)
-    #[ serde( rename = "type" ) ]
-    pub cache_type : String,
-  }
-
-  impl CacheControl
-  {
-    /// Create an ephemeral cache control (5-minute TTL)
-    pub fn ephemeral() -> Self
+    /// Create new builder (no defaults)
+    pub fn new() -> Self
     {
-      Self { cache_type : "ephemeral".to_string() }
+      Self
+      {
+        base_url : None,
+        api_version : None,
+        request_timeout : None,
+        user_agent : None,
+      }
+    }
+
+    /// Create builder with recommended values pre-filled
+    pub fn with_recommended() -> Self
+    {
+      Self
+      {
+        base_url : Some( ANTHROPIC_API_BASE_URL.to_string() ),
+        api_version : Some( ANTHROPIC_API_VERSION.to_string() ),
+        request_timeout : Some( Duration::from_secs( 60 ) ),
+        user_agent : Some( ANTHROPIC_USER_AGENT.to_string() ),
+      }
+    }
+
+    /// Set base URL
+    #[ must_use ]
+    pub fn base_url< S : Into< String > >( mut self, base_url : S ) -> Self
+    {
+      self.base_url = Some( base_url.into() );
+      self
+    }
+
+    /// Set API version
+    #[ must_use ]
+    pub fn api_version< S : Into< String > >( mut self, api_version : S ) -> Self
+    {
+      self.api_version = Some( api_version.into() );
+      self
+    }
+
+    /// Set request timeout
+    #[ must_use ]
+    pub fn timeout( mut self, timeout : Duration ) -> Self
+    {
+      self.request_timeout = Some( timeout );
+      self
+    }
+
+    /// Set user agent
+    #[ must_use ]
+    pub fn user_agent< S : Into< String > >( mut self, user_agent : S ) -> Self
+    {
+      self.user_agent = Some( user_agent.into() );
+      self
+    }
+
+    /// Build the configuration (requires all values to be explicitly set)
+    ///
+    /// # Errors
+    ///
+    /// Returns `AnthropicError::InvalidArgument` if any required configuration values are not set
+    pub fn build( self ) -> Result< ClientConfig, AnthropicError >
+    {
+      let base_url = self.base_url
+        .ok_or_else( || AnthropicError::InvalidArgument( "base_url must be explicitly configured".to_string() ) )?;
+
+      let api_version = self.api_version
+        .ok_or_else( || AnthropicError::InvalidArgument( "api_version must be explicitly configured".to_string() ) )?;
+
+      let request_timeout = self.request_timeout
+        .ok_or_else( || AnthropicError::InvalidArgument( "request_timeout must be explicitly configured".to_string() ) )?;
+
+      let user_agent = self.user_agent
+        .ok_or_else( || AnthropicError::InvalidArgument( "user_agent must be explicitly configured".to_string() ) )?;
+
+      Ok( ClientConfig
+      {
+        base_url,
+        api_version,
+        request_timeout,
+        user_agent,
+      })
     }
   }
 
-  impl From< String > for SystemPrompt
+  impl CreateMessageRequestBuilder
   {
-    fn from( text : String ) -> Self
+    /// Set the model to use for generation
+    #[ inline ]
+    #[ must_use ]
+    pub fn model< S : Into< String > >( mut self, model : S ) -> Self
     {
-      Self { text, cache_control : None }
+      self.model = Some( model.into() );
+      self
     }
-  }
 
-  impl From< &str > for SystemPrompt
-  {
-    fn from( text : &str ) -> Self
+    /// Set the maximum number of tokens to generate
+    #[ inline ]
+    #[ must_use ]
+    pub fn max_tokens( mut self, max_tokens : u32 ) -> Self
     {
-      Self { text : text.to_string(), cache_control : None }
+      self.max_tokens = Some( max_tokens );
+      self
     }
-  }
 
-  /// System prompt with optional cache control
-  ///
-  /// Replaces simple String system prompts to support caching large system contexts.
-  #[ derive( Debug, Clone, PartialEq, Serialize, Deserialize ) ]
-  pub struct SystemPrompt
-  {
-    /// System prompt text
-    pub text : String,
-    /// Optional cache control for this system prompt
-    #[ serde( skip_serializing_if = "Option::is_none" ) ]
-    pub cache_control : Option< CacheControl >,
+    /// Add a message to the conversation
+    #[ inline ]
+    #[ must_use ]
+    pub fn message( mut self, message : Message ) -> Self
+    {
+      self.messages.push( message );
+      self
+    }
+
+    /// Add multiple messages to the conversation
+    #[ inline ]
+    #[ must_use ]
+    pub fn messages( mut self, messages : Vec< Message > ) -> Self
+    {
+      self.messages.extend( messages );
+      self
+    }
+
+    /// Set the system prompt (convenience method for simple string prompts)
+    #[ inline ]
+    #[ must_use ]
+    pub fn system< S : Into< String > >( mut self, system : S ) -> Self
+    {
+      self.system = Some( vec![ SystemContent::text( system ) ] );
+      self
+    }
+
+    /// Set the system prompt with cache control
+    #[ inline ]
+    #[ must_use ]
+    pub fn system_with_cache( mut self, text : String, cache_control : CacheControl ) -> Self
+    {
+      self.system = Some( vec![ SystemContent
+      {
+        r#type : "text".to_string(),
+        text,
+        cache_control : Some( cache_control ),
+      } ] );
+      self
+    }
+
+    /// Set system prompt blocks directly
+    #[ inline ]
+    #[ must_use ]
+    pub fn system_blocks( mut self, blocks : Vec< SystemContent > ) -> Self
+    {
+      self.system = Some( blocks );
+      self
+    }
+
+    /// Set the temperature for sampling
+    #[ inline ]
+    #[ must_use ]
+    pub fn temperature( mut self, temperature : f32 ) -> Self
+    {
+      self.temperature = Some( temperature );
+      self
+    }
+
+    /// Set whether to stream the response
+    #[ inline ]
+    #[ must_use ]
+    pub fn stream( mut self, stream : bool ) -> Self
+    {
+      self.stream = Some( stream );
+      self
+    }
+
+    /// Set tools available for the model to use
+    #[ cfg( feature = "tools" ) ]
+    #[ inline ]
+    #[ must_use ]
+    pub fn tools( mut self, tools : Vec< ToolDefinition > ) -> Self
+    {
+      self.tools = Some( tools );
+      self
+    }
+
+    /// Set how the model should use tools
+    #[ cfg( feature = "tools" ) ]
+    #[ inline ]
+    #[ must_use ]
+    pub fn tool_choice( mut self, tool_choice : ToolChoice ) -> Self
+    {
+      self.tool_choice = Some( tool_choice );
+      self
+    }
+
+    /// Build the `CreateMessageRequest` (for backward compatibility)
+    ///
+    /// # Panics
+    ///
+    /// Panics if required fields are missing
+    #[ inline ]
+    #[ must_use ]
+    pub fn build( self ) -> CreateMessageRequest
+    {
+      CreateMessageRequest
+      {
+        model : self.model.expect( "Model is required" ),
+        max_tokens : self.max_tokens.expect( "Max tokens is required" ),
+        messages : self.messages,
+        system : self.system,
+        temperature : self.temperature,
+        stream : self.stream,
+        #[ cfg( feature = "tools" ) ]
+        tools : self.tools,
+        #[ cfg( feature = "tools" ) ]
+        tool_choice : self.tool_choice,
+      }
+    }
+
+    /// Build and validate the `CreateMessageRequest`
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if required fields are missing or validation fails
+    #[ inline ]
+    pub fn build_validated( self ) -> AnthropicResult< CreateMessageRequest >
+    {
+      let request = CreateMessageRequest
+      {
+        model : self.model.ok_or_else( ||
+          AnthropicError::InvalidRequest( "model must be explicitly specified (use RECOMMENDED_MODEL for guidance)".to_string() )
+        )?,
+        max_tokens : self.max_tokens.ok_or_else( ||
+          AnthropicError::InvalidRequest( "max_tokens is required".to_string() )
+        )?,
+        messages : self.messages,
+        system : self.system,
+        temperature : self.temperature,
+        stream : self.stream,
+        #[ cfg( feature = "tools" ) ]
+        tools : self.tools,
+        #[ cfg( feature = "tools" ) ]
+        tool_choice : self.tool_choice,
+      };
+
+      request.validate()?;
+      Ok( request )
+    }
   }
 
   /// Request to create a message
@@ -453,306 +651,6 @@ mod private
     }
   }
 
-  /// System content block for count tokens endpoint
-  ///
-  /// The count tokens endpoint expects system as an array of content blocks
-  #[ derive( Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize ) ]
-  pub struct SystemContent
-  {
-    /// Type - always "text"
-    #[ serde( rename = "type" ) ]
-    pub r#type : String,
-    /// Text content
-    pub text : String,
-    /// Optional cache control
-    #[ serde( skip_serializing_if = "Option::is_none" ) ]
-    pub cache_control : Option< CacheControl >,
-  }
-
-  impl SystemContent
-  {
-    /// Create a new system content block from text
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::SystemContent;
-    ///
-    /// let content = SystemContent::text( "You are a helpful assistant" );
-    /// assert_eq!( content.text, "You are a helpful assistant" );
-    /// ```
-    pub fn text< S : Into< String > >( text : S ) -> Self
-    {
-      Self
-      {
-        r#type : "text".to_string(),
-        text : text.into(),
-        cache_control : None,
-      }
-    }
-
-    /// Set cache control for this system content (builder pattern)
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::{ SystemContent, CacheControl };
-    ///
-    /// let content = SystemContent::text( "Knowledge base" )
-    ///   .with_cache_control( CacheControl::ephemeral() );
-    ///
-    /// assert!( content.cache_control.is_some() );
-    /// ```
-    #[ must_use ]
-    pub fn with_cache_control( mut self, cache_control : CacheControl ) -> Self
-    {
-      self.cache_control = Some( cache_control );
-      self
-    }
-
-    /// Validate the system content
-    ///
-    /// Checks that:
-    /// - Text is not empty
-    /// - Type is set correctly
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::SystemContent;
-    ///
-    /// let content = SystemContent::text( "Valid content" );
-    /// assert!( content.validate().is_ok() );
-    ///
-    /// let empty = SystemContent
-    /// {
-    ///   r#type : "text".to_string(),
-    ///   text : "".to_string(),
-    ///   cache_control : None,
-    /// };
-    /// assert!( empty.validate().is_err() );
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the text is empty or the type is not "text"
-    pub fn validate( &self ) -> Result< (), String >
-    {
-      if self.text.is_empty()
-      {
-        return Err( "System content text cannot be empty".to_string() );
-      }
-
-      if self.r#type != "text"
-      {
-        return Err( format!( "Invalid system content type : {}", self.r#type ) );
-      }
-
-      Ok( () )
-    }
-
-    /// Check if this system content has cache control enabled
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::{ SystemContent, CacheControl };
-    ///
-    /// let cached = SystemContent::text( "Cached" )
-    ///   .with_cache_control( CacheControl::ephemeral() );
-    /// assert!( cached.has_cache_control() );
-    ///
-    /// let not_cached = SystemContent::text( "Not cached" );
-    /// assert!( !not_cached.has_cache_control() );
-    /// ```
-    pub fn has_cache_control( &self ) -> bool
-    {
-      self.cache_control.is_some()
-    }
-  }
-
-  impl From< &str > for SystemContent
-  {
-    fn from( text : &str ) -> Self
-    {
-      Self::text( text )
-    }
-  }
-
-  impl From< String > for SystemContent
-  {
-    fn from( text : String ) -> Self
-    {
-      Self::text( text )
-    }
-  }
-
-  /// Builder for composing multi-part system instructions
-  ///
-  /// Provides a convenient API for building structured system prompts
-  /// with multiple content blocks, optional caching, and validation.
-  ///
-  /// # Examples
-  ///
-  /// ```
-  /// use api_claude::{ SystemInstructions, CacheControl };
-  ///
-  /// let instructions = SystemInstructions::new()
-  ///   .add_text( "You are a helpful assistant." )
-  ///   .add_cached_text( "Knowledge base : Large corpus of information..." )
-  ///   .add_text( "Help the user with their questions." )
-  ///   .build();
-  ///
-  /// assert_eq!( instructions.len(), 3 );
-  /// ```
-  #[ derive( Debug, Clone, Default ) ]
-  pub struct SystemInstructions
-  {
-    parts : Vec< SystemContent >,
-  }
-
-  impl SystemInstructions
-  {
-    /// Create a new empty system instructions builder
-    pub fn new() -> Self
-    {
-      Self
-      {
-        parts : Vec::new(),
-      }
-    }
-
-    /// Add a text instruction
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::SystemInstructions;
-    ///
-    /// let instructions = SystemInstructions::new()
-    ///   .add_text( "You are a helpful assistant" )
-    ///   .build();
-    ///
-    /// assert_eq!( instructions.len(), 1 );
-    /// ```
-    #[ must_use ]
-    pub fn add_text< S : Into< String > >( mut self, text : S ) -> Self
-    {
-      self.parts.push( SystemContent::text( text ) );
-      self
-    }
-
-    /// Add a cached text instruction
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::SystemInstructions;
-    ///
-    /// let instructions = SystemInstructions::new()
-    ///   .add_cached_text( "Large knowledge base" )
-    ///   .build();
-    ///
-    /// assert!( instructions[ 0 ].has_cache_control() );
-    /// ```
-    #[ must_use ]
-    pub fn add_cached_text< S : Into< String > >( mut self, text : S ) -> Self
-    {
-      let content = SystemContent::text( text )
-        .with_cache_control( CacheControl::ephemeral() );
-      self.parts.push( content );
-      self
-    }
-
-    /// Add a custom system content block
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::{ SystemInstructions, SystemContent, CacheControl };
-    ///
-    /// let custom = SystemContent::text( "Custom instruction" )
-    ///   .with_cache_control( CacheControl::ephemeral() );
-    ///
-    /// let instructions = SystemInstructions::new()
-    ///   .add( custom )
-    ///   .build();
-    ///
-    /// assert_eq!( instructions.len(), 1 );
-    /// ```
-    #[ must_use ]
-    #[ allow( clippy::should_implement_trait ) ]
-    pub fn add( mut self, content : SystemContent ) -> Self
-    {
-      self.parts.push( content );
-      self
-    }
-
-    /// Build the final vector of system content blocks
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::SystemInstructions;
-    ///
-    /// let instructions = SystemInstructions::new()
-    ///   .add_text( "Part 1" )
-    ///   .add_text( "Part 2" )
-    ///   .build();
-    ///
-    /// assert_eq!( instructions.len(), 2 );
-    /// ```
-    #[ must_use ]
-    pub fn build( self ) -> Vec< SystemContent >
-    {
-      self.parts
-    }
-
-    /// Validate all system content blocks
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use api_claude::SystemInstructions;
-    ///
-    /// let instructions = SystemInstructions::new()
-    ///   .add_text( "Valid instruction" );
-    ///
-    /// assert!( instructions.validate().is_ok() );
-    /// ```
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if any content block fails validation
-    pub fn validate( &self ) -> Result< (), String >
-    {
-      if self.parts.is_empty()
-      {
-        return Err( "System instructions cannot be empty".to_string() );
-      }
-
-      for ( idx, content ) in self.parts.iter().enumerate()
-      {
-        content.validate()
-          .map_err( |e| format!( "Invalid content at index {idx}: {e}" ) )?;
-      }
-
-      Ok( () )
-    }
-
-    /// Get the number of content blocks
-    pub fn len( &self ) -> usize
-    {
-      self.parts.len()
-    }
-
-    /// Check if there are no content blocks
-    pub fn is_empty( &self ) -> bool
-    {
-      self.parts.is_empty()
-    }
-  }
-
   /// Request to count tokens in a message
   ///
   /// This allows pre-calculating token usage for cost estimation without sending actual requests.
@@ -917,10 +815,6 @@ crate::mod_interface!
 {
   exposed use ClientConfig;
   exposed use ClientConfigBuilder;
-  exposed use CacheControl;
-  exposed use SystemPrompt;
-  exposed use SystemContent;
-  exposed use SystemInstructions;
   exposed use CreateMessageRequest;
   exposed use CreateMessageRequestBuilder;
   exposed use CreateMessageResponse;

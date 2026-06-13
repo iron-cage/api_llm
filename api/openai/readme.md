@@ -292,7 +292,6 @@ This section documents all files and directories in the crate root, ensuring Com
 | `scripts/` | Build automation and development scripts |
 | `Cargo.toml` | Crate metadata, dependencies, and feature configuration |
 | `readme.md` | Crate overview, quick start, API documentation, and this Responsibility Table |
-| `spec.md` | Crate specification, requirements, and architecture decisions |
 | `license` | MIT license text |
 | `clippy.toml` | Clippy linter configuration |
 

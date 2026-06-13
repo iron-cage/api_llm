@@ -9,7 +9,6 @@ mod private
   use crate::Secret;
   #[ cfg( feature = "error-handling" ) ]
   use crate::error::{ AnthropicError, AnthropicResult };
-  use std::time::Duration;
 
   /// Anthropic API client
   #[ derive( Debug, Clone ) ]
@@ -18,24 +17,6 @@ mod private
     secret : Secret,
     config : ClientConfig,
     http : reqwest::Client,
-    #[ cfg( feature = "authentication" ) ]
-    #[ allow( dead_code ) ] // Will be used when authentication is fully integrated
-    environment : Option< String >,
-    #[ cfg( feature = "authentication" ) ]
-    #[ allow( dead_code ) ] // Will be used when authentication is fully integrated
-    workspace_id : Option< String >,
-    #[ cfg( feature = "authentication" ) ]
-    #[ allow( dead_code ) ] // Will be used when authentication is fully integrated
-    audit_logger : Option< crate::authentication::AuthenticationAuditLogger >,
-    #[ cfg( feature = "authentication" ) ]
-    #[ allow( dead_code ) ] // Will be used when authentication is fully integrated
-    security_monitor : Option< crate::authentication::SecurityMonitor >,
-    #[ cfg( feature = "authentication" ) ]
-    #[ allow( dead_code ) ] // Will be used when authentication is fully integrated
-    performance_monitor : Option< crate::authentication::AuthPerformanceMonitor >,
-    #[ cfg( feature = "authentication" ) ]
-    #[ allow( dead_code ) ] // Will be used when authentication is fully integrated
-    auth_rate_limiting_enabled : bool,
     // Automatic retry configuration removed per governing principle - use explicit retry methods
     // Automatic circuit breaker removed per governing principle - use explicit health monitoring methods
     // Automatic rate limiting removed per governing principle - use explicit rate limit information access
@@ -95,18 +76,6 @@ mod private
         secret,
         config,
         http : http_client,
-        #[ cfg( feature = "authentication" ) ]
-        environment : None,
-        #[ cfg( feature = "authentication" ) ]
-        workspace_id : None,
-        #[ cfg( feature = "authentication" ) ]
-        audit_logger : None,
-        #[ cfg( feature = "authentication" ) ]
-        security_monitor : None,
-        #[ cfg( feature = "authentication" ) ]
-        performance_monitor : None,
-        #[ cfg( feature = "authentication" ) ]
-        auth_rate_limiting_enabled : false,
         // retry_config field removed per governing principle
         // circuit_breaker field removed per governing principle
         // rate_limiter field removed per governing principle
@@ -201,7 +170,7 @@ mod private
     ///
     /// // Create a message request
     /// let request = CreateMessageRequest::builder()
-    ///   .model( "claude-sonnet-4-5-20250929".to_string() )
+    ///   .model( "claude-sonnet-4-6".to_string() )
     ///   .max_tokens( 1000 )
     ///   .messages( vec![
     ///     Message {
@@ -291,7 +260,7 @@ mod private
     ///
     /// let request = CountMessageTokensRequest
     /// {
-    ///   model : "claude-sonnet-4-5-20250929".to_string(),
+    ///   model : "claude-sonnet-4-6".to_string(),
     ///   messages : vec![ Message::user( "Hello, Claude!".to_string() ) ],
     ///   system : None,
     ///   tools : None,
@@ -465,7 +434,7 @@ mod private
     /// Returns an error if the request fails or the response is invalid
     #[ cfg( feature = "error-handling" ) ]
     #[ inline ]
-    pub async fn create_message_with_context( &self, request : CreateMessageRequest, _context : crate::RequestContext ) -> AnthropicResult< CreateMessageResponse >
+    pub async fn create_message_with_context( &self, request : CreateMessageRequest, context : crate::RequestContext ) -> AnthropicResult< CreateMessageResponse >
     {
       // Call the regular create_message method but enhance any errors with context
       match self.create_message( request ).await
@@ -474,20 +443,21 @@ mod private
         Err( basic_error ) =>
         {
           // Convert basic error to enhanced error with context
+          let request_id = format!( "req_{}_{}", context.correlation_id(), context.request_sequence() );
           let error_context = crate::ErrorContext::new(
-            "create_message_with_context_tracking".to_string(),
-            "req_test_123".to_string(),
+            "create_message_with_context".to_string(),
+            request_id.clone(),
             std::collections::HashMap::new()
           );
-          
+
           let enhanced = crate::EnhancedAnthropicError::new(
             crate::ErrorType::InvalidRequest,
             format!( "create_message_with_context : {basic_error}" ),
             Some( error_context )
           )
-          .with_stack_trace( vec![ "create_message_with_context_tracking".to_string() ] )
-          .with_request_id( Some( "req_test_123".to_string() ) )
-          .with_correlation_id( Some( "test-correlation-id".to_string() ) );
+          .with_stack_trace( vec![ "create_message_with_context".to_string() ] )
+          .with_request_id( Some( request_id ) )
+          .with_correlation_id( Some( context.correlation_id().to_string() ) );
 
           // Return enhanced error wrapped in AnthropicError::Enhanced variant
           Err( crate::AnthropicError::Enhanced( Box::new( enhanced ) ) )
@@ -602,189 +572,10 @@ mod private
       None
     }
 
-    // Request Caching functionality
-
-
-
-
-    // Automatic rate limiting configuration methods removed per governing principle
-    // Use explicit rate limit information access methods instead
-
-    /// Get explicit rate limit information for manual control
-    ///
-    /// # Governing Principle Compliance
-    ///
-    /// This method follows the "Thin Client, Rich API" principle by:
-    /// - **Information vs Action**: Provides rate limit data without making automatic decisions
-    /// - **Zero Automatic Behavior**: No hidden rate limiting or magic throttling
-    /// - **Explicit Control**: Developers can use rate limit information to make their own decisions
-    /// - **Transparent Operations**: All rate limit metrics are visible and accessible
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use api_claude::{ Client, Secret };
-    ///
-    /// # async fn example() -> Result< (), Box< dyn std::error::Error > > {
-    /// let secret = Secret::new( "sk-ant-api03-example".to_string() ).unwrap();
-    /// let client = Client::new( secret );
-    ///
-    /// // Check rate limit information for manual decision making
-    /// let rate_info = client.rate_limit_info();
-    /// if rate_info.remaining_requests() < 10 {
-    ///     // Developer decides to wait or use alternative strategy
-    ///     println!( "Rate limit approaching : {} requests remaining", rate_info.remaining_requests() );
-    /// }
-    /// # Ok( () )
-    /// # }
-    /// ```
-    pub fn rate_limit_info( &self ) -> RateLimitInfo
-    {
-      RateLimitInfo::new()
-    }
-
-    /// Get explicit health monitoring information for manual decision making
-    ///
-    /// # Governing Principle Compliance
-    ///
-    /// This method follows the "Thin Client, Rich API" principle by:
-    /// - **Information vs Action**: Provides health information without making automatic decisions
-    /// - **Zero Automatic Behavior**: No hidden health-based request blocking or filtering
-    /// - **Explicit Control**: Developers can use health information to make their own decisions
-    /// - **Transparent Operations**: All health data is visible and accessible
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use api_claude::{ Client, Secret };
-    ///
-    /// # async fn example() -> Result< (), Box< dyn std::error::Error > > {
-    /// let secret = Secret::new( "sk-ant-api03-example".to_string() ).unwrap();
-    /// let client = Client::new( secret );
-    ///
-    /// // Check health information for manual decision making
-    /// let health = client.health();
-    /// if health.consecutive_failures() > 5 {
-    ///     // Developer decides to wait or use alternative strategy
-    ///     println!( "High failure rate detected : {} failures", health.consecutive_failures() );
-    /// }
-    /// # Ok( () )
-    /// # }
-    /// ```
-    pub fn health( &self ) -> HealthStatus
-    {
-      HealthStatus::new()
-    }
-
-    /// Create an explicit retry builder for manual retry control
-    ///
-    /// # Governing Principle Compliance
-    ///
-    /// This method follows the "Thin Client, Rich API" principle by:
-    /// - **Explicit Control**: Developers must explicitly choose to retry and configure retry behavior
-    /// - **Zero Automatic Behavior**: No hidden retry logic or magic thresholds
-    /// - **Transparent Configuration**: All retry parameters are explicitly specified
-    /// - **Information vs Action**: Provides retry capability without imposing retry decisions
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use api_claude::{ Client, Secret };
-    /// use std::time::Duration;
-    ///
-    /// # async fn example() -> Result< (), Box< dyn std::error::Error > > {
-    /// let secret = Secret::new( "sk-ant-api03-example".to_string() ).unwrap();
-    /// let client = Client::new( secret );
-    ///
-    /// // Explicit retry with manual configuration
-    /// let response = client
-    ///   .explicit_retry()
-    ///   .with_attempts( 3 )
-    ///   .with_delay( Duration::from_secs( 1 ) )
-    ///   .execute( | _client | async move {
-    ///     // Your API operation here
-    ///     Ok( "operation result".to_string() )
-    ///   } )
-    ///   .await?;
-    /// # Ok( () )
-    /// # }
-    /// ```
-    pub fn explicit_retry( &self ) -> ExplicitRetryBuilder< '_ >
-    {
-      ExplicitRetryBuilder::new( self )
-    }
   }
-
-  /// Rate limit information for explicit control
-  ///
-  /// # Governing Principle Compliance
-  ///
-  /// This struct follows the "Thin Client, Rich API" principle by:
-  /// - **Information vs Action**: Provides rate limit data without making automatic decisions
-  /// - **Zero Automatic Behavior**: No hidden rate limiting or magic throttling thresholds
-  /// - **Explicit Control**: Developers can use this information to make their own timing decisions
-  /// - **Transparent Operations**: All rate limit metrics are visible and accessible
-  #[ derive( Debug, Clone ) ]
-  pub struct RateLimitInfo
-  {
-    remaining_requests : u32,
-    total_limit : u32,
-    reset_time : Option< std::time::SystemTime >,
-    window_duration : std::time::Duration,
-  }
-
-  // Implementation moved to implementation_helpers.rs (included below)
-
-  /// Health status information for explicit monitoring
-  ///
-  /// # Governing Principle Compliance
-  ///
-  /// This struct follows the "Thin Client, Rich API" principle by:
-  /// - **Information vs Action**: Provides health data without making automatic decisions
-  /// - **Zero Automatic Behavior**: No hidden health-based logic or magic thresholds
-  /// - **Explicit Control**: Developers can use this information to make their own decisions
-  /// - **Transparent Operations**: All health metrics are visible and accessible
-  #[ derive( Debug, Clone ) ]
-  pub struct HealthStatus
-  {
-    consecutive_failures : u32,
-    total_requests : u64,
-    total_failures : u64,
-    last_error : Option< String >,
-  }
-
-  // Implementation moved to implementation_helpers.rs (included below)
-
-  /// Builder for explicit retry operations
-  ///
-  /// # Governing Principle Compliance
-  ///
-  /// This builder follows the "Thin Client, Rich API" principle by:
-  /// - **Explicit Configuration**: All retry behavior must be explicitly configured by developers
-  ///   Type alias for retry predicate function
-  type RetryPredicate = Box< dyn Fn( &AnthropicError, u32 ) -> bool + Send + Sync >;
-
-  /// - **Zero Magic**: No automatic retry decisions or hidden retry logic
-  /// - **Transparent Control**: Every retry parameter is visible and configurable
-  /// - **Information vs Action**: Provides retry information without making retry decisions
-  pub struct ExplicitRetryBuilder< 'a >
-  {
-    client : &'a Client,
-    max_attempts : Option< u32 >,
-    delay : Option< Duration >,
-    should_retry_fn : Option< RetryPredicate >,
-  }
-
-  // Implementations moved to implementation_helpers.rs (included below)
-
-  // Include helper implementations
-  include!( "implementation_helpers.rs" );
 }
 
 crate::mod_interface!
 {
   exposed use Client;
-  exposed use RateLimitInfo;
-  exposed use HealthStatus;
-  exposed use ExplicitRetryBuilder;
 }

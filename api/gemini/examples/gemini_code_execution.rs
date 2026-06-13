@@ -140,50 +140,35 @@ fn parse_args() -> ExecutionExampleConfig
   {
     match args[ i ].as_str()
     {
-      "--mode" => {
-        if i + 1 < args.len()
+      "--mode" if i + 1 < args.len() => {
+        config.mode = match args[ i + 1 ].as_str()
         {
-          config.mode = match args[ i + 1 ].as_str()
-          {
-            "math" => ExecutionMode::Math,
-            "data" => ExecutionMode::Data,
-            "science" => ExecutionMode::Science,
-            "interactive" => ExecutionMode::Interactive,
-            _ => ExecutionMode::Basic,
-          };
-          i += 1;
-        }
+          "math" => ExecutionMode::Math,
+          "data" => ExecutionMode::Data,
+          "science" => ExecutionMode::Science,
+          "interactive" => ExecutionMode::Interactive,
+          _ => ExecutionMode::Basic,
+        };
+        i += 1;
       },
-      "--problem" => {
-        if i + 1 < args.len()
-        {
-          config.problem = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--problem" if i + 1 < args.len() => {
+        config.problem = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--task" => {
-        if i + 1 < args.len()
-        {
-          config.task = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--task" if i + 1 < args.len() => {
+        config.task = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--domain" => {
-        if i + 1 < args.len()
-        {
-          config.domain = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--domain" if i + 1 < args.len() => {
+        config.domain = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--timeout" => {
-        if i + 1 < args.len()
+      "--timeout" if i + 1 < args.len() => {
+        if let Ok( timeout ) = args[ i + 1 ].parse::< i32 >()
         {
-          if let Ok( timeout ) = args[ i + 1 ].parse::< i32 >()
-          {
-            config.timeout_seconds = timeout;
-          }
-          i += 1;
+          config.timeout_seconds = timeout;
         }
+        i += 1;
       },
       "--enable-network" => {
         config.enable_network = true;

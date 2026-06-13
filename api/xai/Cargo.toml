@@ -2,6 +2,7 @@
 name = "api_xai"
 version = "0.3.0"
 edition = "2021"
+rust-version.workspace = true
 authors = [
   "Kostiantyn Mysnyk <wandalen@obox.systems>",
 ]

@@ -81,9 +81,8 @@ fn test_tool_choice_serialization()
 // INTEGRATION TESTS - REAL API TOOL CHOICE MODES
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_tool_choice_auto_mode()
 {
   // Test AUTO mode - model decides whether to use tools
@@ -122,8 +121,7 @@ async fn integration_tool_choice_auto_mode()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: AUTO mode must work : {err}" ),
   };
@@ -134,9 +132,8 @@ async fn integration_tool_choice_auto_mode()
   println!( "✅ Tool choice AUTO mode test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_tool_choice_any_mode()
 {
   // Test ANY mode - force use of any available tool
@@ -173,8 +170,7 @@ async fn integration_tool_choice_any_mode()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: ANY mode must work : {err}" ),
   };
@@ -189,9 +185,8 @@ async fn integration_tool_choice_any_mode()
   println!( "✅ Tool choice ANY mode test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_tool_choice_none_mode()
 {
   // Test NONE mode - disable all tool calling
@@ -228,8 +223,7 @@ async fn integration_tool_choice_none_mode()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: NONE mode must work : {err}" ),
   };
@@ -244,9 +238,8 @@ async fn integration_tool_choice_none_mode()
   println!( "✅ Tool choice NONE mode test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_tool_choice_mode_transitions()
 {
   // Test switching between different tool choice modes
@@ -273,8 +266,7 @@ async fn integration_tool_choice_mode_transitions()
     Ok( r ) => r,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: First request must work : {err}" ),
   };
@@ -299,8 +291,7 @@ async fn integration_tool_choice_mode_transitions()
     Ok( r ) => r,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted on second request" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted on second request - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Second request must work : {err}" ),
   };

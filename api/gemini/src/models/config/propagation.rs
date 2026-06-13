@@ -479,6 +479,9 @@ impl ConfigCacheEntry
   }
 }
 
+/// Map of configuration merge strategies keyed by source name
+type MergeStrategyMap = HashMap< String, Box< dyn Fn( &DynamicConfig, &DynamicConfig ) -> DynamicConfig + Send + Sync > >;
+
 /// Configuration synchronization context for distributed environments
 #[ allow( missing_debug_implementations ) ]
 pub struct ConfigSyncContext
@@ -490,7 +493,7 @@ pub struct ConfigSyncContext
   /// Current synchronization status
   sync_status : AsyncRwLock< SyncStatus >,
   /// Configuration merge strategies by source
-  merge_strategies : RwLock< HashMap< String, Box< dyn Fn( &DynamicConfig, &DynamicConfig ) -> DynamicConfig + Send + Sync > > >,
+  merge_strategies : RwLock< MergeStrategyMap >,
   /// Cache time-to-live settings
   cache_ttl : Duration,
   /// Maximum cache size (number of entries)
@@ -540,7 +543,7 @@ impl ConfigSyncContext
     if cache.len() >= self.max_cache_size
     {
       if let Some( lru_key ) = cache.iter()
-        .min_by_key( | ( _, entry ) | entry.last_accessed.lock().unwrap().clone() )
+        .min_by_key( | ( _, entry ) | *entry.last_accessed.lock().unwrap() )
         .map( | ( k, _ ) | k.clone() )
       {
         cache.remove( &lru_key );
@@ -632,5 +635,13 @@ impl ConfigChangeListener
     Self {
       _handle : Arc::new( () ),
     }
+  }
+}
+
+impl Default for ConfigChangeListener
+{
+  fn default() -> Self
+  {
+    Self::new()
   }
 }

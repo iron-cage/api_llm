@@ -117,6 +117,14 @@ impl ContainerConfigBuilder
   }
 }
 
+impl Default for ContainerConfigBuilder
+{
+  fn default() -> Self
+  {
+    Self::new()
+  }
+}
+
 impl ContainerConfig
 {
   /// Create a new container config builder

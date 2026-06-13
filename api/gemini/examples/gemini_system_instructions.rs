@@ -296,54 +296,36 @@ fn parse_args() -> SystemInstructionConfig
   {
     match args[ i ].as_str()
     {
-      "--mode" => {
-        if i + 1 < args.len()
+      "--mode" if i + 1 < args.len() => {
+        config.mode = match args[ i + 1 ].as_str()
         {
-          config.mode = match args[ i + 1 ].as_str()
-          {
-            "role" => InstructionMode::RoleBased,
-            "interactive" => InstructionMode::Interactive,
-            "comparison" => InstructionMode::Comparison,
-            "template" => InstructionMode::Template,
-            _ => InstructionMode::Basic,
-          };
-          i += 1;
-        }
+          "role" => InstructionMode::RoleBased,
+          "interactive" => InstructionMode::Interactive,
+          "comparison" => InstructionMode::Comparison,
+          "template" => InstructionMode::Template,
+          _ => InstructionMode::Basic,
+        };
+        i += 1;
       },
-      "--role" => {
-        if i + 1 < args.len()
-        {
-          config.role = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--role" if i + 1 < args.len() => {
+        config.role = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--subject" => {
-        if i + 1 < args.len()
-        {
-          config.subject = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--subject" if i + 1 < args.len() => {
+        config.subject = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--domain" => {
-        if i + 1 < args.len()
-        {
-          config.domain = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--domain" if i + 1 < args.len() => {
+        config.domain = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--specialty" => {
-        if i + 1 < args.len()
-        {
-          config.specialty = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--specialty" if i + 1 < args.len() => {
+        config.specialty = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--style" => {
-        if i + 1 < args.len()
-        {
-          config.style = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--style" if i + 1 < args.len() => {
+        config.style = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
     _ => {}
     }

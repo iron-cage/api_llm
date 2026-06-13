@@ -89,11 +89,11 @@ impl ConfigDelta
     // Check basic fields
     if old_config.timeout != new_config.timeout
     {
-      changed_fields.insert( "timeout".to_string(), serde_json::to_value( &new_config.timeout ).unwrap() );
+      changed_fields.insert( "timeout".to_string(), serde_json::to_value( new_config.timeout ).unwrap() );
     }
     if old_config.retry_attempts != new_config.retry_attempts
     {
-      changed_fields.insert( "retry_attempts".to_string(), serde_json::to_value( &new_config.retry_attempts ).unwrap() );
+      changed_fields.insert( "retry_attempts".to_string(), serde_json::to_value( new_config.retry_attempts ).unwrap() );
     }
     if old_config.base_url != new_config.base_url
     {
@@ -101,23 +101,23 @@ impl ConfigDelta
     }
     if old_config.enable_jitter != new_config.enable_jitter
     {
-      changed_fields.insert( "enable_jitter".to_string(), serde_json::to_value( &new_config.enable_jitter ).unwrap() );
+      changed_fields.insert( "enable_jitter".to_string(), serde_json::to_value( new_config.enable_jitter ).unwrap() );
     }
     if old_config.max_retry_delay != new_config.max_retry_delay
     {
-      changed_fields.insert( "max_retry_delay".to_string(), serde_json::to_value( &new_config.max_retry_delay ).unwrap() );
+      changed_fields.insert( "max_retry_delay".to_string(), serde_json::to_value( new_config.max_retry_delay ).unwrap() );
     }
     if old_config.base_retry_delay != new_config.base_retry_delay
     {
-      changed_fields.insert( "base_retry_delay".to_string(), serde_json::to_value( &new_config.base_retry_delay ).unwrap() );
+      changed_fields.insert( "base_retry_delay".to_string(), serde_json::to_value( new_config.base_retry_delay ).unwrap() );
     }
     if old_config.backoff_multiplier != new_config.backoff_multiplier
     {
-      changed_fields.insert( "backoff_multiplier".to_string(), serde_json::to_value( &new_config.backoff_multiplier ).unwrap() );
+      changed_fields.insert( "backoff_multiplier".to_string(), serde_json::to_value( new_config.backoff_multiplier ).unwrap() );
     }
     if old_config.source_priority != new_config.source_priority
     {
-      changed_fields.insert( "source_priority".to_string(), serde_json::to_value( &new_config.source_priority ).unwrap() );
+      changed_fields.insert( "source_priority".to_string(), serde_json::to_value( new_config.source_priority ).unwrap() );
     }
 
     // Check tag changes
@@ -237,12 +237,7 @@ impl ConfigHistoryEntry
     let config_hash = config.compute_hash();
     let size_bytes = serde_json::to_string( &config ).unwrap_or_default().len();
 
-    let delta = if let Some( prev ) = previous_config
-    {
-      Some( ConfigDelta::create_delta( prev, &config ) )
-    } else {
-      None
-    };
+    let delta = previous_config.map( |prev| ConfigDelta::create_delta( prev, &config ) );
 
     Self {
       version_id,

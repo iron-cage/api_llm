@@ -39,36 +39,78 @@ All integration tests **must**:
 
 ```
 tests/
-├── readme.md                    # This file - policies and organization
-├── tests.rs                     # Main test entry point with module includes
-└── inc/                         # Individual test modules
-    ├── basic_test.rs            # Basic functionality tests
-    ├── authentication_test.rs   # Authentication and credential tests
-    ├── core_client_test.rs      # Core client lifecycle tests
-    ├── messages_api_test.rs     # Message API integration tests
-    ├── error_handling_test.rs   # Error handling and recovery tests
-    ├── streaming_test.rs        # Streaming API tests
-    ├── tool_calling_test.rs     # Tool calling functionality tests
-    ├── vision_support_test.rs   # Vision and image analysis tests
-    ├── sync_api_test.rs         # Synchronous API wrapper tests
-    ├── embeddings_test.rs       # Embeddings API tests (future)
-    ├── performance_test.rs      # Performance and benchmarking tests
-    ├── rate_limiting_test.rs    # Rate limiting behavior tests
-    ├── circuit_breaker_test.rs  # Circuit breaker pattern tests
-    ├── retry_logic_test.rs      # Retry mechanism tests
-    ├── request_caching_test.rs  # Response caching tests
-    ├── model_management_test.rs # Model management tests
-    ├── content_generation_*.rs  # Content generation tests
-    ├── curl_diagnostics_test.rs # Diagnostic output tests
-    └── *integration_test.rs     # Real API integration tests
+├── readme.md                                  # This file - policies and organisation
+├── tests.rs                                   # Main test entry point with module includes
+├── docs/                                      # Test surface specs (one entity per docs/ collection)
+│   ├── api/                                   # AP- scenarios (12): endpoint coverage
+│   ├── feature/                               # FT- scenarios (12): enterprise reliability
+│   ├── invariant/                             # IN- scenarios (12): thin-client + testing standards
+│   ├── operation/                             # OP- scenarios (15): secret loading
+│   └── pattern/                               # PT- scenarios (6): module organisation
+├── manual/                                    # Manual testing plans and procedures
+├── -default_topic/                            # Temporary working directory (gitignored)
+└── inc/                                       # 52 test modules — 576 tests (469 unit, 107 integration)
+    ├── mod.rs                                 # Module aggregator (re-exports all test modules)
+    ├── authentication_test.rs                 # Authentication and credential tests
+    ├── batch_messages_test.rs                 # Batch Messages API tests
+    ├── circuit_breaker_test.rs                # Circuit breaker pattern tests
+    ├── comprehensive_integration_test.rs      # Full end-to-end integration tests
+    ├── compression_test.rs                    # Compression feature tests (FT-12)
+    ├── content_generation_refactor_test.rs    # Content generation refactored API
+    ├── content_generation_test.rs             # Content generation core tests
+    ├── core_client_test.rs                    # Core client lifecycle tests
+    ├── curl_diagnostics_test.rs               # Curl diagnostic output tests
+    ├── dynamic_config_test.rs                 # Dynamic configuration tests
+    ├── embeddings_test.rs                     # Embeddings API tests
+    ├── endpoint_coverage_test.rs              # AP- spec: API endpoint coverage
+    ├── enhanced_function_calling_test.rs      # Enhanced function calling tests
+    ├── enhanced_model_details_test.rs         # Enhanced model detail tests
+    ├── enhanced_retry_logic_test.rs           # Enhanced retry strategy tests
+    ├── enterprise_configuration_test.rs       # Enterprise configuration tests
+    ├── enterprise_quota_test.rs               # Enterprise quota management tests
+    ├── enterprise_reliability_test.rs         # FT- spec: enterprise reliability
+    ├── error_handling_integration_test.rs     # Real-API error handling tests
+    ├── error_handling_test.rs                 # Error handling and recovery tests
+    ├── example_model_validation_test.rs       # Example model name validation
+    ├── examples_validation_test.rs            # Examples compilation validation
+    ├── failover_test.rs                       # Failover mechanism tests
+    ├── fallback_behavior_integration_test.rs  # Fallback behaviour integration tests
+    ├── general_diagnostics_test.rs            # General diagnostics tests
+    ├── health_checks_test.rs                  # Health check mechanism tests
+    ├── input_validation_test.rs               # Input validation tests
+    ├── messages_api_test.rs                   # Messages API integration tests
+    ├── model_management_test.rs               # Model management tests
+    ├── module_organization_test.rs            # PT- spec: module organisation
+    ├── operation_test_specs.rs                # OP- spec: secret loading operations
+    ├── performance_monitoring_test.rs         # Performance monitoring tests
+    ├── performance_test.rs                    # Performance and timing tests
+    ├── prompt_caching_tests.rs                # Prompt caching tests
+    ├── rate_limiting_test.rs                  # Rate limiting behaviour tests
+    ├── request_caching_test.rs                # Response caching tests
+    ├── retry_logic_test.rs                    # Retry mechanism tests
+    ├── simple_integration_test.rs             # Minimal real-API smoke tests
+    ├── spec_verification_integration_test.rs  # Spec alignment verification
+    ├── streaming_control_test.rs              # Streaming control tests
+    ├── streaming_test.rs                      # Streaming API tests
+    ├── structured_logging_test.rs             # Structured logging tests
+    ├── sync_api_test.rs                       # Synchronous API wrapper tests
+    ├── sync_cached_content_test.rs            # Sync cached content tests
+    ├── sync_streaming_test.rs                 # Sync streaming tests
+    ├── system_instructions_test.rs            # System instructions tests
+    ├── testing_standards_test.rs              # IN- spec: testing standards (IN-07..12)
+    ├── thin_client_principle_test.rs          # IN- spec: thin client principle (IN-01..06)
+    ├── token_counting_test.rs                 # Token counting tests
+    ├── token_validation_test.rs               # Token validation tests
+    ├── tool_calling_test.rs                   # Tool calling functionality tests
+    └── vision_support_test.rs                 # Vision and image analysis tests
 ```
 
 ### Test Categories
 
 #### 1. Unit Tests (Limited Scope)
-- **Location**: Within `src/` modules using `#[cfg(test)]`
-- **Purpose**: Isolated component testing
-- **Mocking**: **Limited mocking allowed** only for external dependencies
+- **Location**: `tests/inc/` directory
+- **Purpose**: Isolated component testing without external API calls
+- **Mocking**: **ABSOLUTELY PROHIBITED** — zero tolerance per No-Mock Mandate
 - **Scope**: Individual functions, data structures, validation logic
 - **API Requirements**: No API keys needed
 
@@ -174,9 +216,6 @@ All integration tests must:
   Option 2: Set environment variable
     export ANTHROPIC_API_KEY="sk-ant-api03-YOUR-KEY"
 
-  Option 3: Skip integration tests
-    cargo test --no-default-features
-
 🚫 Integration tests CANNOT be silently skipped - this failure is intentional
 📚 See: tests/readme.md for complete credential management documentation
 ```
@@ -186,19 +225,14 @@ All integration tests must:
 ### Running Tests
 
 ```bash
-# Unit tests only (no API key required)
-cargo nextest run
+# Unit tests only (no API key required — excludes integration feature)
+cargo nextest run --no-default-features --features enabled,streaming,authentication,content-generation,model-management,error-handling,tools,vision,embeddings,curl-diagnostics,general-diagnostics,sync-api,retry-logic,circuit-breaker,rate-limiting,failover,health-checks,batch-processing,count-tokens,request-caching,streaming-control,compression,enterprise-quota,dynamic-config,model-comparison,request-templates,buffered-streaming,input-validation,enhanced-function-calling
 
-# Unit tests with all features
+# Integration tests (requires valid ANTHROPIC_API_KEY)
 cargo nextest run --all-features
 
-# Integration tests (requires API key)
-cargo nextest run --features integration --all-features
-
-# Complete test suite (ctest3 equivalent)
-cargo nextest run --all-features && \
-cargo test --doc --all-features && \
-cargo clippy --all-targets --all-features -- -D warnings
+# Complete test suite (canonical verification)
+w3 .test l::3
 ```
 
 ### Test Failure Expectations
@@ -331,7 +365,7 @@ Any mock usage discovery triggers:
 ## 📞 Support
 
 For questions about testing policies or implementation:
-- Review specification: `spec.md`
+- Review documentation: `docs/`
 - Check examples: `examples/`
 - Verify credential setup: `../../secret/-secrets.sh`
 

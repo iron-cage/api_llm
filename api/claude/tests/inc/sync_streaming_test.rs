@@ -21,9 +21,8 @@ fn test_sync_stream_iterator_structure()
 // INTEGRATION TESTS - REAL API SYNC STREAMING
 // ============================================================================
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn integration_sync_streaming_text_generation()
 {
   // Test synchronous streaming for text generation
@@ -48,8 +47,7 @@ fn integration_sync_streaming_text_generation()
     Ok( stream ) => stream,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Sync streaming must work : {err}" ),
   };
@@ -80,9 +78,8 @@ fn integration_sync_streaming_text_generation()
   println!( "   Total text length : {} chars", accumulated_text.len() );
 }
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn integration_sync_streaming_error_handling()
 {
   // Test error handling in sync streaming with invalid request
@@ -109,9 +106,8 @@ fn integration_sync_streaming_error_handling()
   println!( "✅ Sync streaming error handling test passed!" );
 }
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn integration_sync_streaming_blocking_iteration()
 {
   // Test that sync streaming blocks properly and doesn't require async/await
@@ -137,8 +133,7 @@ fn integration_sync_streaming_blocking_iteration()
     Ok( stream ) => stream,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Stream creation must work : {err}" ),
   };
@@ -152,10 +147,7 @@ fn integration_sync_streaming_blocking_iteration()
     {
       Ok( _chunk ) => chunk_count += 1,
       Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
-      {
-        println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted during streaming" );
-        return;
-      },
+        panic!( "INTEGRATION: Credit balance exhausted — top up account to run tests : {}", api_err.message ),
       Err( err ) => panic!( "INTEGRATION: Chunk must be valid : {err}" ),
     }
   }

@@ -26,7 +26,6 @@ mod retry_execution_tests
 
     // At this point, we can only test that the client builds successfully
     // Actual retry execution testing will require implementing the retry logic in task 166
-    assert!( true, "Client with retry configuration built successfully" );
   }
 
   /// Test that retry metrics can be enabled
@@ -41,7 +40,6 @@ mod retry_execution_tests
     .expect( "Failed to build client" );
 
     // Test that metrics configuration is accepted
-    assert!( true, "Client with retry metrics configuration built successfully" );
   }
 
   /// Test that max elapsed time can be configured
@@ -56,7 +54,6 @@ mod retry_execution_tests
     .expect( "Failed to build client" );
 
     // Test that max elapsed time configuration is accepted
-    assert!( true, "Client with max elapsed time configuration built successfully" );
   }
 
   /// Test that jitter can be enabled
@@ -71,7 +68,6 @@ mod retry_execution_tests
     .expect( "Failed to build client" );
 
     // Test that jitter configuration is accepted
-    assert!( true, "Client with jitter configuration built successfully" );
   }
 
   /// Test that backoff multiplier can be configured
@@ -86,7 +82,6 @@ mod retry_execution_tests
     .expect( "Failed to build client" );
 
     // Test that backoff multiplier configuration is accepted
-    assert!( true, "Client with backoff multiplier configuration built successfully" );
   }
 
   /// Test that all retry parameters can be combined
@@ -106,7 +101,6 @@ mod retry_execution_tests
     .expect( "Failed to build client" );
 
     // Test that comprehensive retry configuration is accepted
-    assert!( true, "Client with comprehensive retry configuration built successfully" );
   }
 }
 
@@ -126,6 +120,5 @@ mod retry_disabled_tests
     .expect( "Failed to build client" );
 
     // Client should build successfully without retry features when feature disabled
-    assert!( true, "Client built successfully without retry feature" );
   }
 }

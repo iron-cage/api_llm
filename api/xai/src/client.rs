@@ -398,7 +398,7 @@ mod private
 
       // Parse SSE events
       let event_stream = byte_stream
-        .map( | result | result.map_err( std::io::Error::other ) )
+        .map( | result | result.map_err( | e | std::io::Error::new( std::io::ErrorKind::Other, e ) ) )
         .eventsource();
 
       // Map events to deserialized objects

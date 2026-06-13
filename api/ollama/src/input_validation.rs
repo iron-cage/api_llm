@@ -190,7 +190,7 @@ mod private
       }
 
       // Base64 length must be multiple of 4
-      if !data.len().is_multiple_of( 4 )
+      if data.len() % 4 != 0
       {
         return Err( format!( "Invalid base64 length : {} (must be multiple of 4)", data.len() ) );
       }

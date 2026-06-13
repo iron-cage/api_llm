@@ -16,6 +16,9 @@ This documentation directory contains:
 | Path | Purpose |
 |------|---------|
 | `readme.md` | Master documentation file with collection inventory and navigation |
+| `invariant/` | Non-negotiable behavioral constraints governing all implementation decisions |
+| `api/` | OpenAI API endpoint coverage and feature-gating policy |
+| `feature/` | Optional enterprise reliability features and feature-gate policy |
 | `pattern/` | Design pattern collection (async patterns, builder patterns, etc.) |
 | `operation/` | Operational procedure collection (versioning, release management, etc.) |
 | `feature_flags.md` | Feature flag configuration and usage documentation |
@@ -87,6 +90,5 @@ All design collections follow the documentation.rulebook.md standards:
 ## Related Documentation
 
 - **Root readme.md**: Crate overview, quick start, usage examples
-- **spec.md**: Crate specification and requirements
 - **tests/readme.md**: Testing framework, policies, and organization
 - **examples/readme.md**: Example usage and tutorials

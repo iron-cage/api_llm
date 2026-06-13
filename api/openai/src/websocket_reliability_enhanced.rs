@@ -66,7 +66,7 @@ mod private
       Self
       {
         max_reconnection_attempts : 5,
-        initial_reconnection_delay : Duration::from_millis( 1000 ),
+        initial_reconnection_delay : Duration::from_secs( 1 ),
         max_reconnection_delay : Duration::from_secs( 30 ),
         connection_timeout : Duration::from_secs( 10 ),
         heartbeat_interval : Duration::from_secs( 30 ),

@@ -82,7 +82,7 @@ fn test_enterprise_config_validation()
   let combined = the_module::EnterpriseConfigBuilder::new()
     .with_retry( the_module::RetryConfig::new()
       .with_max_attempts( 5 )
-      .with_initial_delay( std::time::Duration::from_millis( 100 ) ) )
+      .with_initial_delay( core::time::Duration::from_millis( 100 ) ) )
     .with_circuit_breaker( the_module::CircuitBreakerConfig::new()
       .with_failure_threshold( 3 )
       .with_success_threshold( 2 ) )
@@ -98,8 +98,8 @@ fn test_enterprise_config_retry_integration()
   // Test retry configuration integration
   let retry_config = the_module::RetryConfig::new()
     .with_max_attempts( 5 )
-    .with_initial_delay( std::time::Duration::from_millis( 100 ) )
-    .with_max_delay( std::time::Duration::from_secs( 10 ) )
+    .with_initial_delay( core::time::Duration::from_millis( 100 ) )
+    .with_max_delay( core::time::Duration::from_secs( 10 ) )
     .with_backoff_multiplier( 2.0 );
 
   let enterprise_config = the_module::EnterpriseConfigBuilder::new()
@@ -109,7 +109,7 @@ fn test_enterprise_config_retry_integration()
   assert!( enterprise_config.retry_enabled() );
   let retry_cfg = enterprise_config.retry_config().unwrap();
   assert_eq!( retry_cfg.max_attempts(), 5 );
-  assert_eq!( retry_cfg.initial_delay(), std::time::Duration::from_millis( 100 ) );
+  assert_eq!( retry_cfg.initial_delay(), core::time::Duration::from_millis( 100 ) );
 }
 
 #[ test ]
@@ -137,11 +137,11 @@ fn test_enterprise_config_rate_limiting_integration()
     .with_bucket_capacity( 100 );
 
   let enterprise_config = the_module::EnterpriseConfigBuilder::new()
-    .with_rate_limiting( rate_config.clone() )
+    .with_rate_limiting( rate_config )
     .build();
 
   assert!( enterprise_config.rate_limiting_enabled() );
-  assert_eq!( enterprise_config.rate_limiting_config().unwrap().tokens_per_second(), 10.0 );
+  assert!( ( enterprise_config.rate_limiting_config().unwrap().tokens_per_second() - 10.0_f64 ).abs() < f64::EPSILON );
 }
 
 #[ test ]
@@ -163,8 +163,8 @@ fn test_enterprise_config_health_checks_integration()
 {
   // Test health check configuration integration
   let health_config = the_module::HealthCheckConfig::new()
-    .with_interval( std::time::Duration::from_secs( 30 ) )
-    .with_timeout( std::time::Duration::from_secs( 5 ) );
+    .with_interval( core::time::Duration::from_secs( 30 ) )
+    .with_timeout( core::time::Duration::from_secs( 5 ) );
 
   let enterprise_config = the_module::EnterpriseConfigBuilder::new()
     .with_health_checks( health_config.clone() )
@@ -180,7 +180,7 @@ fn test_enterprise_config_zero_overhead_when_disabled()
   let minimal_config = the_module::EnterpriseConfigBuilder::new().build();
 
   // Should be very lightweight
-  assert_eq!( std::mem::size_of_val( &minimal_config ), std::mem::size_of::< the_module::EnterpriseConfig >() );
+  assert_eq!( core::mem::size_of_val( &minimal_config ), core::mem::size_of::< the_module::EnterpriseConfig >() );
 
   // All feature checks should be cheap
   let start = std::time::Instant::now();

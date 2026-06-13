@@ -1,94 +1,124 @@
 # Documentation
 
-## Purpose
+### Purpose
 
 This directory contains detailed API documentation, operational guides, and technical references for the api_gemini crate, organized into design collections following documentation.rulebook.md standards.
 
 Documentation is structured by design dimensions (pattern/, api/, operation/, protocol/) with each collection containing:
-- Master file (`readme.md`) with Collection Scope and Responsibility Table
+- Master file (`readme.md`) with collection scope and Overview Table
 - Instance files with NNN identifiers (001, 002, etc.)
 
-## Responsibility
+### Responsibility
 
 This table documents all entities in the docs/ directory, ensuring Complete Entity Coverage.
 
 | Path | Purpose |
-|------|---------  |
+|------|---------|
 | `readme.md` | Master documentation file with navigation and Complete Entity Coverage |
-| `pattern/` | Pattern design collection - reusable implementation patterns for common use cases |
-| `api/` | API design collection - comprehensive API coverage, endpoints, features, test statistics |
-| `operation/` | Operational procedures collection - cookbook reference, usage examples, testing guidelines |
-| `protocol/` | Protocol design collection - streaming API format discovery and protocol-level decisions |
+| `entities.md` | Module index — all entity directories and their instances |
+| `invariant/` | Invariant constraint collection — non-negotiable behavioral constraints |
+| `feature/` | Feature specification collection — optional feature behavior specs |
+| `api/` | API doc entity — comprehensive API coverage, endpoints, test statistics |
+| `operation/` | Operation doc entity — procedures for API usage patterns |
+| `pattern/` | Pattern doc entity — reusable API usage patterns |
+| `protocol/` | Protocol doc entity — streaming format specification |
+| `investigations/` | Investigation reports — debugging sessions and format discoveries |
 
-## Collections
+### Collections
 
-### pattern/
+#### invariant/
 
-Implementation patterns and reusable code examples for common Gemini API use cases.
+Non-negotiable behavioral constraints governing every implementation decision.
 
-**Master File**: `pattern/readme.md`
+**Master File**: `invariant/readme.md`
 
 **Instances**:
-- `001_patterns.md` - Reusable patterns: quick response, error-resilient, batch processing
+- `001_thin_client_principle.md` — Stateless HTTP transport, no automatic behaviors, explicit caller control
+- `002_testing_standards.md` — No-mock mandate, real API calls only, loud failure on missing credentials
 
-### api/
+#### feature/
+
+Optional feature behavior specifications and configuration contracts.
+
+**Master File**: `feature/readme.md`
+
+**Instances**:
+- `001_core_api.md` — Core Gemini endpoints: content generation, embeddings, models, streaming, multimodal
+- `002_enterprise_reliability.md` — Enterprise modules: retry, circuit-breaker, rate-limiting, failover, health-checks
+
+#### api/
 
 API design, endpoints, coverage, and implementation status.
 
 **Master File**: `api/readme.md`
 
 **Instances**:
-- `001_coverage.md` - Comprehensive API coverage: core endpoints, advanced features, enterprise capabilities, test statistics
+- `001_coverage.md` — Comprehensive API coverage: core endpoints, advanced features, enterprise capabilities, test statistics
 
-### operation/
+#### operation/
 
-Operational procedures for feature usage, cookbook reference, and testing.
+Operational procedures for common API usage patterns.
 
 **Master File**: `operation/readme.md`
 
 **Instances**:
-- `001_cookbook.md` - Official Google Gemini cookbook reference with 64 quickstarts and examples
-- `002_usage_examples.md` - Practical code examples demonstrating api_gemini crate usage
-- `003_testing.md` - Testing strategy, NO MOCKUP TESTS policy, integration test configuration
+- `002_usage_examples.md` — Common API usage operation procedures
 
-### protocol/
+#### pattern/
 
-Protocol design and implementation decisions at the API communication level.
+Reusable structural patterns for common Gemini API usage scenarios.
+
+**Master File**: `pattern/readme.md`
+
+**Instances**:
+- `001_quick_response.md` — Single-call generation; all errors propagate to caller as Result
+- `002_error_resilient.md` — Generation with error-variant-to-fallback-string mapping
+- `003_batch_processing.md` — Sequential paced loop for rate-limited bulk prompt workloads
+
+#### protocol/
+
+Protocol specifications for API communication at the wire level.
 
 **Master File**: `protocol/readme.md`
 
 **Instances**:
-- `001_streaming_format.md` - Streaming API format discovery, investigation, resolution from SSE to JSON array buffering
+- `001_streaming_format.md` — Streaming wire protocol: JSON array format specification
 
-## Navigation
+#### investigations/
+
+Investigation reports documenting debugging sessions and format discoveries. Not an entity collection — plain reference directory.
+
+**Contents**:
+- `001_streaming_format.md` — Gemini streaming format discovery: SSE assumption vs JSON array reality
+
+### Navigation
 
 **For API Usage**:
-- Start with main `readme.md` for quick start
 - Reference `api/001_coverage.md` for comprehensive API coverage
-- Check `operation/002_usage_examples.md` for practical code examples
+- See `operation/002_usage_examples.md` for usage operation procedures
 
 **For Implementation Patterns**:
-- See `pattern/001_patterns.md` for reusable code patterns
-- See `operation/001_cookbook.md` for official Google recipes
+- See `pattern/001_quick_response.md` for simple single-call generation pattern
+- See `pattern/002_error_resilient.md` for error-absorbing generation pattern
+- See `pattern/003_batch_processing.md` for rate-limited bulk processing pattern
 
-**For Testing and Protocol**:
-- See `operation/003_testing.md` for testing guidelines and NO MOCKUP policy
-- See `protocol/001_streaming_format.md` for streaming implementation insights
+**For Protocol**:
+- See `protocol/001_streaming_format.md` for streaming wire protocol specification
+- See `investigations/001_streaming_format.md` for streaming format discovery history
 
 **For Implementation Details**:
-- See `spec.md` for requirements and architecture
+- See `invariant/001_thin_client_principle.md` for governing design principles
+- See `invariant/002_testing_standards.md` for testing policy and requirements
+- See `feature/001_core_api.md` for core API endpoint specifications
+- See `feature/002_enterprise_reliability.md` for enterprise feature configuration
 - See source code documentation for implementation decisions
-- See `tests/` for usage examples and edge cases
+- See `tests/` for coverage details
 
-## Documentation Principles
+### Documentation Principles
 
 - **API Coverage**: WHAT functionality is available (endpoints, features, status)
-- **Usage Examples**: HOW to use the library (code patterns, practical examples)
-- **Cookbook**: OFFICIAL recipes and quickstarts from Google Gemini
-- **Testing**: QUALITY guidelines (NO MOCKUP policy, integration tests)
-- **Protocol**: WHY protocol decisions were made (format discovery, debugging)
-- **Collections**: Organized by design dimension (pattern, api, operation, protocol)
+- **Usage Procedures**: HOW to use the library (operation steps, prerequisites, expected outcomes)
+- **Protocol**: WIRE specification for API communication (streaming format)
+- **Investigations**: HOW bugs were found and resolved (debugging history)
 - **Abstract First**: Documentation focuses on concepts, not implementation details
 - **Complete Coverage**: All documents listed in Responsibility Tables
-
-This separation ensures each document has clear purpose and audience.

@@ -17,7 +17,8 @@ use super::*;
 mod rate_limiting_functionality_tests
 {
   use super::*;
-  use std::time::{ Duration, Instant };
+  use core::time::Duration;
+  use std::time::Instant;
 
   /// Test rate limiter configuration validation
   #[ test ]
@@ -30,7 +31,7 @@ mod rate_limiting_functionality_tests
       .with_initial_tokens( 50 );
 
     assert!( valid_config.is_valid() );
-    assert_eq!( valid_config.tokens_per_second(), 10.0 );
+    assert!( ( valid_config.tokens_per_second() - 10.0_f64 ).abs() < f64::EPSILON );
     assert_eq!( valid_config.bucket_capacity(), 100 );
     assert_eq!( valid_config.initial_tokens(), 50 );
 
@@ -103,7 +104,7 @@ mod rate_limiting_functionality_tests
 
     // Should have approximately 1 token (10 tokens/sec * 0.1 sec)
     let tokens = rate_limiter.available_tokens();
-    assert!( tokens >= 1 && tokens <= 2, "Expected 1-2 tokens, got {}", tokens );
+    assert!( ( 1..=2 ).contains( &tokens ), "Expected 1-2 tokens, got {tokens}" );
 
     // Wait longer for more tokens
     std::thread::sleep( Duration::from_millis( 900 ) );
@@ -111,7 +112,7 @@ mod rate_limiting_functionality_tests
 
     // Should have approximately 10 tokens (10 tokens/sec * 1 sec total)
     let tokens = rate_limiter.available_tokens();
-    assert!( tokens >= 9 && tokens <= 11, "Expected 9-11 tokens, got {}", tokens );
+    assert!( ( 9..=11 ).contains( &tokens ), "Expected 9-11 tokens, got {tokens}" );
   }
 
   /// Test rate limiter blocking behavior
@@ -160,7 +161,7 @@ mod rate_limiting_functionality_tests
     let adaptive_limiter = the_module::AdaptiveRateLimiter::new( config );
 
     // Test initial state
-    assert_eq!( adaptive_limiter.current_rate(), 10.0 );
+    assert!( ( adaptive_limiter.current_rate() - 10.0_f64 ).abs() < f64::EPSILON );
 
     // Test success feedback - should increase rate
     adaptive_limiter.record_success();
@@ -300,7 +301,7 @@ mod rate_limiting_functionality_tests
       .with_bucket_capacity( 100 )
       .with_initial_tokens( 50 );
 
-    let rate_limiter = the_module::RateLimiter::new( config.clone() );
+    let rate_limiter = the_module::RateLimiter::new( config );
 
     // Consume some tokens
     rate_limiter.try_consume( 30 );
@@ -323,7 +324,8 @@ mod rate_limiting_functionality_tests
 mod rate_limiting_integration_tests
 {
   use super::*;
-  use std::time::{ Duration, Instant };
+  use core::time::Duration;
+  use std::time::Instant;
 
   /// Test client integration with rate limiting
   #[ test ]
@@ -413,7 +415,7 @@ mod rate_limiting_integration_tests
     }
 
     // Total consumed should not exceed initial tokens (50)
-    assert!( total_consumed <= 50, "Total consumed {} should not exceed initial tokens", total_consumed );
+    assert!( total_consumed <= 50, "Total consumed {total_consumed} should not exceed initial tokens" );
 
     // Should have consumed a reasonable amount given concurrency
     assert!( total_consumed >= 30, "Should have consumed at least 30 tokens" );

@@ -252,7 +252,7 @@ impl Client
       }
 
       // Sort by priority (higher priority first)
-      configs.sort_by( | a, b | b.1.cmp( &a.1 ) );
+      configs.sort_by_key( | b | std::cmp::Reverse( b.1 ) );
 
       // Start with the lowest priority as base
       let mut merged_config = configs.last().unwrap().0.clone();

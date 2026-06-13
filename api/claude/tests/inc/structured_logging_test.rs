@@ -234,9 +234,9 @@ fn test_disabled_logger_zero_overhead()
   assert_eq!( logger.get_logs().len(), 0, "Disabled logger must not collect logs" );
 
   println!( "✅ Zero overhead test passed!" );
-  println!( "   Without logging : {:?}", duration_without_logging );
-  println!( "   With disabled logging : {:?}", duration_with_disabled_logging );
-  println!( "   Overhead ratio : {:.2}x", overhead_ratio );
+  println!( "   Without logging : {duration_without_logging:?}" );
+  println!( "   With disabled logging : {duration_with_disabled_logging:?}" );
+  println!( "   Overhead ratio : {overhead_ratio:.2}x" );
 }
 
 // Helper function
@@ -249,9 +249,8 @@ fn simple_operation() -> u64
 // INTEGRATION TESTS - REAL API LOGGING
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_log_api_request_response()
 {
   // Test logging real API request and response
@@ -282,8 +281,7 @@ async fn integration_log_api_request_response()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => {
       logger.log_error( &err, request_id );
@@ -303,9 +301,8 @@ async fn integration_log_api_request_response()
   println!( "   Logged {} entries", logs.len() );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_log_api_error()
 {
   // Test logging API error
@@ -353,9 +350,8 @@ async fn integration_log_api_error()
   println!( "✅ API error logging integration test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_structured_logging_with_context()
 {
   // Test structured logging with request context
@@ -396,8 +392,7 @@ async fn integration_structured_logging_with_context()
     },
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => {
       logger.log_error( &err, request_id );

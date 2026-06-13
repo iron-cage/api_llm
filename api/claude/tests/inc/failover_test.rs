@@ -2,13 +2,13 @@
 //!
 //! These tests cover the failover pattern implementation including:
 //! - Endpoint configuration and health tracking
-//! - Failover strategy selection (Priority, RoundRobin, Random, Sticky)
+//! - Failover strategy selection (Priority, `RoundRobin`, Random, Sticky)
 //! - Context management and retry attempts
 //! - Configuration validation
 //! - Manager operations and endpoint selection
 
 use super::*;
-use std::time::Duration;
+use core::time::Duration;
 
 /// Test endpoint health status transitions
 #[ test ]

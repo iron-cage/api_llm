@@ -475,7 +475,7 @@ impl QuotaManager
   {
     let mut per_user = HashMap::new();
     let mut users_by_usage : Vec< _ > = tracker.user_usage.iter().collect();
-    users_by_usage.sort_by( | a, b | b.1.daily_requests.cmp( &a.1.daily_requests ) );
+    users_by_usage.sort_by_key( |&( _, usage )| core::cmp::Reverse( usage.daily_requests ) );
 
     for ( rank, ( user_id, usage ) ) in users_by_usage.iter().enumerate()
     {

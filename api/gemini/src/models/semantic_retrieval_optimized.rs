@@ -145,12 +145,15 @@ mod private
     pub memory_usage_bytes : u64,
   }
 
+  /// Vector entry: embedding vector with optional metadata tags
+  type VectorEntry = ( Vec< f32 >, Option< HashMap< String, String > > );
+
   /// High-performance flat vector index implementation
   #[ derive( Debug ) ]
   pub struct FlatVectorIndex
   {
     /// Vector storage with metadata
-    vectors : HashMap< String, ( Vec< f32 >, Option< HashMap<  String, String  > > ) >,
+    vectors : HashMap< String, VectorEntry >,
     /// Performance statistics
     stats : Arc< RwLock< IndexStats > >,
     /// Vector dimensionality
@@ -299,7 +302,7 @@ mod private
       let start_time = Instant::now();
 
       // For flat index, optimization involves memory defragmentation
-      let optimized_vectors : HashMap< String, ( Vec< f32 >, Option< HashMap<  String, String  > > ) > =
+      let optimized_vectors : HashMap< String, VectorEntry > =
         self.vectors.iter().map( | ( k, v ) | ( k.clone(), v.clone() ) ).collect();
 
       self.vectors = optimized_vectors;

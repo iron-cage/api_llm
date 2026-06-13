@@ -10,7 +10,7 @@
 
 ### ✅ Specification Accuracy Verified
 
-The specification created in `/api/xai/spec.md` accurately predicted the X.AI API structure:
+The initial specification accurately predicted the X.AI API structure:
 
 | Aspect | Spec Prediction | Actual API | Status |
 |--------|----------------|------------|--------|

@@ -175,7 +175,7 @@ mod enhanced_retry_tests
       info
     );
 
-    let display = format!( "{}", error );
+    let display = format!( "{error}" );
     assert!( display.contains( "Rate limit exceeded" ) );
     assert!( display.contains( "retry after 30s" ) );
     assert!( display.contains( "[requests : 50/1000]" ) );
@@ -375,10 +375,9 @@ mod enhanced_retry_tests
 
   #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
 async fn integration_retry_with_explicit_config()
   {
-    use std::time::Duration;
+    use core::time::Duration;
 
     let client = the_module::Client::from_workspace()
       .expect( "Failed to create client from workspace secrets" );

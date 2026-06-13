@@ -289,6 +289,14 @@ impl StreamControlConfigBuilder
   }
 }
 
+impl Default for StreamControlConfigBuilder
+{
+  fn default() -> Self
+  {
+    Self::new()
+  }
+}
+
 impl StreamControlConfig
 {
   /// Create a new configuration builder

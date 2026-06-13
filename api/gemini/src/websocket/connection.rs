@@ -81,6 +81,8 @@ impl WebSocketConnectionManager
   }
 
   /// Stop the connection manager and close all connections
+  // await_holding_lock: write guard must be held across loop to drain all connections atomically
+  #[ allow( clippy::await_holding_lock ) ]
   pub async fn stop( &self ) -> Result< (), Error >
   {
     self.is_running.store( false, Ordering::Relaxed );
@@ -142,6 +144,8 @@ impl WebSocketConnectionManager
   }
 
   /// Remove a session
+  // await_holding_lock: write guard held while awaiting close() to prevent double-remove race
+  #[ allow( clippy::await_holding_lock ) ]
   pub async fn remove_session( &self, session_id : &str ) -> Result< (), Error >
   {
     if let Ok( mut connections ) = self.connections.write()

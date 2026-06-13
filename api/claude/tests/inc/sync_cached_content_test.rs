@@ -51,9 +51,8 @@ fn test_sync_system_prompt_caching()
 // INTEGRATION TESTS - REAL API CACHED CONTENT
 // ============================================================================
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn integration_sync_cached_content_creation()
 {
   // Test synchronous cached content creation
@@ -87,8 +86,7 @@ fn integration_sync_cached_content_creation()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Cached content creation must work : {err}" ),
   };
@@ -105,9 +103,8 @@ fn integration_sync_cached_content_creation()
   println!( "   Output tokens : {}", response.usage.output_tokens );
 }
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn integration_sync_cache_hit_scenario()
 {
   // Test that subsequent requests hit the cache
@@ -141,8 +138,7 @@ fn integration_sync_cache_hit_scenario()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: First request must work : {err}" ),
   };
@@ -167,8 +163,7 @@ fn integration_sync_cache_hit_scenario()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted on second request" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted on second request - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Second request must work : {err}" ),
   };
@@ -181,9 +176,8 @@ fn integration_sync_cache_hit_scenario()
   println!( "   Second response ID: {}", response2.id );
 }
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn integration_sync_cache_error_handling()
 {
   // Test error handling with invalid cached content configuration
@@ -220,9 +214,8 @@ fn integration_sync_cache_error_handling()
   println!( "✅ Sync cache error handling test passed!" );
 }
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn integration_sync_cached_content_cost_savings()
 {
   // Test that cached content demonstrates cost savings
@@ -258,8 +251,7 @@ fn integration_sync_cached_content_cost_savings()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Cost savings test must work : {err}" ),
   };

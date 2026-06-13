@@ -2,7 +2,7 @@
 name = "api_openai"
 version = "0.3.0"
 edition = "2021"
-rust-version = "1.70.0"
+rust-version.workspace = true
 authors = [
   "Kostiantyn Mysnyk <wandalen@obox.systems>",
 ]
@@ -32,7 +32,7 @@ all-features = false
 # Default enables everything for ease of use
 default = [ "full" ]
 # 'full' enables all features, including the base 'enabled'
-full = [ "enabled", "integration", "retry", "circuit_breaker", "rate_limiting", "failover", "health_checks", "enterprise", "caching", "batching", "compression", "streaming_control", "audio", "moderation", "input_validation", "model_comparison", "request_templates", "buffered_streaming" ]
+full = [ "enabled", "integration", "retry", "circuit_breaker", "rate_limiting", "failover", "health_checks", "enterprise", "caching", "batching", "compression", "streaming_control", "audio", "moderation", "input_validation", "model_comparison", "request_templates", "buffered_streaming", "websocket" ]
 # 'enabled' is the master switch for the crate's core functionality
 enabled = [
   "dep:mod_interface",
@@ -60,7 +60,6 @@ enabled = [
   "dep:eventsource-stream",
   "dep:reqwest",
   "dep:tracing",
-  "dep:tokio-tungstenite",
 ]
 
 # Feature for running integration tests with real API
@@ -91,6 +90,9 @@ enterprise = []
 model_comparison = []
 request_templates = []
 buffered_streaming = []
+
+# WebSocket support for Realtime API
+websocket = [ "dep:tokio-tungstenite" ]
 
 # Performance-focused feature combinations
 performance = [
@@ -230,6 +232,4 @@ name = "openai_request_batching_demo"
 path = "examples/openai_request_batching_demo.rs"
 
 # NOTE: 19 broken example files tracked in -broken_examples_tracking.md
-
-# Profile configurations moved to workspace root Cargo.toml
 

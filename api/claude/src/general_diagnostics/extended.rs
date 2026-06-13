@@ -6,18 +6,123 @@ mod private
 {
   use std::collections::HashMap;
   use core::time::{ Duration };
-  use std::time::Instant;
   use serde::{ Serialize, Deserialize };
 
-  include!( "extended_types.rs" );
+/// Analyzes and categorizes errors by type
+#[ derive( Debug ) ]
+pub struct ErrorAnalyzer
+{
+  pub( super ) error_categories : HashMap< String, ErrorCategory >,
+  pub( super ) total_errors : u64,
+}
+
+/// Error category containing related errors
+#[ derive( Debug, Clone ) ]
+pub struct ErrorCategory
+{
+  pub( super ) count : u64,
+  pub( super ) messages : Vec< String >,
+  pub( super ) status_codes : Vec< String >,
+}
+
+/// Summary of all errors across categories
+#[ derive( Debug, Clone ) ]
+pub struct ErrorSummary
+{
+  pub( super ) total_errors : u64,
+  pub( super ) most_common_category : String,
+}
+
+/// Diagnostics context for correlation
+#[ derive( Debug, Clone, Serialize, Deserialize ) ]
+pub struct DiagnosticsContext
+{
+  pub( super ) request_id : String,
+  pub( super ) user_id : Option< String >,
+  pub( super ) operation : String,
+  pub( super ) model : Option< String >,
+  pub( super ) timestamp : Option< String >,
+}
+
+/// Diagnostics aggregator for comprehensive reporting
+#[ derive( Debug ) ]
+pub struct DiagnosticsAggregator
+{
+  pub( super ) requests : HashMap< String, RequestMetrics >,
+  pub( super ) total_requests : u64,
+  pub( super ) successful_requests : u64,
+  pub( super ) failed_requests : u64,
+  pub( super ) total_duration : Duration,
+}
+
+/// Metrics for a single request
+#[ derive( Debug, Clone ) ]
+pub( super ) struct RequestMetrics
+{
+  pub( super ) operation : String,
+  pub( super ) duration : Option< Duration >,
+  pub( super ) success : Option< bool >,
+  pub( super ) error_category : Option< String >,
+}
+
+/// Metrics for operations of a specific type
+#[ derive( Debug, Clone ) ]
+pub struct OperationMetrics
+{
+  pub( super ) total_requests : u64,
+  pub( super ) successful_requests : u64,
+}
+
+/// Summary of diagnostic information
+#[ derive( Debug, Clone ) ]
+pub struct DiagnosticsSummary
+{
+  pub( super ) total_requests : u64,
+  pub( super ) successful_requests : u64,
+  pub( super ) failed_requests : u64,
+  pub( super ) average_duration : Duration,
+}
+
+/// Diagnostics collector integrating with CURL diagnostics
+#[ derive( Debug, Clone ) ]
+pub struct DiagnosticsCollector
+{
+  // Placeholder for collection state
+}
+
+/// Diagnostics data structure
+#[ derive( Debug, Clone ) ]
+pub struct DiagnosticsData
+{
+  pub( super ) curl_representation : Option< String >,
+  pub( super ) request_size : usize,
+  pub( super ) estimated_cost : Option< f64 >,
+  pub( super ) request_metrics : Vec< RequestMetricData >,
+}
+
+/// Data for a request metric entry
+#[ derive( Debug, Clone ) ]
+pub( super ) struct RequestMetricData
+{
+  pub( super ) duration : Duration,
+  pub( super ) success : bool,
+}
+
+
+/// Aggregated metrics data
+#[ derive( Debug ) ]
+pub struct AggregatedMetrics
+{
+  pub( super ) request_count : u32,
+  pub( super ) has_performance_data : bool,
+}
 
   impl ErrorCategory
   {
-    fn new( name : String ) -> Self
+    fn new() -> Self
     {
       Self
       {
-        name,
         count : 0,
         messages : Vec::new(),
         status_codes : Vec::new(),
@@ -90,8 +195,8 @@ mod private
       let status = status_code.into();
 
       let category_entry = self.error_categories
-        .entry( category_name.clone() )
-        .or_insert_with( || ErrorCategory::new( category_name ) );
+        .entry( category_name )
+        .or_insert_with( ErrorCategory::new );
 
       category_entry.record_error( error_message, status );
       self.total_errors += 1;
@@ -104,7 +209,6 @@ mod private
     {
       static EMPTY_CATEGORY : ErrorCategory = ErrorCategory
       {
-        name : String::new(),
         count : 0,
         messages : Vec::new(),
         status_codes : Vec::new(),
@@ -123,7 +227,7 @@ mod private
         .map( | ( name, category ) | ( name.clone(), category.count ) )
         .collect();
 
-      categories.sort_by( | a, b | b.1.cmp( &a.1 ) );
+      categories.sort_by_key( | b | std::cmp::Reverse( b.1 ) );
 
       let most_common_category = categories
         .first()
@@ -133,7 +237,6 @@ mod private
       {
         total_errors : self.total_errors,
         most_common_category,
-        categories,
       }
     }
   }
@@ -311,7 +414,6 @@ mod private
       Self
       {
         requests : HashMap::new(),
-        operation_metrics : HashMap::new(),
         total_requests : 0,
         successful_requests : 0,
         failed_requests : 0,
@@ -324,19 +426,13 @@ mod private
     pub fn record_request_start( &mut self, request_id : impl Into< String >, operation : impl Into< String > )
     {
       let id = request_id.into();
-      let op = operation.into();
-
-      let metrics = RequestMetrics
+      self.requests.insert( id, RequestMetrics
       {
-        id : id.clone(),
-        operation : op,
-        start_time : Instant::now(),
+        operation : operation.into(),
         duration : None,
         success : None,
         error_category : None,
-      };
-
-      self.requests.insert( id, metrics );
+      } );
       self.total_requests += 1;
     }
 
@@ -407,33 +503,23 @@ mod private
     {
       let mut total = 0;
       let mut successful = 0;
-      let mut failed = 0;
 
       for metrics in self.requests.values()
       {
         if metrics.operation == operation
         {
           total += 1;
-          if let Some( success ) = metrics.success
+          if metrics.success == Some( true )
           {
-            if success
-            {
-              successful += 1;
-            }
-            else
-            {
-              failed += 1;
-            }
+            successful += 1;
           }
         }
       }
 
       OperationMetrics
       {
-        name : operation.to_string(),
         total_requests : total,
         successful_requests : successful,
-        failed_requests : failed,
       }
     }
   }
@@ -469,8 +555,6 @@ mod private
         estimated_cost : Some( 0.01 ),
         request_metrics : vec![
           RequestMetricData {
-            request_id : "test-request".to_string(),
-            operation : "create_message".to_string(),
             duration : Duration::from_millis(150),
             success : true,
           }
@@ -498,8 +582,6 @@ mod private
         estimated_cost : Some( 0.005 ),
         request_metrics : vec![
           RequestMetricData {
-            request_id : "integration-test".to_string(),
-            operation : "create_message".to_string(),
             duration : Duration::from_millis(120),
             success : true,
           }
@@ -589,15 +671,9 @@ mod private
 
     /// Add a request metric to the diagnostics data
     #[ inline ]
-    pub fn add_request_metric( &mut self, request_id : impl Into< String >, operation : impl Into< String >, duration : Duration, success : bool )
+    pub fn add_request_metric( &mut self, duration : Duration, success : bool )
     {
-      self.request_metrics.push( RequestMetricData
-      {
-        request_id : request_id.into(),
-        operation : operation.into(),
-        duration,
-        success,
-      } );
+      self.request_metrics.push( RequestMetricData { duration, success } );
     }
 
     /// Check if the request succeeded
@@ -666,237 +742,6 @@ mod private
     }
   }
 
-  impl Default for DiagnosticsExporter
-  {
-      fn default() -> Self 
-      {
-          Self::new()
-      }
-  }
-
-  impl DiagnosticsExporter
-  {
-    /// Create a new diagnostics exporter
-    #[ inline ]
-    #[ must_use ]
-    pub fn new() -> Self
-    {
-      Self
-    }
-
-    /// Export diagnostics data to JSON format
-    #[ inline ]
-    #[ must_use ]
-    pub fn to_json( &self, data : &DiagnosticsData ) -> String
-    {
-      format!( r#"{{"create_message": true, "150": true, "request_size": {}}}"#, data.request_size )
-    }
-
-    /// Export diagnostics data to CSV format
-    #[ inline ]
-    #[ must_use ]
-    pub fn to_csv( &self, _data : &DiagnosticsData ) -> String
-    {
-      "request_id,operation,duration_ms,success\nreq-1,create_message,150,true".to_string()
-    }
-
-    /// Export diagnostics data to Prometheus metrics format
-    #[ inline ]
-    #[ must_use ]
-    pub fn to_prometheus_metrics( &self, _data : &DiagnosticsData ) -> String
-    {
-      "api_request_duration_ms 150\napi_request_total 1".to_string()
-    }
-  }
-
-  impl Default for RealtimeMonitor
-  {
-      fn default() -> Self 
-      {
-          Self::new()
-      }
-  }
-
-  impl RealtimeMonitor
-  {
-    /// Create a new realtime monitor
-    #[ inline ]
-    #[ must_use ]
-    pub fn new() -> Self
-    {
-      Self
-      {
-        alert_count : 0,
-        latencies : Vec::new(),
-      }
-    }
-
-    /// Register a callback for high latency events
-    #[ inline ]
-    pub fn on_high_latency< F >( &mut self, _callback : F )
-    where
-      F : Fn( Duration ),
-    {
-      // Mock implementation
-    }
-
-    /// Record a latency measurement for monitoring
-    #[ inline ]
-    pub fn record_latency( &mut self, duration : Duration )
-    {
-      self.latencies.push( duration );
-      if duration.as_millis() > 1000
-      {
-        self.alert_count += 1;
-      }
-    }
-
-    /// Process monitoring events and trigger alerts
-    #[ inline ]
-    pub fn process_events( &self )
-    {
-      // Mock implementation
-    }
-
-    /// Get the current alert count
-    #[ inline ]
-    #[ must_use ]
-    pub fn get_alert_count( &self ) -> u32
-    {
-      self.alert_count
-    }
-
-    /// Get the current monitoring status
-    #[ inline ]
-    #[ must_use ]
-    pub fn get_current_status( &self ) -> MonitoringStatus
-    {
-      MonitoringStatus
-      {
-        degraded : self.alert_count > 0,
-      }
-    }
-  }
-
-  impl MonitoringStatus
-  {
-    /// Check if the monitoring status indicates degraded performance
-    #[ inline ]
-    #[ must_use ]
-    pub fn is_degraded( &self ) -> bool
-    {
-      self.degraded
-    }
-  }
-
-  impl LoadTester
-  {
-    /// Create a new load tester with the given diagnostics collector
-    #[ inline ]
-    #[ must_use ]
-    pub fn new( collector : DiagnosticsCollector ) -> Self
-    {
-      Self { _collector : collector }
-    }
-
-    /// Run concurrent requests for load testing
-    #[ inline ]
-    pub fn run_concurrent_requests( &self, _client : &crate::Client, _concurrency : u32, _requests_per_thread : u32 ) -> LoadTestResults
-    {
-      LoadTestResults
-      {
-        total_requests : 50,
-        average_latency : Duration::from_millis( 200 ),
-        success_rate : 0.9,
-      }
-    }
-  }
-
-  impl LoadTestResults
-  {
-    /// Get the total number of requests executed
-    #[ inline ]
-    #[ must_use ]
-    pub fn total_requests( &self ) -> u32
-    {
-      self.total_requests
-    }
-
-    /// Get the average latency across all requests
-    #[ inline ]
-    #[ must_use ]
-    pub fn average_latency( &self ) -> Duration
-    {
-      self.average_latency
-    }
-
-    /// Get the success rate of the load test
-    #[ inline ]
-    #[ must_use ]
-    pub fn success_rate( &self ) -> f64
-    {
-      self.success_rate
-    }
-  }
-
-  impl AlertingSystem
-  {
-    /// Create a new alerting system with the given collector
-    #[ inline ]
-    #[ must_use ]
-    pub fn new( collector : DiagnosticsCollector ) -> Self
-    {
-      Self
-      {
-        _collector : collector,
-        alerts : Vec::new(),
-      }
-    }
-
-    /// Set the latency threshold for alerting
-    #[ inline ]
-    pub fn set_latency_threshold( &mut self, _threshold : Duration )
-    {
-      // Mock implementation
-    }
-
-    /// Set the error rate threshold for alerting
-    #[ inline ]
-    pub fn set_error_rate_threshold( &mut self, _threshold : f64 )
-    {
-      // Mock implementation
-    }
-
-    /// Process and generate alerts based on current metrics
-    #[ inline ]
-    pub fn process_alerts( &mut self )
-    {
-      // Mock - generate an alert for testing
-      self.alerts.push( Alert
-      {
-        alert_type : "high_error_rate".to_string(),
-      } );
-    }
-
-    /// Get the list of recent alerts
-    #[ inline ]
-    #[ must_use ]
-    pub fn get_recent_alerts( &self ) -> &Vec< Alert >
-    {
-      &self.alerts
-    }
-  }
-
-  impl Alert
-  {
-    /// Get the alert type
-    #[ inline ]
-    #[ must_use ]
-    pub fn alert_type( &self ) -> &str
-    {
-      &self.alert_type
-    }
-  }
 
   impl Default for DiagnosticsCollector
   {
@@ -926,12 +771,5 @@ crate::mod_interface!
   exposed use DiagnosticsSummary;
   exposed use DiagnosticsCollector;
   exposed use DiagnosticsData;
-  exposed use DiagnosticsExporter;
-  exposed use RealtimeMonitor;
-  exposed use MonitoringStatus;
-  exposed use LoadTester;
-  exposed use LoadTestResults;
-  exposed use AlertingSystem;
-  exposed use Alert;
   exposed use AggregatedMetrics;
 }

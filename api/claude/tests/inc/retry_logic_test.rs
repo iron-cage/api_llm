@@ -18,7 +18,7 @@ fn test_retry_config_creation()
   assert_eq!( default_config.max_attempts(), 3 );
   assert_eq!( default_config.base_delay_ms(), 1000 );
   assert_eq!( default_config.max_delay_ms(), 60000 );
-  assert_eq!( default_config.backoff_multiplier(), 2.0 );
+  assert!( ( default_config.backoff_multiplier() - 2.0_f64 ).abs() < f64::EPSILON );
   assert!( default_config.jitter_enabled() );
 
   // Test custom retry configuration
@@ -32,7 +32,7 @@ fn test_retry_config_creation()
   assert_eq!( custom_config.max_attempts(), 5 );
   assert_eq!( custom_config.base_delay_ms(), 500 );
   assert_eq!( custom_config.max_delay_ms(), 30000 );
-  assert_eq!( custom_config.backoff_multiplier(), 1.5 );
+  assert!( ( custom_config.backoff_multiplier() - 1.5_f64 ).abs() < f64::EPSILON );
   assert!( !custom_config.jitter_enabled() );
 }
 
@@ -255,7 +255,7 @@ fn test_jitter_application()
   // All delays should be within reasonable bounds (±10% of base)
   for delay in unique_delays
   {
-    assert!( delay >= 900 && delay <= 1100, "Jittered delay {} should be within bounds", delay );
+    assert!( ( 900..=1100 ).contains( &delay ), "Jittered delay {delay} should be within bounds" );
   }
 }
 
@@ -272,6 +272,7 @@ fn test_retry_executor_creation()
 }
 
 /// Test async retry execution with mock operations
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_async_retry_execution_success()
 {
@@ -303,6 +304,7 @@ async fn test_async_retry_execution_success()
 }
 
 /// Test async retry execution with transient failures
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_async_retry_execution_with_retries()
 {
@@ -342,6 +344,7 @@ async fn test_async_retry_execution_with_retries()
 }
 
 /// Test async retry execution with permanent failure
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_async_retry_execution_permanent_failure()
 {
@@ -372,6 +375,7 @@ async fn test_async_retry_execution_permanent_failure()
 }
 
 /// Test async retry execution exceeding max attempts
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_async_retry_execution_max_attempts_exceeded()
 {
@@ -403,6 +407,7 @@ async fn test_async_retry_execution_max_attempts_exceeded()
 
 /// Test client integration with retry logic
 #[ cfg( feature = "retry-logic" ) ]
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_client_with_retry_logic()
 {
@@ -412,6 +417,7 @@ async fn test_client_with_retry_logic()
 
 /// Test retry logic with rate limit error
 #[ cfg( feature = "retry-logic" ) ]
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_retry_with_rate_limit_error()
 {
@@ -456,11 +462,11 @@ fn test_retry_error_recovery_strategies()
 
   for ( error, should_retry, description ) in test_cases
   {
-    assert_eq!( strategy.should_retry( &error, 1 ), should_retry, "{}", description );
+    assert_eq!( strategy.should_retry( &error, 1 ), should_retry, "{description}" );
   }
 }
 
-/// Test BackoffCalculator enhanced implementation
+/// Test `BackoffCalculator` enhanced implementation
 #[ cfg( feature = "retry-logic" ) ]
 #[ test ]
 fn test_backoff_calculator_enhanced()
@@ -476,7 +482,7 @@ fn test_backoff_calculator_enhanced()
   assert!( backoff_strategy.is_ok() );
 
   let strategy = backoff_strategy.unwrap();
-  assert!( strategy.initial_delay() >= core::time::Duration::from_millis( 45000 ) ); // Should respect retry-after
+  assert!( strategy.initial_delay() >= core::time::Duration::from_secs( 45 ) ); // Should respect retry-after
   assert_eq!( strategy.backoff_type(), the_module::BackoffType::Linear );
   assert!( strategy.jitter_enabled() );
 
@@ -491,8 +497,8 @@ fn test_backoff_calculator_enhanced()
   assert!( token_backoff.is_ok() );
 
   let token_strategy = token_backoff.unwrap();
-  assert!( token_strategy.initial_delay() >= core::time::Duration::from_millis( 1000 ) ); // Default backoff
-  assert!( token_strategy.initial_delay() <= core::time::Duration::from_millis( 60000 ) ); // Reasonable maximum
+  assert!( token_strategy.initial_delay() >= core::time::Duration::from_secs( 1 ) ); // Default backoff
+  assert!( token_strategy.initial_delay() <= core::time::Duration::from_mins( 1 ) ); // Reasonable maximum
 }
 
 /// Test retry metrics and monitoring

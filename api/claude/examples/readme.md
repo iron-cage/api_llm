@@ -2,6 +2,22 @@
 
 This directory contains practical examples demonstrating the most useful use cases of the Anthropic API crate. All examples use real API calls - no mocking.
 
+## Responsibility Table
+
+| File | Responsibility |
+|------|----------------|
+| `readme.md` | Directory index and quick-start guide |
+| `claude_api_basic.rs` | Minimal API call: single message and response |
+| `claude_api_interactive.rs` | Interactive multi-turn conversation loop |
+| `claude_chat_cached_interactive.rs` | Interactive chat with prompt caching enabled |
+| `claude_chat_streaming.rs` | Real-time streaming response display |
+| `claude_code_review.rs` | Automated code review via the messages API |
+| `claude_content_generation.rs` | Long-form content generation with structured output |
+| `claude_function_calling.rs` | Tool use and function calling patterns |
+| `claude_multi_turn_conversation.rs` | Stateful multi-turn conversation management |
+| `claude_vision_analysis.rs` | Image input and visual analysis |
+
+
 ## 🚀 Quick Start
 
 ### Prerequisites

@@ -81,11 +81,11 @@ mod integration_tests
       Ok( Err( e ) ) => {
         // Expected for testing - Gemini may not support native WebSocket
       println!( "⚠ WebSocket connection failed as expected (fallback behavior): {}", e );
-        assert!( true ); // This is expected behavior for HTTP fallback
+        // This is expected behavior for HTTP fallback
       },
       Err( _ ) => {
         println!( "⚠ Connection attempt timed out (expected in test environment)" );
-        assert!( true ); // Timeout is acceptable in test environment
+        // Timeout is acceptable in test environment
       }
     }
 
@@ -170,11 +170,11 @@ mod integration_tests
       },
       Ok( Err( e ) ) => {
       println!( "⚠ Bidirectional messaging test failed as expected : {}", e );
-        assert!( true ); // Expected for HTTP fallback testing
+        // Expected for HTTP fallback testing
       },
       Err( _ ) => {
         println!( "⚠ Bidirectional messaging test timed out (expected)" );
-        assert!( true ); // Timeout is acceptable in test environment
+        // Timeout is acceptable in test environment
       }
     }
 
@@ -274,11 +274,11 @@ mod integration_tests
       },
       Ok( Err( e ) ) => {
       println!( "⚠ Connection lifecycle test failed as expected : {}", e );
-        assert!( true ); // Expected for HTTP fallback
+        // Expected for HTTP fallback
       },
       Err( _ ) => {
         println!( "⚠ Connection lifecycle test timed out (expected)" );
-        assert!( true ); // Timeout is acceptable
+        // Timeout is acceptable
       }
     }
 
@@ -321,7 +321,7 @@ mod integration_tests
     {
       Ok( Ok( _connection ) ) => {
         println!( "⚠ Connection succeeded unexpectedly (fallback behavior)" );
-        assert!( true ); // Acceptable if fallback occurred
+        // Acceptable if fallback occurred
       },
       Ok( Err( _e ) ) => {
         println!( "✓ Connection failed as expected with short timeout" );
@@ -411,11 +411,11 @@ mod integration_tests
       },
       Ok( Err( e ) ) => {
       println!( "⚠ Streaming control test failed as expected : {}", e );
-        assert!( true ); // Expected for HTTP fallback
+        // Expected for HTTP fallback
       },
       Err( _ ) => {
         println!( "⚠ Streaming control test timed out (expected)" );
-        assert!( true ); // Timeout is acceptable
+        // Timeout is acceptable
       }
     }
 
@@ -473,11 +473,11 @@ mod integration_tests
       },
       Ok( Err( e ) ) => {
       println!( "⚠ Fallback connection failed as expected : {}", e );
-        assert!( true ); // This is acceptable - fallback may not be fully implemented
+        // This is acceptable - fallback may not be fully implemented
       },
       Err( _ ) => {
         println!( "⚠ Fallback connection timed out (expected in test environment)" );
-        assert!( true ); // Timeout is acceptable
+        // Timeout is acceptable
       }
     }
 

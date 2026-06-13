@@ -1,7 +1,6 @@
 use super::*;
 
 mod authentication_test;
-mod basic_test;
 #[ cfg( all( feature = "batch-processing", feature = "error-handling" ) ) ]
 mod batch_messages_test;
 mod circuit_breaker_test;
@@ -28,13 +27,14 @@ mod general_diagnostics_test;
 #[ cfg( feature = "health-checks" ) ]
 mod health_checks_test;
 mod error_handling_test;
+mod example_model_validation_test;
 mod examples_validation_test;
-mod experiment;
 mod fallback_behavior_integration_test;
 mod messages_api_test;
 mod model_management_test;
 mod performance_test;
 mod performance_monitoring_test;
+mod prompt_caching_tests;
 #[ cfg( feature = "rate-limiting" ) ]
 mod rate_limiting_test;
 mod retry_logic_test;
@@ -58,4 +58,9 @@ mod token_counting_test;
 mod token_validation_test;
 mod tool_calling_test;
 mod vision_support_test;
-mod workspace_loading_integration_test;
+mod thin_client_principle_test;
+mod testing_standards_test;
+mod endpoint_coverage_test;
+mod enterprise_reliability_test;
+mod module_organization_test;
+mod operation_test_specs;

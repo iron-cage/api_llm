@@ -10,7 +10,9 @@ mod private {}
 crate::mod_interface!
 {
   layer core;
+  layer manager;
   layer enhanced;
+  layer enhanced_impls;
 }
 
 #[ cfg( not( feature = "model-management" ) ) ]

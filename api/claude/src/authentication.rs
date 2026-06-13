@@ -804,19 +804,6 @@ mod private
       }
     }
 
-    /// Create secret with enhanced validation (compatibility wrapper for tests)
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if API key validation fails
-    ///
-    /// NOTE: This is a compatibility wrapper for tests. Use `new_with_validation()` for explicit control.
-    pub fn new_validated( api_key : String ) -> AnthropicResult< Self >
-    {
-      // Compatibility wrapper with Anthropic API key defaults
-      Self::new_with_validation( api_key, "sk-ant-", Some(74), Some(74) )
-    }
-    
     /// Load secret with environment variable precedence
     ///
     /// # Errors

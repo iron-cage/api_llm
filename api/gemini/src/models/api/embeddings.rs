@@ -561,7 +561,7 @@ impl ModelApi< '_ >
     );
 
     // For now, process texts individually
-    // qqq : Implement actual batch API when available from Gemini
+    // qqq : Implement actual batch API when available from Gemini (task/verified/004)
     let mut embeddings = Vec::with_capacity( texts.len() );
     let mut successful = 0;
     let mut failed = 0;
@@ -680,7 +680,7 @@ impl ModelApi< '_ >
     }
 
     // For now, process contents individually
-    // qqq : Implement actual batch API when available from Gemini
+    // qqq : Implement actual batch API when available from Gemini (task/verified/004)
     let mut embeddings = Vec::with_capacity( contents.len() );
     let mut successful = 0;
     let mut failed = 0;

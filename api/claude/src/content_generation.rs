@@ -293,7 +293,7 @@ mod private
       Self
       {
         client,
-        default_model : "claude-sonnet-4-5-20250929".to_string(),
+        default_model : "claude-sonnet-4-6".to_string(),
         default_max_tokens : 1000,
         timeout : Duration::from_secs( 60 ),
       }

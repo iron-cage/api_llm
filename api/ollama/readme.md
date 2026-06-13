@@ -166,7 +166,6 @@ w3 .test level::3
 - **[Implementation Roadmap](docs/implementation_roadmap.md)** - Feature priorities and guidelines
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/ollama/examples)** - Runnable code examples
 - **[Tests](tests/)** - Test documentation
-- **[Specification](spec/)** - Technical specification
 
 ## Project Structure
 
@@ -195,7 +194,6 @@ This section documents the complete project layout with each entity's responsibi
 |--------|----------------|-------|
 | `readme.md` | Project overview and onboarding | Quick start, architecture overview, feature summary, navigation |
 | `docs/` | Detailed documentation | Roadmaps, guides, design docs - see docs/readme.md |
-| `spec/` | Formal technical specification | Complete requirements, design, governance - see spec/readme.md |
 | `examples/` | Usage demonstrations | Runnable examples for developers - see examples/readme.md |
 
 #### Temporary Files & Working Directories

@@ -4,6 +4,9 @@
 //! behavior consistency, role-based responses, and instruction effectiveness.
 //! All tests use real API calls following the no-mockup policy.
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::
 {
   client ::Client,
@@ -15,22 +18,6 @@ use api_gemini::
 };
 use tokio::time::{ timeout, Duration };
 use std::collections::HashMap;
-
-/// Create a test client using the API key from workspace secrets or environment.
-///
-/// This uses `Client::new()` which attempts to load GEMINI_API_KEY from:
-/// 1. Workspace secrets : `secret/-secrets.sh` (workspace_tools 0.6.0)
-/// 2. Environment variable : `GEMINI_API_KEY`
-///
-/// Tests will FAIL EXPLICITLY (not skip) if the API key cannot be loaded.
-/// This is intentional - silent skipping masks configuration issues and creates
-/// false confidence in CI/CD pipelines.
-///
-/// Note : workspace_tools 0.6.0 uses `secret/` (visible directory, NO dot prefix)
-fn create_test_client() -> Client
-{
-  Client::new().unwrap()
-}
 
 /// Create a request with system instructions
 fn create_system_instruction_request(
@@ -316,11 +303,11 @@ fn analyze_response_characteristics( response_text: &str ) -> HashMap<  String, 
 /// the test will fail loudly with complete API response analysis.
 async fn test_instruction_consistency() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let system_instruction = "You are a poetry expert who always responds in rhyming couplets and includes the word 'verse' in every response.";
 
-  let test_queries = vec![
+  let test_queries = [
   "What is poetry?",
   "Tell me about Shakespeare",
   "Explain haiku",
@@ -396,7 +383,7 @@ println!( "\n✅ All {} queries completed successfully with instruction consiste
 /// Test comparison between responses with and without system instructions
 async fn test_instruction_impact_comparison() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let system_instruction = "You are a technical expert who always provides responses in exactly 3 bullet points, uses technical terminology, and includes specific numbers or metrics when possible.";
   let test_query = "How does machine learning work?";
@@ -484,7 +471,7 @@ println!( "Instruction response characteristics : {:?}", instruction_characteris
 /// Test multi-turn conversation with system instructions
 async fn test_multi_turn_conversation_consistency() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let system_instruction = "You are a helpful coding tutor who always:
   1. Asks a follow-up question after each explanation
@@ -494,7 +481,7 @@ async fn test_multi_turn_conversation_consistency() -> Result< (), Box< dyn std:
 
   println!( "Testing multi-turn conversation consistency" );
 
-  let conversation_turns = vec![
+  let conversation_turns = [
   "What is a variable in programming?",
   "How do I create a variable in Python?",
   "What's the difference between a list and a tuple?",
@@ -575,7 +562,7 @@ println!( "✅ Multi-turn conversation completed with {} turns", conversation_tu
 /// Test system instruction with domain-specific constraints
 async fn test_domain_specific_constraints() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   let system_instruction = "You are a financial advisor who must:
   • Only discuss investment topics related to stocks, bonds, and mutual funds
@@ -586,7 +573,7 @@ async fn test_domain_specific_constraints() -> Result< (), Box< dyn std::error::
 
   If asked about non-investment topics, politely redirect to investment education.";
 
-  let test_queries = vec![
+  let test_queries = [
   "What are stocks?",
   "Should I buy Tesla stock?", // Should trigger constraint about specific recommendations
   "Tell me a joke", // Should trigger topic redirection
@@ -671,7 +658,7 @@ println!( "Response {}: {}", i + 1, response_text );
 /// Integration test : Complex system instruction workflow
 async fn test_complex_instruction_workflow() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client();
+  let client = create_integration_client();
 
   println!( "Running complex system instruction workflow test" );
 
@@ -700,7 +687,7 @@ async fn test_complex_instruction_workflow() -> Result< (), Box< dyn std::error:
   • If they demonstrate understanding, introduce related concepts
   • Always acknowledge their level and adjust accordingly";
 
-  let tutorial_steps = vec![
+  let tutorial_steps = [
   "I'm a complete beginner. What is programming?",
   "That makes sense! How do I write my first program?",
   "I wrote 'print(\"Hello World\")' and it worked! What should I learn next?",

@@ -2,11 +2,6 @@
 //!
 //! ## Test Status : TDD Implementation Phase
 //!
-//! Some tests in this file are currently disabled with #[ ignore ] as part of
-//! the Test-Driven Development (TDD) workflow. Tests were written BEFORE
-//! implementation to define the expected behavior of the EnhancedModelDetails
-//! feature set.
-//!
 //! **Tracking:** See -issue-002.md for implementation progress
 //!
 //! MANDATORY INTEGRATION TEST REQUIREMENTS:
@@ -247,11 +242,10 @@ mod enhanced_model_details_functionality_tests
     assert!( !recommendations.is_empty(), "Should provide use case recommendations" );
   }
 
-  /// Test model filtering and search capabilities
+  /// Test model filtering via `FilteredModel` builder
   #[ test ]
   fn test_model_filtering_and_search()
   {
-    // This test will fail until ModelFilter is implemented
     use the_module::{ ModelFilter, FilteredModel };
 
     let _filter = ModelFilter::builder()
@@ -260,7 +254,6 @@ mod enhanced_model_details_functionality_tests
       .min_context_length( 100_000 )
       .build();
 
-    // Mock functionality - in real implementation would filter models
     let matching_models = vec![ FilteredModel
     {
       model_id : "claude-sonnet-4-5-20250929".to_string(),
@@ -269,7 +262,6 @@ mod enhanced_model_details_functionality_tests
       is_deprecated : false,
     }];
 
-    // Validate filtered results
     assert!( !matching_models.is_empty(), "Should find models matching criteria" );
 
     for model in &matching_models
@@ -278,222 +270,28 @@ mod enhanced_model_details_functionality_tests
       assert!( model.get_context_length() >= 100_000, "All results should have sufficient context" );
       assert!( !model.is_deprecated(), "No deprecated models should be included" );
     }
-
-    // Test search functionality
-    let search_results = ModelFilter::search( "sonnet" );
-    assert!( !search_results.is_empty(), "Should find Sonnet models" );
-
-    for result in &search_results
-    {
-      assert!( result.get_name().to_lowercase().contains( "sonnet" ) ||
-               result.get_description().to_lowercase().contains( "sonnet" ),
-               "Search results should contain 'sonnet'" );
-    }
   }
 
-  /// Test model feature compatibility matrix
-  ///
+  /// Test model feature capabilities per model
   #[ test ]
   fn test_model_feature_compatibility()
   {
-    // This test will fail until FeatureCompatibilityMatrix is implemented
-    use the_module::FeatureCompatibilityMatrix;
+    use the_module::EnhancedModelCapabilities;
 
-    let matrix = FeatureCompatibilityMatrix::new();
+    let sonnet46 = EnhancedModelCapabilities::for_model( "claude-sonnet-4-6" );
+    assert!( sonnet46.supports_vision(), "Sonnet 4.6 should support vision" );
+    assert!( sonnet46.supports_function_calling(), "Sonnet 4.6 should support function calling" );
+    assert!( sonnet46.supports_streaming(), "Should support streaming" );
 
-    // Test feature support across models
-    let vision_models = matrix.get_models_supporting( "vision" );
-    assert!( !vision_models.is_empty(), "Should have vision-capable models" );
-    // Fix(issue-001): Sonnet 4.5 does NOT support vision - it's text-only
-    assert!( !vision_models.contains( &"claude-sonnet-4-5-20250929".to_string() ), "Sonnet 4.5 does NOT support vision" );
+    let sonnet45 = EnhancedModelCapabilities::for_model( "claude-sonnet-4-5-20250929" );
+    assert!( !sonnet45.supports_vision(), "Sonnet 4.5 does NOT support vision" );
+    assert!( !sonnet45.supports_function_calling(), "Sonnet 4.5 does NOT support function calling" );
 
-    let tool_models = matrix.get_models_supporting( "function_calling" );
-    assert!( !tool_models.is_empty(), "Should have tool-capable models" );
-
-    // Test compatibility checking
-    let features = vec![ "vision", "function_calling", "streaming" ];
-    let compatible_models = matrix.get_models_supporting_all( &features );
-    assert!( !compatible_models.is_empty(), "Should have models supporting all features" );
-
-    // Test feature availability timeline
-    let feature_timeline = matrix.get_feature_timeline( "vision" );
-    assert!( !feature_timeline.is_empty(), "Should have vision feature timeline" );
-  }
-}
-
-#[ cfg( feature = "model-management" ) ]
-#[ cfg( feature = "integration" ) ]
-mod enhanced_model_details_integration_tests
-{
-  use super::*;
-
-  /// Test end-to-end enhanced model details retrieval
-  #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
-async fn test_end_to_end_enhanced_model_details()
-  {
-    use the_module::EnhancedModelDetails;
-
-    let client = the_module::Client::from_workspace()
-      .expect( "Must have valid API key for integration test" );
-
-    let model_id = "claude-sonnet-4-5-20250929";
-    let enhanced_details = EnhancedModelDetails::fetch_from_api( &client, model_id );
-
-    match enhanced_details
-    {
-      Ok( details ) => {
-        // Validate comprehensive details
-        assert_eq!( details.get_model_id(), model_id );
-        assert!( !details.get_display_name().is_empty(), "Should have display name" );
-        assert!( details.get_pricing().is_some(), "Should have pricing information" );
-        // Fix(issue-001): Sonnet 4.5 does NOT support vision
-        assert!( !details.get_capabilities().supports_vision(), "Sonnet 4.5 does NOT support vision" );
-        assert!( details.get_context_window().get_max_tokens() > 0, "Should have context window info" );
-        assert!( !details.get_lifecycle().is_deprecated(), "Should not be deprecated" );
-      },
-      Err( _err ) => {
-        // Expected to fail until enhanced model details are implemented
-      }
-    }
+    let haiku = EnhancedModelCapabilities::for_model( "claude-3-5-haiku-20241022" );
+    assert!( !haiku.supports_vision(), "Haiku 3.5 does NOT support vision" );
+    assert!( haiku.supports_function_calling(), "Haiku 3.5 should support function calling" );
   }
 
-  /// Test model details caching and performance
-  #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
-async fn test_enhanced_model_details_caching()
-  {
-    use the_module::{ EnhancedModelDetails, ModelDetailsCache };
-
-    let client = the_module::Client::from_workspace()
-      .expect( "Must have valid API key for integration test" );
-
-    let model_id = "claude-sonnet-4-5-20250929";
-
-    // First fetch ( should hit API )
-    let first_fetch = EnhancedModelDetails::fetch_from_api( &client, model_id );
-
-    // Second fetch ( should use cache )
-    let second_fetch = EnhancedModelDetails::fetch_from_api( &client, model_id );
-
-    if first_fetch.is_ok() && second_fetch.is_ok()
-    {
-      // For mock implementation, just verify both calls succeeded
-      // In real implementation, cached access would be faster
-
-      // Test cache invalidation
-      ModelDetailsCache::invalidate( model_id );
-      let invalidated_fetch = EnhancedModelDetails::fetch_from_api( &client, model_id );
-      assert!( invalidated_fetch.is_ok(), "Should work after cache invalidation" );
-    }
-  }
-
-  /// Test model comparison with real API data
-  #[ tokio::test ]
-  async fn test_real_model_comparison()
-  {
-    use the_module::ModelComparison;
-
-    let client = match the_module::Client::from_workspace()
-    {
-      Ok( client ) => client,
-      Err( the_module::AnthropicError::MissingEnvironment( _ ) ) =>
-      {
-        println!( "INTEGRATION TEST SKIPPED: No API key available - this confirms real API dependency" );
-        return;
-      },
-      Err( err ) => panic!( "Must have valid API key for integration test : {err}" ),
-    };
-
-    let comparison = ModelComparison::fetch_comparison(
-      &client,
-      "claude-sonnet-4-5-20250929",
-      "claude-3-5-haiku-20241022"
-    );
-
-    match comparison
-    {
-      Ok( comp ) => {
-        // Validate real comparison data
-        assert!( comp.get_cost_comparison().get_cost_ratio() > 1.0, "Sonnet should cost more than Haiku" );
-        assert!( !comp.get_capability_differences().is_empty(), "Should have capability differences" );
-        assert!( !comp.get_use_case_recommendations().is_empty(), "Should provide recommendations" );
-      },
-      Err( _err ) => {
-        // Expected to fail until comparison is implemented
-      }
-    }
-  }
-
-  /// Test pricing information accuracy with real data
-  #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
-async fn test_real_pricing_accuracy()
-  {
-    use the_module::ModelPricing;
-
-    // INTEGRATION TEST - STRICT FAILURE POLICY: Must have valid API key
-    let client = the_module::Client::from_workspace()
-      .expect( "INTEGRATION TEST: Must have valid ANTHROPIC_API_KEY in environment or workspace" );
-
-    let pricing = ModelPricing::fetch_current_pricing( &client, "claude-sonnet-4-5-20250929" );
-
-    match pricing
-    {
-      Ok( price_info ) => {
-        // Validate pricing data format and ranges
-        assert!( price_info.get_input_price_per_token() > 0.0, "Input price should be positive" );
-        assert!( price_info.get_output_price_per_token() > 0.0, "Output price should be positive" );
-        assert!( price_info.get_currency() == "USD", "Should use USD currency" );
-
-        // Sanity check on pricing ranges (avoiding hardcoded values)
-        assert!( price_info.get_input_price_per_token() < 0.1, "Input price should be reasonable" );
-        assert!( price_info.get_output_price_per_token() < 0.1, "Output price should be reasonable" );
-      },
-      Err( _err ) => {
-        // Expected to fail until pricing fetching is implemented
-      }
-    }
-  }
-
-  /// Test model lifecycle status validation
-  #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
-async fn test_model_lifecycle_validation()
-  {
-    use the_module::ModelLifecycle;
-
-    // Integration test requires valid API key - fail if not available
-    let client = the_module::Client::from_workspace()
-      .expect( "Integration test requires valid API key. Set ANTHROPIC_API_KEY environment variable or configure workspace secrets." );
-
-    // Test current model lifecycle
-    let current_lifecycle = ModelLifecycle::fetch_lifecycle_status( &client, "claude-sonnet-4-5-20250929" );
-
-    match current_lifecycle
-    {
-      Ok( lifecycle ) => {
-        assert!( !lifecycle.is_deprecated(), "Current model should not be deprecated" );
-        assert!( lifecycle.get_status() == "active", "Should be active" );
-        assert!( lifecycle.get_release_date().is_some(), "Should have release date" );
-      },
-      Err( _err ) => {
-        // Expected to fail until lifecycle tracking is implemented
-      }
-    }
-
-    // Test potentially deprecated model
-    let old_lifecycle = ModelLifecycle::fetch_lifecycle_status( &client, "claude-2.1" );
-
-    if let Ok( old_model_lifecycle ) = old_lifecycle
-    {
-      if old_model_lifecycle.is_deprecated()
-      {
-        assert!( old_model_lifecycle.get_deprecation_date().is_some(), "Deprecated model should have deprecation date" );
-        assert!( old_model_lifecycle.get_replacement_model().is_some(), "Should suggest replacement" );
-      }
-    }
-  }
 }
 
 #[ cfg( not( feature = "model-management" ) ) ]

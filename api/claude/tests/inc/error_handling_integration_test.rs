@@ -15,8 +15,8 @@
 use super::*;
 use std::env;
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
+#[ test ]
 #[ allow( clippy::too_many_lines ) ]
 fn test_error_handling_integration()
 {

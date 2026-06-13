@@ -199,4 +199,3 @@ cargo test --test function_calling_tests test_function_calling_basic --features=
 - **Test Plan Details**: `test_chat_examples.md` (legacy, see above for current plan)
 - **Automated Tests**: `../function_calling_tests.rs`, `../providers_api_tests.rs`
 - **Examples**: `../../examples/interactive_chat.rs`, `../../examples/chat.rs`
-- **Specification**: `../../spec.md` (Router API migration ADR)

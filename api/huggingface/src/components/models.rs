@@ -59,7 +59,7 @@ impl Models
 
   /// Llama 3.3 70B Instruct model (recommended default)
   ///
-  /// This is the current recommended default model as specified in spec.md
+  /// This is the current recommended default model.
   #[ inline ]
   #[ must_use ]
   pub const fn llama_3_3_70b_instruct() -> &'static str

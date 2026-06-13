@@ -123,6 +123,14 @@ pub struct ToolRegistry
   execution_log: Vec< FunctionContext >,
 }
 
+impl Default for ToolRegistry
+{
+  fn default() -> Self
+  {
+    Self::new()
+  }
+}
+
 impl ToolRegistry
 {
   /// Create new tool registry with default tools
@@ -395,7 +403,7 @@ impl ToolRegistry
         {
           if let Some( field_name ) = req_field.as_str()
           {
-            if !args.get( field_name ).is_some()
+            if args.get( field_name ).is_none()
             {
           return Err( format!( "Required parameter '{}' missing for function '{}'", field_name, name ).into() );
             }
@@ -1006,12 +1014,9 @@ impl FunctionCallingAgent
       }
     }
 
-    if iteration >= self.config.max_iterations
+    if iteration >= self.config.max_iterations && self.config.logging_enabled
     {
-      if self.config.logging_enabled
-      {
-        println!( "Maximum iterations reached" );
-      }
+      println!( "Maximum iterations reached" );
     }
 
     if self.config.logging_enabled
@@ -1110,83 +1115,62 @@ fn parse_args() -> AgentConfig
   {
     match args[ i ].as_str()
     {
-      "--agent-mode" =>
+      "--agent-mode" if i + 1 < args.len() =>
       {
-        if i + 1 < args.len()
+        match args[ i + 1 ].as_str()
         {
-          match args[ i + 1 ].as_str()
-          {
-            "interactive" => config.agent_mode = AgentMode::Interactive,
-            "automated" => config.agent_mode = AgentMode::Automated,
-            mode => config.agent_mode = AgentMode::Demo( mode.to_string() ),
-          }
-          i += 1;
+          "interactive" => config.agent_mode = AgentMode::Interactive,
+          "automated" => config.agent_mode = AgentMode::Automated,
+          mode => config.agent_mode = AgentMode::Demo( mode.to_string() ),
         }
+        i += 1;
       }
-      "--tools" =>
+      "--tools" if i + 1 < args.len() =>
       {
-        if i + 1 < args.len()
+        if args[ i + 1 ] == "all"
         {
-          if args[ i + 1 ] == "all"
-          {
-            config.available_tools = vec![ "all".to_string() ];
-          }
-          else
-          {
-            config.available_tools = args[ i + 1 ]
-            .split( ',' )
-            .map( |s| s.trim().to_string() )
-            .collect();
-          }
-          i += 1;
+          config.available_tools = vec![ "all".to_string() ];
         }
+        else
+        {
+          config.available_tools = args[ i + 1 ]
+          .split( ',' )
+          .map( |s| s.trim().to_string() )
+          .collect();
+        }
+        i += 1;
       }
-      "--task" =>
+      "--task" if i + 1 < args.len() =>
       {
-        if i + 1 < args.len()
-        {
-          config.task_description = Some( args[ i + 1 ].clone() );
-          config.agent_mode = AgentMode::Automated;
-          i += 1;
-        }
+        config.task_description = Some( args[ i + 1 ].clone() );
+        config.agent_mode = AgentMode::Automated;
+        i += 1;
       }
-      "--demo" =>
+      "--demo" if i + 1 < args.len() =>
       {
-        if i + 1 < args.len()
-        {
-          config.agent_mode = AgentMode::Demo( "demo".to_string() );
-          i += 1;
-        }
+        config.agent_mode = AgentMode::Demo( "demo".to_string() );
+        i += 1;
       }
-      "--service" =>
+      "--service" if i + 1 < args.len() =>
       {
-        if i + 1 < args.len()
-        {
-          config.demo_service = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+        config.demo_service = Some( args[ i + 1 ].clone() );
+        i += 1;
       }
-      "--max-iterations" =>
+      "--max-iterations" if i + 1 < args.len() =>
       {
-        if i + 1 < args.len()
+        if let Ok( max_iter ) = args[ i + 1 ].parse::< usize >()
         {
-          if let Ok( max_iter ) = args[ i + 1 ].parse::< usize >()
-          {
-            config.max_iterations = max_iter;
-          }
-          i += 1;
+          config.max_iterations = max_iter;
         }
+        i += 1;
       }
-      "--timeout" =>
+      "--timeout" if i + 1 < args.len() =>
       {
-        if i + 1 < args.len()
+        if let Ok( timeout ) = args[ i + 1 ].parse::< u64 >()
         {
-          if let Ok( timeout ) = args[ i + 1 ].parse::< u64 >()
-          {
-            config.timeout_seconds = timeout;
-          }
-          i += 1;
+          config.timeout_seconds = timeout;
         }
+        i += 1;
       }
       "--quiet" =>
       {

@@ -184,7 +184,7 @@ let secret = Secret::new( "sk-ant-api03-your-key-here".to_string() )?;
 let client = Client::new( secret );
 ```
 
-See [Secret Loading Guide](docs/secret_loading.md) for complete authentication options.
+See [Secret Loading Guide](docs/operation/001_secret_loading.md) for complete authentication options.
 
 ## Feature Flags
 
@@ -214,7 +214,7 @@ See [Secret Loading Guide](docs/secret_loading.md) for complete authentication o
 ## Testing
 
 ### Test Coverage
-- 435 tests passing (100%)
+- 540 tests (37 unit + 503 integration requiring API credentials)
 - Real API integration tests
 - No-mockup policy: all integration tests use real API calls
 
@@ -231,9 +231,8 @@ See [Secret Loading Guide](docs/secret_loading.md) for complete authentication o
 
 - **[API Reference](https://docs.rs/api_claude)** - Complete API documentation
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/claude/examples)** - Real-world usage examples
-- **[Secret Loading](docs/secret_loading.md)** - Authentication and secret management
+- **[Secret Loading](docs/operation/001_secret_loading.md)** - Authentication and secret management
 - **[Testing Guide](tests/readme.md)** - Testing organization and NO MOCKING policy
-- **[Specification](spec.md)** - Detailed project specification
 
 ## Dependencies
 
@@ -267,10 +266,10 @@ This section documents all files and directories in the crate root, ensuring Com
 | Path | Purpose |
 |------|---------|
 | `src/` | Source code implementation - client, Messages API, streaming, tools, error handling |
-| `tests/` | Comprehensive test suite with 88 tests, strict NO MOCKING ALLOWED policy |
+| `tests/` | Comprehensive test suite with 540 tests, strict NO MOCKING ALLOWED policy |
 | `examples/` | API usage examples demonstrating Claude API features and capabilities |
 | `docs/` | Technical documentation organized in design collections (operation/) |
-| `spec.md` | Crate specification, requirements, and architecture decisions |
+| `task/` | Implementation task tracking — tsk-compliant work items for this crate |
 | `Cargo.toml` | Crate metadata, dependencies, and feature configuration |
 | `readme.md` | Crate overview, quick start, API documentation, and this Responsibility Table |
 | `license` | MIT license text |
@@ -280,4 +279,3 @@ This section documents all files and directories in the crate root, ensuring Com
 - **[Anthropic Console](https://console.anthropic.com/)** - Get your API key
 - **[Claude API Documentation](https://docs.anthropic.com/claude/reference)** - Official API docs
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/claude/examples)** - Comprehensive usage examples
-- **[Specification](spec.md)** - Technical specification

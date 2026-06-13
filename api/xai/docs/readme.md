@@ -1,34 +1,80 @@
-# Documentation Directory
+# docs
 
-This directory contains API reference documentation, research, and OpenAPI specifications for the api_xai crate.
+### Purpose
 
-## Purpose
+This directory contains technical documentation for the `api_xai` crate, organized into design collections following doc.rulebook.md standards. Documentation is structured by design dimension (invariant/, pattern/, operation/, etc.) with each collection containing a master file (`readme.md`) and NNN-prefixed instance files.
 
-The `docs/` directory serves as the central location for:
-- API reference documentation
-- OpenAPI specifications
-- Research notes and design exploration
-- Endpoint summaries and guides
+### Responsibility
 
-## Responsibility Table
+| Path | Purpose |
+|------|---------|
+| `readme.md` | Master documentation index with navigation and Complete Entity Coverage |
+| `invariant/` | Non-negotiable behavioral constraints — thin client principle, testing standards |
+| `api/` | API contracts and endpoint coverage requirements |
+| `feature/` | Optional feature behavior specifications — enterprise reliability modules |
+| `operation/` | Operational procedures — secret loading, credential management |
+| `pattern/` | Design pattern specifications — module organization (mod_interface) |
+| `api_reference.md` | API reference documentation (endpoint descriptions, parameters, responses) |
+| `openapi_endpoints_summary.md` | OpenAPI endpoint quick reference |
+| `openapi.json` | Machine-readable OpenAPI 3.0 specification |
+| `research_summary.md` | Research notes and API exploration findings |
 
-| File | Responsibility | Scope |
-|------|----------------|-------|
-| `readme.md` | Document docs/ organization | Directory structure, file responsibilities, navigation |
-| `api_reference.md` | API reference documentation | Endpoint descriptions, parameters, responses |
-| `openapi_endpoints_summary.md` | OpenAPI endpoint summary | Quick reference for available endpoints |
-| `openapi.json` | OpenAPI specification | Machine-readable API specification (OpenAPI 3.0) |
-| `research_summary.md` | Research notes and findings | API exploration, design decisions, implementation notes |
+### Collections
 
-## Usage
+#### invariant/
 
-- **API Reference**: Start with `api_reference.md` for human-readable endpoint documentation
-- **OpenAPI Spec**: Use `openapi.json` for tooling integration (Swagger UI, code generation)
-- **Quick Reference**: See `openapi_endpoints_summary.md` for endpoint overview
-- **Research**: See `research_summary.md` for design rationale and API exploration notes
+Non-negotiable behavioral constraints.
 
-## Related Documentation
+**Master File**: `invariant/readme.md`
 
-- See `../spec.md` for formal specification
-- See `../readme.md` for project overview
-- See `../examples/` for usage demonstrations
+**Instances**:
+- `001_thin_client_principle.md` — No automatic behaviors; all client actions must be explicit
+- `002_testing_standards.md` — No-mock mandate and loud-failure requirement for all integration tests
+
+#### api/
+
+API contracts and endpoint coverage.
+
+**Master File**: `api/readme.md`
+
+**Instances**:
+- `001_endpoint_coverage.md` — Required X.AI API endpoint coverage and feature-gating policy
+
+#### feature/
+
+Optional feature behavior specifications.
+
+**Master File**: `feature/readme.md`
+
+**Instances**:
+- `001_enterprise_reliability.md` — Enterprise reliability feature set and configuration contract
+
+#### operation/
+
+Operational procedures for `api_xai`.
+
+**Master File**: `operation/readme.md`
+
+**Instances**:
+- `001_secret_loading.md` — Load XAI_API_KEY via workspace secrets file or environment variable
+
+#### pattern/
+
+Design pattern specifications.
+
+**Master File**: `pattern/readme.md`
+
+**Instances**:
+- `001_module_organization.md` — mod_interface pattern and module structure conventions
+
+### Navigation
+
+- Behavioral constraints: see `invariant/`
+- API contracts and endpoint coverage: see `api/`
+- Feature behavior specifications: see `feature/`
+- Operational procedures (authentication, secret loading): see `operation/`
+- Design patterns: see `pattern/`
+- API reference (human-readable): see `api_reference.md`
+- OpenAPI spec (tooling): see `openapi.json`
+- Project overview: see `../readme.md`
+- Usage examples: see `../examples/`

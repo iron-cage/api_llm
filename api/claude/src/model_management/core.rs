@@ -1,972 +1,459 @@
-//! Core model management types and `ModelManager` implementation
+//! Core model management types
 //!
-//! Basic model types, capabilities, requirements, and the main `ModelManager`.
+//! Basic model types, capabilities, requirements, and related data structures.
 
 #[ allow( clippy::missing_inline_in_public_items ) ]
 mod private
 {
-  use crate::{ 
-    error::{ AnthropicError, AnthropicResult }, 
-    client::{ Client, CreateMessageRequest },
-  };
   use serde::{ Serialize, Deserialize };
-  use std::{ collections::HashMap, sync::{ Arc, Mutex }, time::{ Duration, Instant } };
+  use std::time::Duration;
 
-
-  include!("core_types.rs");
-
-
-  /// Model cache entry
-  #[ derive( Debug, Clone ) ]
-  struct CacheEntry< T >
+  /// Model information structure
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelInfo
   {
-    data : T,
-    timestamp : Instant,
-    ttl : Duration,
+    /// Model identifier
+    pub id : String,
+    /// Display name
+    pub display_name : String,
+    /// Model name (user-facing)
+    pub name : String,
+    /// Maximum tokens supported
+    pub max_tokens : u32,
+    /// Context length
+    pub context_length : u32,
+    /// Creation timestamp
+    pub created_at : Option< String >,
+    /// Model capabilities
+    pub supports_tools : bool,
+    /// Vision support
+    pub supports_vision : bool,
+    /// Model version
+    pub version : Option< String >,
   }
 
-  impl< T > CacheEntry< T >
+  /// Model capabilities structure
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelCapabilities
   {
-    fn new( data : T, ttl : Duration ) -> Self
-    {
-      Self
-      {
-        data,
-        timestamp : Instant::now(),
-        ttl,
-      }
-    }
-
-    fn is_expired( &self ) -> bool
-    {
-      self.timestamp.elapsed() > self.ttl
-    }
+    /// Tool calling support
+    pub supports_tools : bool,
+    /// Vision input support
+    pub supports_vision : bool,
+    /// Maximum context length
+    pub max_context_length : u32,
+    /// Maximum tool calls per request
+    pub max_tool_calls : Option< u32 >,
+    /// Supported input modalities
+    pub input_modalities : Vec< String >,
+    /// Output modalities
+    pub output_modalities : Vec< String >,
   }
 
-  /// Model management system
-  #[ derive( Debug, Clone ) ]
-  pub struct ModelManager
+  /// Model requirements for selection
+  #[ derive( Debug, Clone, Default ) ]
+  pub struct ModelRequirements
   {
-    /// HTTP client for API calls
-    client : Client,
-    /// Model cache
-    cache : Arc< Mutex< HashMap< String, CacheEntry< ModelInfo > > > >,
-    /// Default cache TTL
-    cache_ttl : Duration,
+    /// Requires vision capability
+    pub requires_vision : bool,
+    /// Requires tool calling
+    pub requires_tools : bool,
+    /// Minimum context length needed
+    pub min_context_length : u32,
+    /// Maximum cost tier (1=cheap, 5=expensive)
+    pub max_cost_tier : u32,
+    /// Prefer speed over capability
+    pub prefer_speed : bool,
   }
 
-  impl ModelManager
+  /// Builder for model requirements
+  #[ derive( Debug, Default ) ]
+  pub struct ModelRequirementsBuilder
   {
-    /// Create new model manager
+    requires_vision : bool,
+    requires_tools : bool,
+    min_context_length : u32,
+    max_cost_tier : u32,
+    prefer_speed : bool,
+  }
+
+  impl ModelRequirementsBuilder
+  {
+    /// Create new builder
     #[ must_use ]
-    pub fn new( client : Client ) -> Self
+    pub fn new() -> Self
     {
-      Self
+      Self::default()
+    }
+
+    /// Set vision requirement
+    #[ must_use ]
+    pub fn requires_vision( mut self, requires : bool ) -> Self
+    {
+      self.requires_vision = requires;
+      self
+    }
+
+    /// Set tools requirement
+    #[ must_use ]
+    pub fn requires_tools( mut self, requires : bool ) -> Self
+    {
+      self.requires_tools = requires;
+      self
+    }
+
+    /// Set minimum context length
+    #[ must_use ]
+    pub fn min_context_length( mut self, length : u32 ) -> Self
+    {
+      self.min_context_length = length;
+      self
+    }
+
+    /// Set maximum cost tier
+    #[ must_use ]
+    pub fn max_cost_tier( mut self, tier : u32 ) -> Self
+    {
+      self.max_cost_tier = tier;
+      self
+    }
+
+    /// Set speed preference
+    #[ must_use ]
+    pub fn prefer_speed( mut self, prefer : bool ) -> Self
+    {
+      self.prefer_speed = prefer;
+      self
+    }
+
+    /// Build requirements
+    #[ must_use ]
+    pub fn build( self ) -> ModelRequirements
+    {
+      ModelRequirements
       {
-        client,
-        cache : Arc::new( Mutex::new( HashMap::new() ) ),
-        cache_ttl : Duration::from_secs( 300 ), // 5 minutes
+        requires_vision : self.requires_vision,
+        requires_tools : self.requires_tools,
+        min_context_length : self.min_context_length,
+        max_cost_tier : self.max_cost_tier,
+        prefer_speed : self.prefer_speed,
       }
-    }
-
-    /// List all available models from the API
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if API request fails
-    pub async fn list_models( &self ) -> AnthropicResult< Vec< ModelInfo > >
-    {
-      // Implement actual API call to /v1/models endpoint
-      let url = format!( "{}/v1/models", self.client.base_url() );
-
-      let response = self.client.http()
-        .get( &url )
-        .header( "x-api-key", &self.client.secret().ANTHROPIC_API_KEY )
-        .header( "anthropic-version", "2023-06-01" )
-        .header( "content-type", "application/json" )
-        .send()
-        .await
-        .map_err( |e| AnthropicError::http_error( format!( "Failed to fetch models : {e}" ) ) )?;
-
-      if !response.status().is_success()
-      {
-        return Err( AnthropicError::http_error_with_status( format!( "API error : {}", response.status() ), response.status().as_u16() ) );
-      }
-
-      let models_response : ModelsApiResponse = response
-        .json()
-        .await
-        .map_err( |e| AnthropicError::Parsing( format!( "Failed to parse models response : {e}" ) ) )?;
-
-      // Convert API response to our internal format
-      let models = models_response.data.into_iter()
-        .map( |api_model| ModelInfo {
-          id : api_model.id.clone(),
-          display_name : api_model.display_name.unwrap_or_else( || api_model.id.clone() ),
-          name : api_model.id,
-          max_tokens : api_model.max_tokens.unwrap_or( 200_000 ),
-          context_length : api_model.context_length.unwrap_or( 200_000 ),
-          created_at : api_model.created,
-          supports_tools : api_model.capabilities.contains( &"tools".to_string() ),
-          supports_vision : api_model.capabilities.contains( &"vision".to_string() ),
-          version : api_model.version,
-        })
-        .collect();
-
-      Ok( models )
-    }
-
-    /// Get specific model information
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found or API request fails
-    ///
-    /// # Panics
-    ///
-    /// Panics if the cache mutex is poisoned
-    pub async fn get_model( &self, model_id : &str ) -> AnthropicResult< ModelInfo >
-    {
-      // Check cache first
-      {
-        let cache = self.cache.lock().unwrap();
-        if let Some( entry ) = cache.get( model_id )
-        {
-          if !entry.is_expired()
-          {
-            return Ok( entry.data.clone() );
-          }
-        }
-      }
-
-      // Fetch from API (simulated)
-      let models = self.list_models().await?;
-      let model = models.into_iter()
-        .find( | m | m.id == model_id )
-        .ok_or_else( || AnthropicError::InvalidArgument( format!( "Model '{model_id}' not found" ) ) )?;
-
-      // Cache the result
-      {
-        let mut cache = self.cache.lock().unwrap();
-        cache.insert( model_id.to_string(), CacheEntry::new( model.clone(), self.cache_ttl ) );
-      }
-
-      Ok( model )
-    }
-
-    /// Get model capabilities
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn get_model_capabilities( &self, model_id : &str ) -> AnthropicResult< ModelCapabilities >
-    {
-      let model = self.get_model( model_id ).await?;
-
-      let capabilities = ModelCapabilities
-      {
-        supports_tools : model.supports_tools,
-        supports_vision : model.supports_vision,
-        max_context_length : model.context_length,
-        max_tool_calls : if model.supports_tools { Some( 20 ) } else { None },
-        input_modalities : if model.supports_vision 
-        { 
-          vec![ "text".to_string(), "image".to_string() ] 
-        } 
-        else 
-        { 
-          vec![ "text".to_string() ] 
-        },
-        output_modalities : vec![ "text".to_string() ],
-      };
-
-      Ok( capabilities )
-    }
-
-    /// Select best model based on requirements
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if no suitable model found
-    ///
-    /// # Panics
-    ///
-    /// Panics if no suitable models found after filtering (should not happen due to error check)
-    pub async fn select_model( &self, requirements : ModelRequirements ) -> AnthropicResult< ModelInfo >
-    {
-      let models = self.list_models().await?;
-      
-      let mut suitable_models : Vec< _ > = models.into_iter()
-        .filter( | model | {
-          // Check vision requirement
-          if requirements.requires_vision && !model.supports_vision
-          {
-            return false;
-          }
-          // Check tools requirement
-          if requirements.requires_tools && !model.supports_tools
-          {
-            return false;
-          }
-          // Check context length
-          if model.context_length < requirements.min_context_length
-          {
-            return false;
-          }
-          true
-        })
-        .collect();
-
-      if suitable_models.is_empty()
-      {
-        return Err( AnthropicError::InvalidArgument( "No models match requirements".to_string() ) );
-      }
-
-      // Sort by preference
-      if requirements.prefer_speed
-      {
-        // Prefer Haiku for speed
-        suitable_models.sort_by( | a, b | {
-          let a_is_haiku = a.name.contains( "haiku" );
-          let b_is_haiku = b.name.contains( "haiku" );
-          b_is_haiku.cmp( &a_is_haiku )
-        });
-      }
-
-      Ok( suitable_models.into_iter().next().unwrap() )
-    }
-
-    /// Check model availability
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn check_model_availability( &self, model_id : &str ) -> AnthropicResult< ModelAvailability >
-    {
-      // Verify model exists
-      let _model = self.get_model( model_id ).await?;
-
-      // For production, this would check API /v1/models/{id}/availability endpoint
-      // For now, return availability based on basic heuristics
-      let current_time = std::time::SystemTime::now()
-        .duration_since( std::time::UNIX_EPOCH )
-        .unwrap_or_default();
-
-      // Simulate basic load patterns based on time
-      let load_factor = ( ( current_time.as_secs() % 100 ) as f32 ) / 100.0;
-      let is_available = load_factor < 0.9; // Available unless heavily loaded
-
-      Ok( ModelAvailability
-      {
-        is_available,
-        estimated_wait_time : if is_available { None } else { Some( Duration::from_secs( 30 ) ) },
-        load_factor,
-      })
-    }
-
-    /// Select first available model from fallback chain
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if no models in chain are available
-    pub async fn select_available_model( &self, fallback_chain : Vec< String > ) -> AnthropicResult< ModelInfo >
-    {
-      for model_id in fallback_chain
-      {
-        if let Ok( model ) = self.get_model( &model_id ).await
-        {
-          if let Ok( availability ) = self.check_model_availability( &model_id ).await
-          {
-            if availability.is_available
-            {
-              return Ok( model );
-            }
-          }
-        }
-      }
-
-      Err( AnthropicError::InvalidArgument( "No models in fallback chain are available".to_string() ) )
-    }
-
-    /// Get latest version of model family
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model family not found
-    ///
-    /// # Panics
-    ///
-    /// Panics if family models list is empty after filtering (should not happen due to error check)
-    pub async fn get_latest_model_version( &self, model_family : &str ) -> AnthropicResult< ModelInfo >
-    {
-      let models = self.list_models().await?;
-      let family_models : Vec< _ > = models.into_iter()
-        .filter( | m | m.name.starts_with( model_family ) )
-        .collect();
-
-      if family_models.is_empty()
-      {
-        return Err( AnthropicError::InvalidArgument( format!( "No models found for family '{model_family}'" ) ) );
-      }
-
-      // Return the first one (in real implementation, would sort by version)
-      Ok( family_models.into_iter().next().unwrap() )
-    }
-
-    /// Get upgrade recommendations for a model
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn get_upgrade_recommendations( &self, model_id : &str ) -> AnthropicResult< Vec< ModelRecommendation > >
-    {
-      let current_model = self.get_model( model_id ).await?;
-      let all_models = self.list_models().await?;
-
-      // Generate intelligent upgrade recommendations based on model capabilities
-      let mut recommendations = Vec::new();
-
-      for model in all_models
-      {
-        // Skip the current model
-        if model.id == current_model.id
-        {
-          continue;
-        }
-
-        // Check if this is a potential upgrade
-        let is_upgrade = model.max_tokens >= current_model.max_tokens
-          && model.context_length >= current_model.context_length
-          && ( !current_model.supports_tools || model.supports_tools )
-          && ( !current_model.supports_vision || model.supports_vision );
-
-        if is_upgrade
-        {
-          let confidence_score = if model.supports_tools && model.supports_vision { 0.9 }
-                                 else if model.supports_tools || model.supports_vision { 0.7 }
-                                 else { 0.5 };
-
-          let reasoning = format!(
-            "Upgrade from {} with enhanced capabilities : {}",
-            current_model.name,
-            if model.max_tokens > current_model.max_tokens { "larger context, " } else { "" }
-          );
-
-          recommendations.push( ModelRecommendation
-          {
-            recommended_model : model.id,
-            confidence_score,
-            reasoning,
-          });
-        }
-      }
-
-      // Sort by confidence score descending
-      recommendations.sort_by( |a, b| b.confidence_score.partial_cmp( &a.confidence_score ).unwrap_or( core::cmp::Ordering::Equal ) );
-
-      Ok( recommendations )
-    }
-
-    /// Get model parameter limits
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn get_model_limits( &self, model_id : &str ) -> AnthropicResult< ModelLimits >
-    {
-      let model = self.get_model( model_id ).await?;
-
-      let limits = ModelLimits
-      {
-        max_tokens : model.max_tokens,
-        temperature_range : TemperatureRange { min : 0.0, max : 1.0 },
-        max_tool_calls : if model.supports_tools { Some( 20 ) } else { None },
-        rate_limits : RateLimits
-        {
-          requests_per_minute : 1000,
-          tokens_per_minute : 100_000,
-        },
-      };
-
-      Ok( limits )
-    }
-
-    /// Validate request parameters for specific model
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if request is invalid for the model
-    pub async fn validate_request_for_model( &self, request : &CreateMessageRequest ) -> AnthropicResult< () >
-    {
-      // Local validation for common models (doesn't require API call)
-      let (max_tokens_limit, temp_min, temp_max) = match request.model.as_str()
-      {
-        "claude-sonnet-4-5-20250929" | "claude-3-5-haiku-20241022" | "claude-3-opus-20240229" => (200_000, 0.0, 1.0),
-        _ => {
-          // For unknown models, try to get limits from API
-          let limits = self.get_model_limits( &request.model ).await?;
-          (limits.max_tokens, limits.temperature_range.min, limits.temperature_range.max)
-        }
-      };
-
-      if request.max_tokens > max_tokens_limit
-      {
-        return Err( AnthropicError::InvalidArgument( format!(
-          "max_tokens {} exceeds model limit of {}",
-          request.max_tokens,
-          max_tokens_limit
-        )));
-      }
-
-      if let Some( temp ) = request.temperature
-      {
-        if temp < temp_min || temp > temp_max
-        {
-          return Err( AnthropicError::InvalidArgument( format!(
-            "temperature {temp} is outside allowed range {temp_min}-{temp_max}"
-          )));
-        }
-      }
-
-      Ok( () )
-    }
-
-    /// Get model performance characteristics
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn get_model_performance( &self, model_id : &str ) -> AnthropicResult< ModelPerformance >
-    {
-      let _model = self.get_model( model_id ).await?;
-
-      let performance = ModelPerformance
-      {
-        model : model_id.to_string(),
-        tokens_per_second : if model_id.contains( "haiku" ) { 150.0 } else { 80.0 },
-        latency_ms : if model_id.contains( "haiku" ) { 200 } else { 400 },
-        throughput_score : if model_id.contains( "haiku" ) { 9.0 } else { 7.5 },
-        speed_score : if model_id.contains( "haiku" ) { 9.5 } else { 7.0 },
-        cost_tier : if model_id.contains( "haiku" ) { "1".to_string() } else { "3".to_string() },
-      };
-
-      Ok( performance )
-    }
-
-    /// Compare performance between multiple models
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if any model not found
-    pub async fn compare_model_performance( &self, model_ids : Vec< &str > ) -> AnthropicResult< Vec< ModelPerformance > >
-    {
-      let mut performances = Vec::new();
-      
-      for model_id in model_ids
-      {
-        let performance = self.get_model_performance( model_id ).await?;
-        performances.push( performance );
-      }
-
-      Ok( performances )
-    }
-
-    /// Get model status (deprecated, etc.)
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn get_model_status( &self, model_id : &str ) -> AnthropicResult< ModelStatus >
-    {
-      let _model = self.get_model( model_id ).await?;
-
-      let status = ModelStatus
-      {
-        is_deprecated : model_id.contains( "20240307" ),
-        deprecation_date : if model_id.contains( "20240307" ) 
-        { 
-          Some( "2024-12-01T00:00:00Z".to_string() ) 
-        } 
-        else 
-        { 
-          None 
-        },
-        sunset_date : if model_id.contains( "20240307" ) 
-        { 
-          Some( "2025-06-01T00:00:00Z".to_string() ) 
-        } 
-        else 
-        { 
-          None 
-        },
-        replacement_model : if model_id.contains( "haiku" ) 
-        { 
-          "claude-3-5-haiku-20241022".to_string() 
-        } 
-        else 
-        { 
-          "claude-sonnet-4-5-20250929".to_string() 
-        },
-      };
-
-      Ok( status )
-    }
-
-    /// Get migration path for deprecated model
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn get_migration_path( &self, model_id : &str ) -> AnthropicResult< MigrationPath >
-    {
-      let _model_status = self.get_model_status( model_id ).await?;
-
-      let migration = MigrationPath
-      {
-        recommended_replacement : "claude-3-5-haiku-20241022".to_string(),
-        migration_steps : vec![
-          "Update model parameter in requests".to_string(),
-          "Test with new model".to_string(),
-          "Deploy gradually".to_string(),
-        ],
-        breaking_changes : Some( vec![
-          "Response format may differ slightly".to_string(),
-        ] ),
-      };
-
-      Ok( migration )
-    }
-
-    /// Get model pricing information
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn get_model_pricing( &self, model_id : &str ) -> AnthropicResult< ModelPricing >
-    {
-      let _model = self.get_model( model_id ).await?;
-
-      let pricing = ModelPricing
-      {
-        input_cost_per_token : if model_id.contains( "haiku" ) { 0.00025 } else { 0.003 },
-        output_cost_per_token : if model_id.contains( "haiku" ) { 0.00125 } else { 0.015 },
-        currency : "USD".to_string(),
-        usage_tier : if model_id.contains( "haiku" ) { "basic".to_string() } else { "premium".to_string() },
-      };
-
-      Ok( pricing )
-    }
-
-    /// Estimate cost for usage
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn estimate_cost( &self, usage : EstimatedUsage ) -> AnthropicResult< CostEstimate >
-    {
-      let pricing = self.get_model_pricing( &usage.model ).await?;
-
-      let input_cost = f64::from( usage.input_tokens ) * pricing.input_cost_per_token;
-      let output_cost = f64::from( usage.output_tokens ) * pricing.output_cost_per_token;
-      let total_cost = input_cost + output_cost;
-
-      let estimate = CostEstimate
-      {
-        total_cost,
-        input_cost,
-        output_cost,
-        currency : pricing.currency,
-      };
-
-      Ok( estimate )
-    }
-
-    /// Filter models by criteria
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if API request fails
-    pub async fn filter_models( &self, filter : ModelFilter ) -> AnthropicResult< Vec< ModelInfo > >
-    {
-      let models = self.list_models().await?;
-      
-      let filtered_models : Vec< _ > = models.into_iter()
-        .filter( | model | {
-          if let Some( supports_tools ) = filter.supports_tools
-          {
-            if model.supports_tools != supports_tools
-            {
-              return false;
-            }
-          }
-          if let Some( supports_vision ) = filter.supports_vision
-          {
-            if model.supports_vision != supports_vision
-            {
-              return false;
-            }
-          }
-          if let Some( min_context ) = filter.min_context_length
-          {
-            if model.context_length < min_context
-            {
-              return false;
-            }
-          }
-          true
-        })
-        .collect();
-
-      Ok( filtered_models )
-    }
-
-    /// Search models by name pattern
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if API request fails
-    pub async fn search_models( &self, query : &str ) -> AnthropicResult< Vec< ModelInfo > >
-    {
-      let models = self.list_models().await?;
-      
-      let search_results : Vec< _ > = models.into_iter()
-        .filter( | model | model.name.contains( query ) )
-        .collect();
-
-      Ok( search_results )
-    }
-
-    /// Recommend model for specific use case
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if no suitable recommendation found
-    pub fn recommend_model_for_use_case( &self, use_case : UseCase ) -> AnthropicResult< ModelRecommendation >
-    {
-      let recommendation = match use_case
-      {
-        UseCase::CodeGeneration { complexity, .. } =>
-        {
-          let model = match complexity
-          {
-            CodeComplexity::High | CodeComplexity::Medium => "claude-sonnet-4-5-20250929",
-            CodeComplexity::Low => "claude-3-5-haiku-20241022",
-          };
-
-          ModelRecommendation
-          {
-            recommended_model : model.to_string(),
-            confidence_score : 0.85,
-            reasoning : "Selected based on code complexity requirements".to_string(),
-          }
-        },
-        UseCase::CreativeWriting { .. } =>
-        {
-          ModelRecommendation
-          {
-            recommended_model : "claude-sonnet-4-5-20250929".to_string(),
-            confidence_score : 0.9,
-            reasoning : "Sonnet excels at creative writing tasks".to_string(),
-          }
-        },
-      };
-
-      Ok( recommendation )
-    }
-
-    /// Clear model cache
-    ///
-    /// # Errors
-    ///
-    /// Should not fail under normal circumstances
-    ///
-    /// # Panics
-    ///
-    /// Panics if the cache mutex is poisoned
-    pub fn clear_model_cache( &self ) -> AnthropicResult< () >
-    {
-      let mut cache = self.cache.lock().unwrap();
-      cache.clear();
-      Ok( () )
-    }
-
-    /// Check feature compatibility
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub async fn check_feature_compatibility( &self, model_id : &str, feature : &str ) -> AnthropicResult< FeatureCompatibility >
-    {
-      let capabilities = self.get_model_capabilities( model_id ).await?;
-
-      let compatibility = match feature
-      {
-        "tools" =>
-        {
-          FeatureCompatibility
-          {
-            is_compatible : capabilities.supports_tools,
-            feature_version : if capabilities.supports_tools { Some( "1.0".to_string() ) } else { None },
-            alternative_models : if capabilities.supports_tools 
-            { 
-              None 
-            } 
-            else 
-            { 
-              Some( vec![ "claude-sonnet-4-5-20250929".to_string() ] ) 
-            },
-          }
-        },
-        "vision" =>
-        {
-          FeatureCompatibility
-          {
-            is_compatible : capabilities.supports_vision,
-            feature_version : if capabilities.supports_vision { Some( "1.0".to_string() ) } else { None },
-            alternative_models : if capabilities.supports_vision 
-            { 
-              None 
-            } 
-            else 
-            { 
-              Some( vec![ "claude-sonnet-4-5-20250929".to_string() ] ) 
-            },
-          }
-        },
-        _ =>
-        {
-          FeatureCompatibility
-          {
-            is_compatible : false,
-            feature_version : None,
-            alternative_models : None,
-          }
-        }
-      };
-
-      Ok( compatibility )
     }
   }
 
-  /// Extension methods for Client to provide model management capabilities
-  impl Client
+  impl ModelRequirements
   {
-    /// Create a model manager with this client
+    /// Create new builder
     #[ must_use ]
-    pub fn model_manager( &self ) -> ModelManager
+    pub fn builder() -> ModelRequirementsBuilder
     {
-      ModelManager::new( self.clone() )
+      ModelRequirementsBuilder::new()
+    }
+  }
+
+  /// Model availability information
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelAvailability
+  {
+    /// Whether model is currently available
+    pub is_available : bool,
+    /// Estimated wait time if unavailable
+    pub estimated_wait_time : Option< Duration >,
+    /// Load factor (0.0 = no load, 1.0 = full capacity)
+    pub load_factor : f32,
+  }
+
+  /// Model limits and constraints
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelLimits
+  {
+    /// Maximum tokens per request
+    pub max_tokens : u32,
+    /// Temperature range
+    pub temperature_range : TemperatureRange,
+    /// Maximum tool calls
+    pub max_tool_calls : Option< u32 >,
+    /// Rate limits
+    pub rate_limits : RateLimits,
+  }
+
+  /// Temperature range
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct TemperatureRange
+  {
+    /// Minimum temperature
+    pub min : f32,
+    /// Maximum temperature
+    pub max : f32,
+  }
+
+  /// Rate limiting information
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct RateLimits
+  {
+    /// Requests per minute
+    pub requests_per_minute : u32,
+    /// Tokens per minute
+    pub tokens_per_minute : u32,
+  }
+
+  /// Model performance metrics
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelPerformance
+  {
+    /// Model identifier
+    pub model : String,
+    /// Tokens per second throughput
+    pub tokens_per_second : f32,
+    /// Average latency in milliseconds
+    pub latency_ms : u32,
+    /// Overall throughput score
+    pub throughput_score : f32,
+    /// Speed score (higher = faster)
+    pub speed_score : f32,
+    /// Cost tier (1-5, lower = cheaper)
+    pub cost_tier : String,
+  }
+
+  /// Model status information
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelStatus
+  {
+    /// Whether model is deprecated
+    pub is_deprecated : bool,
+    /// Deprecation date
+    pub deprecation_date : Option< String >,
+    /// Sunset/removal date
+    pub sunset_date : Option< String >,
+    /// Recommended replacement model
+    pub replacement_model : String,
+  }
+
+  /// Migration path for deprecated models
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct MigrationPath
+  {
+    /// Recommended replacement model
+    pub recommended_replacement : String,
+    /// Migration steps
+    pub migration_steps : Vec< String >,
+    /// Breaking changes information
+    pub breaking_changes : Option< Vec< String > >,
+  }
+
+  /// Model pricing information
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelPricing
+  {
+    /// Cost per input token
+    pub input_cost_per_token : f64,
+    /// Cost per output token
+    pub output_cost_per_token : f64,
+    /// Currency
+    pub currency : String,
+    /// Usage tier
+    pub usage_tier : String,
+  }
+
+  /// Cost estimation request
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct EstimatedUsage
+  {
+    /// Input token count
+    pub input_tokens : u32,
+    /// Output token count
+    pub output_tokens : u32,
+    /// Model identifier
+    pub model : String,
+  }
+
+  /// Cost estimation result
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct CostEstimate
+  {
+    /// Total estimated cost
+    pub total_cost : f64,
+    /// Input cost component
+    pub input_cost : f64,
+    /// Output cost component
+    pub output_cost : f64,
+    /// Currency
+    pub currency : String,
+  }
+
+  /// Model filtering criteria
+  #[ derive( Debug, Clone, Default ) ]
+  pub struct ModelFilter
+  {
+    /// Filter by tool support
+    pub supports_tools : Option< bool >,
+    /// Filter by vision support
+    pub supports_vision : Option< bool >,
+    /// Maximum cost tier
+    pub max_cost_tier : Option< u32 >,
+    /// Minimum context length
+    pub min_context_length : Option< u32 >,
+  }
+
+  /// Builder for model filter
+  #[ derive( Debug, Default ) ]
+  pub struct ModelFilterBuilder
+  {
+    supports_tools : Option< bool >,
+    supports_vision : Option< bool >,
+    max_cost_tier : Option< u32 >,
+    min_context_length : Option< u32 >,
+  }
+
+  impl ModelFilterBuilder
+  {
+    /// Create new builder
+    #[ must_use ]
+    pub fn new() -> Self
+    {
+      Self::default()
     }
 
-    /// List all available models.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if API request fails.
-    pub async fn list_models( &self ) -> AnthropicResult< Vec< ModelInfo > >
+    /// Filter by tool support
+    #[ must_use ]
+    pub fn supports_tools( mut self, supports : bool ) -> Self
     {
-      self.model_manager().list_models().await
+      self.supports_tools = Some( supports );
+      self
     }
 
-    /// Get specific model information.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_model( &self, model_id : &str ) -> AnthropicResult< ModelInfo >
+    /// Filter by vision support
+    #[ must_use ]
+    pub fn supports_vision( mut self, supports : bool ) -> Self
     {
-      self.model_manager().get_model( model_id ).await
+      self.supports_vision = Some( supports );
+      self
     }
 
-    /// Get model capabilities.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_model_capabilities( &self, model_id : &str ) -> AnthropicResult< ModelCapabilities >
+    /// Set maximum cost tier
+    #[ must_use ]
+    pub fn max_cost_tier( mut self, tier : u32 ) -> Self
     {
-      self.model_manager().get_model_capabilities( model_id ).await
+      self.max_cost_tier = Some( tier );
+      self
     }
 
-    /// Select best model based on requirements.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if no suitable model found.
-    pub async fn select_model( &self, requirements : ModelRequirements ) -> AnthropicResult< ModelInfo >
+    /// Set minimum context length
+    #[ must_use ]
+    pub fn min_context_length( mut self, length : u32 ) -> Self
     {
-      self.model_manager().select_model( requirements ).await
+      self.min_context_length = Some( length );
+      self
     }
 
-    /// Check model availability.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn check_model_availability( &self, model_id : &str ) -> AnthropicResult< ModelAvailability >
+    /// Build filter
+    #[ must_use ]
+    pub fn build( self ) -> ModelFilter
     {
-      self.model_manager().check_model_availability( model_id ).await
+      ModelFilter
+      {
+        supports_tools : self.supports_tools,
+        supports_vision : self.supports_vision,
+        max_cost_tier : self.max_cost_tier,
+        min_context_length : self.min_context_length,
+      }
     }
+  }
 
-    /// Select first available model from fallback chain.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if no models are available.
-    pub async fn select_available_model( &self, fallback_chain : Vec< String > ) -> AnthropicResult< ModelInfo >
+  impl ModelFilter
+  {
+    /// Create new builder
+    #[ must_use ]
+    pub fn builder() -> ModelFilterBuilder
     {
-      self.model_manager().select_available_model( fallback_chain ).await
+      ModelFilterBuilder::new()
     }
+  }
 
-    /// Get latest version of model family.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model family not found.
-    pub async fn get_latest_model_version( &self, model_family : &str ) -> AnthropicResult< ModelInfo >
+  /// Use case definitions for model recommendations
+  #[ derive( Debug, Clone ) ]
+  pub enum UseCase
+  {
+    /// Code generation use case
+    CodeGeneration
     {
-      self.model_manager().get_latest_model_version( model_family ).await
-    }
+      /// Programming language
+      programming_language : String,
+      /// Code complexity level
+      complexity : CodeComplexity,
+      /// Whether explanation is needed
+      requires_explanation : bool,
+    },
+    /// Creative writing use case
+    CreativeWriting
+    {
+      /// Writing genre
+      genre : String,
+      /// Content length
+      length : ContentLength,
+      /// Writing tone
+      tone : WritingTone,
+    },
+  }
 
-    /// Get upgrade recommendations.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_upgrade_recommendations( &self, model_id : &str ) -> AnthropicResult< Vec< ModelRecommendation > >
-    {
-      self.model_manager().get_upgrade_recommendations( model_id ).await
-    }
+  /// Code complexity levels
+  #[ derive( Debug, Clone ) ]
+  pub enum CodeComplexity
+  {
+    /// Simple code tasks
+    Low,
+    /// Moderate complexity
+    Medium,
+    /// Complex code tasks
+    High,
+  }
 
-    /// Get model parameter limits.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_model_limits( &self, model_id : &str ) -> AnthropicResult< ModelLimits >
-    {
-      self.model_manager().get_model_limits( model_id ).await
-    }
+  /// Content length categories
+  #[ derive( Debug, Clone ) ]
+  pub enum ContentLength
+  {
+    /// Short content
+    Short,
+    /// Medium content
+    Medium,
+    /// Long content
+    Long,
+  }
 
-    /// Validate request for specific model.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if request is invalid.
-    pub async fn validate_request_for_model( &self, request : &CreateMessageRequest ) -> AnthropicResult< () >
-    {
-      self.model_manager().validate_request_for_model( request ).await
-    }
+  /// Writing tone styles
+  #[ derive( Debug, Clone ) ]
+  pub enum WritingTone
+  {
+    /// Professional tone
+    Professional,
+    /// Casual tone
+    Casual,
+    /// Creative tone
+    Creative,
+  }
 
-    /// Get model performance.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_model_performance( &self, model_id : &str ) -> AnthropicResult< ModelPerformance >
-    {
-      self.model_manager().get_model_performance( model_id ).await
-    }
+  /// Model recommendation result
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct ModelRecommendation
+  {
+    /// Recommended model
+    pub recommended_model : String,
+    /// Confidence score (0.0-1.0)
+    pub confidence_score : f32,
+    /// Reasoning for recommendation
+    pub reasoning : String,
+  }
 
-    /// Compare model performance.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if any model not found.
-    pub async fn compare_model_performance( &self, model_ids : Vec< &str > ) -> AnthropicResult< Vec< ModelPerformance > >
-    {
-      self.model_manager().compare_model_performance( model_ids ).await
-    }
-
-    /// Get model status.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_model_status( &self, model_id : &str ) -> AnthropicResult< ModelStatus >
-    {
-      self.model_manager().get_model_status( model_id ).await
-    }
-
-    /// Get migration path.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_migration_path( &self, model_id : &str ) -> AnthropicResult< MigrationPath >
-    {
-      self.model_manager().get_migration_path( model_id ).await
-    }
-
-    /// Get model pricing.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn get_model_pricing( &self, model_id : &str ) -> AnthropicResult< ModelPricing >
-    {
-      self.model_manager().get_model_pricing( model_id ).await
-    }
-
-    /// Estimate usage cost.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn estimate_cost( &self, usage : EstimatedUsage ) -> AnthropicResult< CostEstimate >
-    {
-      self.model_manager().estimate_cost( usage ).await
-    }
-
-    /// Filter models.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if API request fails.
-    pub async fn filter_models( &self, filter : ModelFilter ) -> AnthropicResult< Vec< ModelInfo > >
-    {
-      self.model_manager().filter_models( filter ).await
-    }
-
-    /// Search models.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if API request fails.
-    pub async fn search_models( &self, query : &str ) -> AnthropicResult< Vec< ModelInfo > >
-    {
-      self.model_manager().search_models( query ).await
-    }
-
-    /// Recommend model for use case.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if no recommendation found.
-    pub fn recommend_model_for_use_case( &self, use_case : UseCase ) -> AnthropicResult< ModelRecommendation >
-    {
-      self.model_manager().recommend_model_for_use_case( use_case )
-    }
-
-    /// Clear model cache.
-    ///
-    /// # Errors
-    ///
-    /// Should not fail.
-    pub fn clear_model_cache( &self ) -> AnthropicResult< () >
-    {
-      self.model_manager().clear_model_cache()
-    }
-
-    /// Check feature compatibility.
-    ///
-    /// # Errors
-    ///
-    /// Returns error if model not found.
-    pub async fn check_feature_compatibility( &self, model_id : &str, feature : &str ) -> AnthropicResult< FeatureCompatibility >
-    {
-      self.model_manager().check_feature_compatibility( model_id, feature ).await
-    }
+  /// Feature compatibility information
+  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  pub struct FeatureCompatibility
+  {
+    /// Whether feature is compatible
+    pub is_compatible : bool,
+    /// Feature version
+    pub feature_version : Option< String >,
+    /// Alternative models if incompatible
+    pub alternative_models : Option< Vec< String > >,
   }
 }
 
@@ -994,5 +481,5 @@ crate::mod_interface!
   exposed use WritingTone;
   exposed use ModelRecommendation;
   exposed use FeatureCompatibility;
-  exposed use ModelManager;
 }
+

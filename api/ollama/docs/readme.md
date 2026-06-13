@@ -16,6 +16,10 @@ The `docs/` directory serves as the central location for:
 | Entity | Responsibility | Reason |
 |--------|---------------|--------|
 | `readme.md` | Document docs/ organization | Directory structure, collection overview, navigation |
+| `invariant/` | Non-negotiable behavioral constraints | Thin client principle, testing standards |
+| `api/` | Ollama API endpoint coverage | Endpoint table, feature-gating policy |
+| `feature/` | Optional feature behaviors | Enterprise reliability feature table |
+| `pattern/` | Recurring design patterns | Module organization, client_ext_*.rs pattern |
 | `operation/` | Operational procedures collection | Feature roadmaps, implementation strategies, workspace integration - see operation/readme.md |
 
 ## Documentation Collections
@@ -39,6 +43,5 @@ See `operation/readme.md` for complete collection details.
 
 ## Related Documentation
 
-- See `../spec/` for formal specifications and requirements
 - See `../tests/readme.md` for test documentation and organization
 - See source code (`../src/`) for inline API documentation

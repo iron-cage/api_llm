@@ -508,15 +508,6 @@ mod private
       ( delay as f64 * jitter_factor ) as u64
     }
 
-    /// Apply jitter to delay (deprecated - use explicit configuration)
-    #[ deprecated(note = "Use apply_jitter_with_config() for explicit jitter configuration") ]
-    #[ allow(dead_code) ]
-    #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
-    fn apply_jitter( _delay : u64 ) -> u64
-    {
-      // Magic numbers removed - this method is deprecated
-      panic!("apply_jitter() is deprecated. Use apply_jitter_with_config() for explicit jitter configuration")
-    }
   }
 
   /// Retry executor for running operations with retry logic

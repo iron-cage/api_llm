@@ -1,32 +1,14 @@
-# Operational Procedures Collection
+# Operation Doc Entity
 
-## Collection Scope
+### Scope
 
-This collection documents operational procedures for the Claude API client, including:
-- Authentication and secret management
-- Configuration and credential loading
-- Runtime operational procedures
+- **Purpose**: Document operational procedures for the Claude API client that operators execute to configure, authenticate, and maintain the system.
+- **Responsibility**: Master file listing all operation doc instances with ID, name, purpose, and status.
+- **In Scope**: Operational procedures for authentication, secret management, and credential loading.
+- **Out of Scope**: Source code documentation, API design decisions, and algorithmic implementation details.
 
-## Responsibility
+### Overview Table
 
-This table documents all instances in this collection, ensuring Complete Entity Coverage.
-
-| Instance | Purpose |
-|----------|---------|
-| `001_secret_loading.md` | Secret loading, authentication, and credential management procedures for Claude API |
-
-## Overview
-
-| ID | Operation Name | Category | Complexity | Status |
-|----|----------------|----------|------------|--------|
-| 001 | Secret Loading | Authentication | Medium | Active |
-
-## Collection Principles
-
-- **Abstract First**: Documentation focuses on procedures, not implementation details
-- **Instance Granularity**: Each operation documented in separate NNN-prefixed file
-- **Complete Coverage**: All operational procedures listed in Responsibility Table
-
-## Navigation
-
-- For secret loading and authentication: see `001_secret_loading.md`
+| ID | Name | Purpose | Status |
+|----|------|---------|--------|
+| 001 | [Secret Loading](001_secret_loading.md) | Load and validate Anthropic API credentials from workspace or environment | ✅ |

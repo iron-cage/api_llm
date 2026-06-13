@@ -64,7 +64,7 @@
 
 ## Master Requirement Manifest
 
-### Feature Requirements (from spec.md v2.0)
+### Feature Requirements
 
 | ID | Category | Requirement | Status | Implementation |
 |----|----------|-------------|--------|----------------|

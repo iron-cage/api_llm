@@ -13,7 +13,7 @@ mod streaming_control_tests
 {
   use super::*;
   use the_module::{ StreamControl, StreamState };
-  use std::time::Duration;
+  use core::time::Duration;
   use tokio::time::sleep;
 
   #[ test ]

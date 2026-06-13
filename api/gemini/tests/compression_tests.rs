@@ -180,15 +180,12 @@ mod compression_tests
   #[ cfg( feature = "integration" ) ]
   async fn test_compression_integration_with_models_list()
   {
-    // Skip if no API key
-    let api_key = match std::env::var( "GEMINI_API_KEY" )
-    {
-      Ok( key ) => key,
-      Err( _ ) => {
-        eprintln!( "Skipping integration test: GEMINI_API_KEY not set" );
-        return;
-      }
-    };
+    use workspace_tools as workspace;
+    let api_key = workspace::workspace()
+      .expect( "Failed to resolve workspace" )
+      .load_secret_key( "GEMINI_API_KEY", "-secrets.sh" )
+      .or_else( |_| std::env::var( "GEMINI_API_KEY" ) )
+      .expect( "❌ GEMINI_API_KEY not found in workspace secrets or environment" );
 
     // Create client with compression enabled
     let client = Client::builder()
@@ -217,15 +214,12 @@ mod compression_tests
   #[ cfg( all( feature = "integration", feature = "retry" ) ) ]
   async fn test_compression_with_retry_logic()
   {
-    // Skip if no API key
-    let api_key = match std::env::var( "GEMINI_API_KEY" )
-    {
-      Ok( key ) => key,
-      Err( _ ) => {
-        eprintln!( "Skipping integration test: GEMINI_API_KEY not set" );
-        return;
-      }
-    };
+    use workspace_tools as workspace;
+    let api_key = workspace::workspace()
+      .expect( "Failed to resolve workspace" )
+      .load_secret_key( "GEMINI_API_KEY", "-secrets.sh" )
+      .or_else( |_| std::env::var( "GEMINI_API_KEY" ) )
+      .expect( "❌ GEMINI_API_KEY not found in workspace secrets or environment" );
 
     // Create client with both compression and retry enabled
     let client = Client::builder()

@@ -14,6 +14,7 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_streaming_message_request_construction()
 {
@@ -32,6 +33,7 @@ async fn test_streaming_message_request_construction()
   assert_eq!( request.stream, Some( true ) );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_streaming_with_tool_calling_structure()
 {
@@ -56,6 +58,7 @@ async fn test_streaming_with_tool_calling_structure()
   assert!( request.tool_choice.is_some() );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_streaming_with_vision_structure()
 {
@@ -88,9 +91,9 @@ async fn test_streaming_with_vision_structure()
 // INTEGRATION TESTS - REAL API STREAMING
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "streaming" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_streaming_real_api()
 {
   let client = the_module::Client::from_workspace()
@@ -127,9 +130,9 @@ async fn integration_streaming_real_api()
   }
 }
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "streaming" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_streaming_method_availability()
 {
   let client = the_module::Client::from_workspace()

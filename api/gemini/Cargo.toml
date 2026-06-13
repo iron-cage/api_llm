@@ -2,6 +2,7 @@
 name = "api_gemini"
 version = "0.5.0"
 edition = "2021"
+rust-version.workspace = true
 authors = [
   "Kostiantyn Mysnyk <wandalen@obox.systems>",
 ]
@@ -16,8 +17,13 @@ Gemini's API for accessing large language models (LLMs).
 categories = [ "algorithms", "development-tools" ]
 keywords = [ "fundamental", "general-purpose" ]
 
+# Exception to workspace [lints] inheritance: api_gemini cannot use `workspace = true`
+# because Cargo 1.95 forbids combining workspace = true with local overrides in [lints].
+# This section replicates workspace [workspace.lints.rust] and omits workspace pedantic
+# (clippy::pedantic) intentionally — too many TDD-cleanup-debt violations exist to enable
+# it. Resolve overrides in task/ before enabling pedantic and switching to workspace = true.
+
 [lints.rust]
-# Core safety and correctness lints from workspace
 rust_2018_idioms = { level = "warn", priority = -1 }
 future_incompatible = { level = "warn", priority = -1 }
 missing_docs = "warn"
@@ -25,41 +31,10 @@ missing_debug_implementations = "warn"
 unsafe-code = "deny"
 
 [lints.clippy]
-# Important safety and correctness lints
+# workspace clippy baseline (minus pedantic group — see comment above)
 undocumented_unsafe_blocks = "deny"
 std_instead_of_core = "allow"
 doc_include_without_cfg = "warn"
-
-# Temporarily allow pedantic lints that cause bulk violations during TDD cleanup
-missing_inline_in_public_items = "allow"
-must_use_candidate = "allow"
-return_self_not_must_use = "allow"
-double_must_use = "allow"
-missing_errors_doc = "allow"
-uninlined_format_args = "allow"
-new_without_default = "allow"
-unused_self = "allow"
-needless_borrows_for_generic_args = "allow"
-manual_map = "allow"
-unnecessary_map_or = "allow"
-manual_range_contains = "allow"
-await_holding_lock = "allow"
-derivable_impls = "allow"
-redundant_closure = "allow"
-type_complexity = "allow"
-clone_on_copy = "allow"
-drain_collect = "allow"
-extend_with_drain = "allow"
-let_unit_value = "allow"
-unused_unit = "allow"
-collapsible_if = "allow"
-manual_clamp = "allow"
-too_many_arguments = "allow"
-assertions_on_constants = "allow"
-nonminimal_bool = "allow"
-useless_vec = "allow"
-
-# Keep important workspace exceptions
 single_call_fn = "allow"
 inline_always = "allow"
 module_name_repetitions = "allow"
@@ -113,19 +88,17 @@ enabled = [
   # Web
   "dep:reqwest",
   "dep:tracing",
-  "dep:tracing-subscriber",
-  "dep:tokio-tungstenite",
 ]
 # Feature for running integration tests with real API
 integration = []
 # Feature for diagnostics curl command generation
 diagnostics_curl = []
 # Feature for structured logging with tracing
-logging = []
+logging = [ "dep:tracing-subscriber" ]
 # Feature for streaming response support with JSON array buffering
 streaming = []
 # Feature for WebSocket streaming with bidirectional real-time communication
-websocket_streaming = []
+websocket_streaming = [ "dep:tokio-tungstenite" ]
 # Feature for streaming control with pause, resume, and cancel operations
 streaming_control = []
 # Feature for chat completion functionality with conversation management
@@ -210,7 +183,7 @@ reqwest = { workspace = true, features = [
 ], default-features = false, optional = true }
 tracing = { workspace = true, optional = true }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "fmt" ], optional = true }
-tokio-tungstenite = { workspace = true, features = [ "native-tls" ], optional = true }
+tokio-tungstenite = { workspace = true, features = [ "rustls-tls-webpki-roots" ], optional = true }
 # tracing-capture = { workspace = true }
 
 ## dynamic configuration (optional)

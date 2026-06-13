@@ -11,7 +11,7 @@ mod dynamic_config_tests
 {
   use super::*;
   use the_module::RuntimeConfig;
-  use std::time::Duration;
+  use core::time::Duration;
 
   #[ test ]
   fn test_runtime_config_defaults()
@@ -51,7 +51,7 @@ mod dynamic_config_tests
       rate_limit_rps : 10,
     };
 
-    assert_eq!( config.timeout(), Duration::from_millis( 60_000 ) );
+    assert_eq!( config.timeout(), Duration::from_mins( 1 ) );
   }
 
   #[ test ]

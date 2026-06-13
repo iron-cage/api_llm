@@ -23,8 +23,8 @@ mod curl_diagnostics_functionality_tests
   use super::*;
 
   /// Test `AsCurl` trait implementation for basic message requests
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
-  #[ ignore = "Requires workspace secrets file" ]
 fn test_message_request_as_curl()
   {
     // This test will fail until AsCurl trait is implemented
@@ -41,14 +41,14 @@ fn test_message_request_as_curl()
     assert!( curl_command.contains( "curl" ), "Should contain curl command" );
     assert!( curl_command.contains( "--request POST" ), "Should use POST method" );
     assert!( curl_command.contains( "https://api.anthropic.com/v1/messages" ), "Should contain correct URL" );
-    assert!( curl_command.contains( "Content-Type : application/json" ), "Should set content type" );
+    assert!( curl_command.contains( "Content-Type: application/json" ), "Should set content type" );
     assert!( curl_command.contains( "claude-3-sonnet-20240229" ), "Should include model in request body" );
     assert!( curl_command.contains( "Hello, how are you?" ), "Should include message content" );
   }
 
   /// Test `AsCurl` trait with authentication headers
+  #[ cfg( feature = "integration" ) ]
   #[ test ]
-  #[ ignore = "Requires workspace secrets file" ]
 fn test_curl_with_authentication()
   {
     let request = the_module::CreateMessageRequest::builder()
@@ -65,7 +65,7 @@ fn test_curl_with_authentication()
     let curl_command = client.as_curl_for_request( &request, "https://api.anthropic.com/v1/messages" );
 
     // Validate authentication headers
-    assert!( curl_command.contains( "x-api-key : sk-ant-api03-test-key" ), "Should include API key header" );
+    assert!( curl_command.contains( "x-api-key: sk-ant-api03-test-key" ), "Should include API key header" );
     assert!( curl_command.contains( "anthropic-version:" ), "Should include version header" );
     assert!( curl_command.contains( "User-Agent:" ), "Should include user agent" );
   }
@@ -252,8 +252,8 @@ mod curl_diagnostics_integration_tests
   use super::*;
 
   /// Test generated cURL command actually works with real API
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
 async fn test_curl_command_execution_equivalence()
   {
     let client = the_module::Client::from_workspace()
@@ -278,8 +278,8 @@ async fn test_curl_command_execution_equivalence()
   }
 
   /// Test cURL generation maintains request fidelity
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
-  #[ ignore = "Requires workspace secrets file" ]
 async fn test_curl_request_fidelity()
   {
     let client = the_module::Client::from_workspace()

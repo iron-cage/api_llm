@@ -133,6 +133,14 @@ impl ScalingConfigBuilder
   }
 }
 
+impl Default for ScalingConfigBuilder
+{
+  fn default() -> Self
+  {
+    Self::new()
+  }
+}
+
 impl ScalingConfig
 {
   /// Create a new scaling config builder
@@ -245,6 +253,14 @@ impl ResourceConfigBuilder
   }
 }
 
+impl Default for ResourceConfigBuilder
+{
+  fn default() -> Self
+  {
+    Self::new()
+  }
+}
+
 impl ResourceConfig
 {
   /// Create a new resource config builder
@@ -334,40 +350,37 @@ impl IntelligentScaler
     }
 
     // Scaling up conditions
-    if cpu_util > self.config.target_cpu_utilization || memory_util > self.config.target_memory_utilization
+    if ( cpu_util > self.config.target_cpu_utilization || memory_util > self.config.target_memory_utilization )
+      && current_instances < self.config.max_instances
     {
-      if current_instances < self.config.max_instances
-      {
-        let predicted_load = self.predict_future_load();
-        let recommended_instances = self.calculate_optimal_instances( predicted_load );
+      let predicted_load = self.predict_future_load();
+      let recommended_instances = self.calculate_optimal_instances( predicted_load );
 
-        if recommended_instances > current_instances
-        {
-          return Some( ScalingDecision::ScaleUp {
-            target_instances : recommended_instances.min( self.config.max_instances ),
-            reason : format!( "CPU: {:.1}%, Memory : {:.1}%, Target CPU: {:.1}%",
-              cpu_util, memory_util, self.config.target_cpu_utilization ),
-          } );
-        }
+      if recommended_instances > current_instances
+      {
+        return Some( ScalingDecision::ScaleUp {
+          target_instances : recommended_instances.min( self.config.max_instances ),
+          reason : format!( "CPU: {:.1}%, Memory : {:.1}%, Target CPU: {:.1}%",
+            cpu_util, memory_util, self.config.target_cpu_utilization ),
+        } );
       }
     }
 
     // Scaling down conditions
-    if cpu_util < self.config.target_cpu_utilization * 0.5 && memory_util < self.config.target_memory_utilization * 0.5
+    if cpu_util < self.config.target_cpu_utilization * 0.5
+      && memory_util < self.config.target_memory_utilization * 0.5
+      && current_instances > self.config.min_instances
     {
-      if current_instances > self.config.min_instances
-      {
-        let predicted_load = self.predict_future_load();
-        let recommended_instances = self.calculate_optimal_instances( predicted_load );
+      let predicted_load = self.predict_future_load();
+      let recommended_instances = self.calculate_optimal_instances( predicted_load );
 
-        if recommended_instances < current_instances
-        {
-          return Some( ScalingDecision::ScaleDown {
-            target_instances : recommended_instances.max( self.config.min_instances ),
-            reason : format!( "CPU: {:.1}%, Memory : {:.1}%, low utilization detected",
-              cpu_util, memory_util ),
-          } );
-        }
+      if recommended_instances < current_instances
+      {
+        return Some( ScalingDecision::ScaleDown {
+          target_instances : recommended_instances.max( self.config.min_instances ),
+          reason : format!( "CPU: {:.1}%, Memory : {:.1}%, low utilization detected",
+            cpu_util, memory_util ),
+        } );
       }
     }
 
@@ -402,7 +415,7 @@ impl IntelligentScaler
       .sum::< f64 >() / recent_metrics.len() as f64;
 
     // Normalize load factor (simplified)
-    ( avg_cpu / 100.0 ).max( 0.1 ).min( 2.0 )
+    ( avg_cpu / 100.0 ).clamp( 0.1, 2.0 )
   }
 
   /// Calculate optimal instance count based on predicted load

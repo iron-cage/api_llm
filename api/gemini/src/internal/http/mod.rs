@@ -606,15 +606,19 @@ fn is_authentication_error( message : &str ) -> bool
   msg_lower.contains( "quota exceeded" )
 }
 
-/// Backward compatibility wrapper for the original execute function
+/// Logging-only HTTP dispatch path, bypassing all enterprise features.
 ///
-/// This function maintains the original API while internally using the new
-/// enhanced execute function with a test-friendly timeout configuration.
-/// Uses a 10-second timeout to work well with test environments.
+/// This function skips retry logic, circuit-breaking, and rate-limiting entirely.
+/// It wraps [`execute`] with logging configuration only. All callers in
+/// `src/client/api_interfaces/` use this path — they pre-date the enterprise
+/// dispatch path (`execute_with_optional_retries`).
+///
+/// All new callers must use `execute_with_optional_retries` instead.
+/// Migration of existing callers tracked in `task/verified/006_migrate_execute_legacy_callers.md`.
 ///
 /// # Errors
 ///
-/// Returns the same errors as [`execute`] - see that function's documentation
+/// Returns the same errors as [`execute`] — see that function's documentation
 /// for detailed error information.
 #[ inline ]
 pub async fn execute_legacy< T, R >

@@ -101,6 +101,14 @@ impl DeploymentHealthCheckConfigBuilder
   }
 }
 
+impl Default for DeploymentHealthCheckConfigBuilder
+{
+  fn default() -> Self
+  {
+    Self::new()
+  }
+}
+
 impl DeploymentHealthCheckConfig
 {
   /// Create a new health check config builder
@@ -206,6 +214,14 @@ impl MonitoringConfigBuilder
   pub fn build( self ) -> Result< MonitoringConfig, crate::error::Error >
   {
     Ok( self.config )
+  }
+}
+
+impl Default for MonitoringConfigBuilder
+{
+  fn default() -> Self
+  {
+    Self::new()
   }
 }
 
@@ -576,6 +592,14 @@ impl PerformanceOptimizer
   pub fn clear_recommendations( &self )
   {
     self.recommendations.lock().unwrap().clear();
+  }
+}
+
+impl Default for PerformanceOptimizer
+{
+  fn default() -> Self
+  {
+    Self::new()
   }
 }
 

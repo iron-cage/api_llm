@@ -321,14 +321,7 @@ impl MediaCache
       {
         let total_time = self.stats.total_compression_time_us.load( Ordering::Relaxed );
         let total_compressed = self.stats.total_compressed_bytes.load( Ordering::Relaxed );
-        if total_compressed > 0
-        {
-          total_time / total_compressed
-        }
-        else
-        {
-          0
-        }
+        total_time.checked_div( total_compressed ).unwrap_or( 0 )
       },
     }
   }

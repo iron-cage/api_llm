@@ -135,63 +135,6 @@ mod private
       Ok( Box::pin( stream ) )
     }
   }
-  
-  /// Extract a complete SSE event from buffer, returning (event, `remaining_buffer`)
-  #[ allow( dead_code ) ] // Used in future streaming implementations
-  fn extract_complete_event( buffer : &str ) -> Option< ( String, String ) >
-  {
-    // Look for double newline indicating end of event
-    if let Some( pos ) = buffer.find( "\n\n" )
-    {
-      let event = buffer[ ..pos ].to_string();
-      let remaining = buffer[ pos + 2.. ].to_string();
-      return Some( ( event, remaining ) );
-    }
-    
-    // Check for single newline at end (some streams may use single newlines)
-    if buffer.ends_with( '\n' ) && buffer.lines().any( | line | line.starts_with( "data:" ) )
-    {
-      // Find the last complete event
-      let lines : Vec< &str > = buffer.lines().collect();
-      if lines.len() >= 2
-      {
-        let mut event_lines = Vec::new();
-        let mut i = 0;
-        
-        while i < lines.len()
-        {
-          let line = lines[ i ];
-          if line.starts_with( "event:" ) || line.starts_with( "data:" )
-          {
-            event_lines.push( line );
-            i += 1;
-            
-            // Collect data lines for this event
-            while i < lines.len() && lines[ i ].starts_with( "data:" )
-            {
-              event_lines.push( lines[ i ] );
-              i += 1;
-            }
-            
-            // Check if we have a complete event
-            if event_lines.iter().any( | l | l.starts_with( "data:" ) )
-            {
-              let event = event_lines.join( "\n" );
-              let remaining_lines = &lines[ i.. ];
-              let remaining = remaining_lines.join( "\n" );
-              return Some( ( event, remaining ) );
-            }
-          }
-          else
-          {
-            i += 1;
-          }
-        }
-      }
-    }
-    
-    None
-  }
 }
 
 

@@ -261,7 +261,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
     }
 
     // Show conversation statistics periodically
-    if conversation_history.len().is_multiple_of(10) && !conversation_history.is_empty()
+    if conversation_history.len() % 10 == 0 && !conversation_history.is_empty()
     {
       println!( "📊 Conversation stats : {} messages exchanged", conversation_history.len() );
     }

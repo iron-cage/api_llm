@@ -10,6 +10,9 @@ members = [
   "api/xai",
 ]
 
+[workspace.package]
+rust-version = "1.70"
+
 [workspace.metadata]
 branches = [ "master", "alpha" ]
 master_branch = "master"
@@ -73,6 +76,16 @@ mod_module_files = "allow"
 missing_docs_in_private_items = "allow"
 
 ## api — workspace members (WD-4: all members must be declared here)
+
+[workspace.dependencies.api_gemini]
+version = "=0.5.0"
+path = "api/gemini"
+default-features = false
+
+[workspace.dependencies.api_huggingface]
+version = "=0.3.0"
+path = "api/huggingface"
+default-features = false
 
 [workspace.dependencies.api_openai_compatible]
 version = "=0.2.0"
@@ -151,7 +164,7 @@ version = "^3.15"
 version = "^1.0"
 
 [workspace.dependencies.serde_yml]
-version = "^0.0"
+version = "^0.0.9"
 
 [workspace.dependencies.base64]
 version = "^0.22"

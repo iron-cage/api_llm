@@ -70,7 +70,7 @@ impl MediaProcessingPipeline
   {
     let cache = Arc::new( MediaCache::new( config.clone() ) );
     let operation_semaphore = Arc::new( Semaphore::new( config.max_concurrent_operations ) );
-    let thumbnail_generator = config.thumbnail_config.clone().map( | cfg | ThumbnailGenerator::new( cfg ) );
+    let thumbnail_generator = config.thumbnail_config.clone().map( ThumbnailGenerator::new );
 
     Self {
       config,
@@ -112,7 +112,7 @@ impl MediaProcessingPipeline
           is_compressed : metadata.is_compressed,
           compression_ratio : metadata.compression_ratio,
           processing_time_ms : 0, // Cached result
-          thumbnail_data : None, // xxx : Cache thumbnails
+          thumbnail_data : None, // xxx : Cache thumbnails (task/unverified/008)
         },
         cache_hit : true,
       } );
@@ -299,12 +299,7 @@ impl MediaProcessingPipeline
   {
     let files_processed = self.metrics.files_processed.load( Ordering::Relaxed );
     let total_time_us = self.metrics.total_processing_time_us.load( Ordering::Relaxed );
-    let avg_processing_time_ms = if files_processed > 0
-    {
-      ( total_time_us / files_processed ) / 1000 // Convert to milliseconds
-    } else {
-      0
-    };
+    let avg_processing_time_ms = total_time_us.checked_div( files_processed ).map_or( 0, | v | v / 1000 ); // Convert to milliseconds
 
     MediaProcessingMetricsReport {
       files_processed,

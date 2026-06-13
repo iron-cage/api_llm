@@ -18,10 +18,12 @@ mod private
     fine_tuning ::FineTuning,
     images ::Images,
     models ::Models,
-    realtime ::Realtime,
     responses ::Responses,
     vector_stores ::VectorStores,
   };
+
+  #[ cfg( feature = "websocket" ) ]
+  use crate::realtime ::Realtime;
 
   #[ cfg( feature = "audio" ) ]
   use crate::audio::Audio;
@@ -64,6 +66,7 @@ mod private
     fn moderations( &self ) -> Moderations< '_, E >;
 
     /// Returns a `Realtime` API client.
+    #[ cfg( feature = "websocket" ) ]
     fn realtime( &self ) -> Realtime< '_, E >;
 
     /// Returns a `Responses` API client.
@@ -134,6 +137,7 @@ mod private
     }
 
     #[ inline ]
+    #[ cfg( feature = "websocket" ) ]
     fn realtime( &self ) -> Realtime< '_, E >
     {
       Realtime::new( self )

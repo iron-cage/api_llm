@@ -13,9 +13,8 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn test_workspace_token_loading_and_format_validation()
 {
   println!( "🔐 Token Loading & Format Validation Test" );
@@ -69,9 +68,8 @@ fn test_workspace_token_loading_and_format_validation()
   println!( "=========================================" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn test_live_token_authentication_verification()
 {
   println!( "\n🌐 Live Token Authentication Verification" );
@@ -105,8 +103,7 @@ async fn test_live_token_authentication_verification()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION FAILURE: Authentication must succeed with valid token : {err}" ),
   };
@@ -172,9 +169,8 @@ async fn test_live_token_authentication_verification()
   println!( "✅ Response validation : WORKING" );
 }
 
-#[ test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ test ]
 fn test_token_security_and_workspace_integration()
 {
   println!( "\n🛡️ Token Security & Workspace Integration Test" );

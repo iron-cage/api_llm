@@ -170,7 +170,7 @@ mod private
       // Record request metrics if diagnostics are enabled
       if let Some( diagnostics ) = &self.diagnostics
       {
-        let request_body_size = serde_json::to_vec( body ).map( |v| v.len() ).unwrap_or( 0 );
+        let request_body_size = serde_json::to_vec( body ).map_or( 0, |v| v.len() );
         let request_metrics = RequestMetrics
         {
           timestamp : start_time,

@@ -443,7 +443,7 @@ impl ConfigSource for RemoteConfigSource
             let current_hash = config.compute_hash();
 
             // Check if configuration has changed
-            if last_config_hash.map_or( true, | hash | hash != current_hash )
+            if last_config_hash != Some( current_hash )
             {
               last_config_hash = Some( current_hash );
 

@@ -23,7 +23,7 @@ For primary crate documentation, see:
 
 - **Main readme**: `../readme.md`
 - **Module docs**: Rust doc comments in source code
-- **Specification**: `../spec.md`
+- **Design docs**: `../docs/`
 - **Testing guide**: `../tests/readme.md`
 
 ## Online Documentation

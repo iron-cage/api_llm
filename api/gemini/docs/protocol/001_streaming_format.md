@@ -1,258 +1,72 @@
-# Gemini Streaming API Format Discovery
+# Protocol: Streaming Format
 
-**Date**: 2025-10-12
-**Issue**: Streaming test failure - zero chunks received
-**Root Cause**: Incorrect assumption about Gemini API streaming format
-**Resolution**: Fixed by switching from SSE parser to JSON array buffering
+### Scope
 
----
+- **Purpose**: Specify the wire protocol used by the Gemini streaming endpoint
+- **Responsibility**: Document message format, structure, and parsing strategy for `:streamGenerateContent`
+- **In Scope**: HTTP response format, JSON array structure, message types, buffering strategy
+- **Out of Scope**: Client-level streaming control features (pause/resume/cancel), SSE format (not used by Gemini)
 
-## Problem Statement
+### Abstract
 
-The streaming integration test `integration_test_streaming_real_api` was consistently failing with the error:
-```
-No chunks received from streaming API - streaming must return at least one chunk
-```
+The Gemini `:streamGenerateContent` endpoint returns a complete JSON array of `GenerateContentResponse` objects rather than a Server-Sent Events stream. The client buffers the full response before yielding individual array elements as stream chunks to the caller.
 
-This occurred despite:
-- Valid API key authentication
-- Successful HTTP connection to `:streamGenerateContent` endpoint
-- Correct request format
-- 200 OK response from Gemini API
+HTTP response headers carry `Content-Type: application/json`. Requests must send `Accept: application/json` (not `text/event-stream`).
 
-## Investigation Process
+See `../investigations/001_streaming_format.md` for the debugging investigation that discovered this format.
 
-### Initial Hypothesis
+### Message Structure
 
-The implementation assumed Gemini's streaming endpoint returned Server-Sent Events (SSE) format, based on:
-- Common industry practice for streaming APIs
-- Endpoint name containing "stream"
-- Similar APIs (OpenAI, Anthropic) using SSE
+The HTTP response body is a top-level JSON array. Each element is a complete `GenerateContentResponse` object. The array may contain one or more elements depending on response length and chunking decisions by the Gemini backend. This contrasts with SSE format (`data: {...}\n\n`), which Gemini does not use for this endpoint.
 
-### Debug Evidence
+| Layer | Description |
+|-------|-------------|
+| HTTP response body | Top-level JSON array — zero or more `GenerateContentResponse` objects |
+| Array element type | `GenerateContentResponse` object |
+| Element count | One or more, determined by Gemini backend |
+| Excluded format | SSE (`data: {...}\n\n`) — not used by this endpoint |
+| Excluded format | NDJSON (one JSON object per line) — not used by this endpoint |
 
-Adding debug logging to the streaming parser revealed:
+### Message Types
 
-```
-DEBUG: Received chunk #1: is_final=Some(false), has_candidates=false, has_error=Some("Failed to parse NDJSON line: invalid type: map, expected a sequence at line 1 column 1. Raw line: [{")
-DEBUG: Received chunk #2: is_final=Some(false), has_candidates=false, has_error=Some("Failed to parse NDJSON line: invalid type: string \"candidates\", expected struct GenerateContentResponse at line 1 column 12. Raw line: \"candidates\": [")
-...
-DEBUG: Total chunks received: 59, Total content parts: 0
-```
+#### Partial Response
 
-**Key Insight**: All 59 line-by-line parse attempts failed. The SSE parser was attempting to parse individual lines of a formatted JSON array.
+Intermediate array elements carry content parts without a terminal `finishReason`.
 
-### Actual Format Discovery
+Present fields:
+- `candidates[].content.parts[].text` — incremental generated text
+- `usageMetadata.promptTokenCount` — prompt token count (constant across chunks)
+- `usageMetadata.candidatesTokenCount` — tokens generated so far
 
-Manual inspection of raw HTTP response showed:
+Absent or null fields: `candidates[].finishReason`, `candidates[].safetyRatings`
 
-```json
-[
-  {
-    "candidates": [{"content": {"parts": [{"text": "1\n2\n"}]}, "index": 0}],
-    "usageMetadata": {"promptTokenCount": 14, "candidatesTokenCount": 3, "totalTokenCount": 17}
-  },
-  {
-    "candidates": [{"content": {"parts": [{"text": "\n3\n4\n5"}]}, "finishReason": "STOP", "index": 0}],
-    "usageMetadata": {"promptTokenCount": 14, "candidatesTokenCount": 8, "totalTokenCount": 22}
-  }
-]
-```
+#### Final Response
 
-**Critical Discovery**: Gemini returns a complete JSON array, NOT Server-Sent Events.
+The last array element carries a terminal `finishReason` and complete usage metadata.
 
-## Root Cause Analysis
+Present fields (all partial fields plus):
+- `candidates[].finishReason` — terminal reason; `"STOP"` for normal completion
+- `candidates[].safetyRatings` — per-category safety evaluation results
+- `usageMetadata.totalTokenCount` — total tokens consumed by the request
 
-The implementation at `src/models/api.rs:1189-1265` used:
+### Version Compatibility
 
-```rust
-use eventsource_stream::Eventsource;
+- Observed behavior: API `v1beta`, Gemini models as of 2025-10-12
+- Gemini does not document SSE for `:streamGenerateContent` — verify format by inspecting raw HTTP responses if behavior changes after API updates
+- If Google changes the response format in a future API version, update parsing logic in `src/streaming/client_impl.rs`
+- The `Accept: application/json` request header is required; `text/event-stream` will not produce the correct response
+- The `batch_operations` endpoint uses a different format; this spec applies only to `:streamGenerateContent`
 
-response
-  .bytes_stream()
-  .eventsource()  // ← Wrong: Expects SSE format
-  .map
-  (
-    |event_result|
-    {
-      match event_result
-      {
-        Ok( event ) =>
-        {
-          match event.data.as_str()
-          {
-            // Parse SSE data field...
-          }
-        }
-      }
-    }
-  )
-```
+### Sources
 
-**Why It Failed:**
-1. `eventsource-stream` expects format: `data: {...}\n\n`
-2. Gemini sends: `[{...}, {...}]` with formatting newlines
-3. SSE parser sees opening bracket `[{` as invalid SSE syntax
-4. Every line is rejected → zero chunks parsed
+| File | Relationship |
+|------|-------------|
+| `src/streaming/client_impl.rs` | JSON array buffering implementation |
+| `../investigations/001_streaming_format.md` | Full debugging investigation record |
 
-## Solution
+### Tests
 
-### Implementation Changes
-
-1. **Removed SSE Parser:**
-   - Removed `eventsource-stream` dependency usage
-   - Removed line-by-line parsing logic
-
-2. **Added JSON Array Buffering:**
-   ```rust
-   use async_stream::stream;
-
-   async_stream::stream!
-   {
-     let bytes_result = response.bytes().await;  // Buffer complete response
-
-     match bytes_result
-     {
-       Ok( bytes ) =>
-       {
-         let text = String::from_utf8_lossy( &bytes );
-
-         // Parse as JSON array
-         match serde_json::from_str::< Vec< GenerateContentResponse > >( &text )
-         {
-           Ok( responses ) =>
-           {
-             // Emit each array element as stream chunk
-             for api_response in responses.into_iter()
-             {
-               yield Ok( streaming_response );
-             }
-           }
-         }
-       }
-     }
-   }
-   ```
-
-3. **Header Correction:**
-   ```rust
-   .header("Accept", "application/json")  // was: "text/event-stream"
-   ```
-
-4. **Added Dependency:**
-   ```toml
-   async-stream = { workspace = true }
-   ```
-
-### Test Results
-
-After fix:
-```
-DEBUG: Received chunk #1: is_final=Some(false), has_candidates=true, has_error=None
-DEBUG: Chunk has 1 candidates
-DEBUG: Candidate has 1 parts
-DEBUG: Found text part: "1"
-DEBUG: Received chunk #2: is_final=Some(true), has_candidates=true, has_error=None
-DEBUG: Chunk has 1 candidates
-DEBUG: Candidate has 1 parts
-DEBUG: Found text part: "\n2\n3\n4\n5"
-DEBUG: Total chunks received: 3, Total content parts: 2
-test integration_test_streaming_real_api ... ok
-```
-
-**Success**: All 287 tests passing, including streaming integration test.
-
-## Lessons Learned
-
-### Don't Assume Standard Formats
-
-**Incorrect Assumption**: "Streaming endpoints use SSE format"
-**Reality**: Each API has its own format choices
-
-**Action**: Always verify actual format through:
-- Official API documentation
-- Raw HTTP response inspection
-- Debug logging of parse failures
-
-### Test Against Real APIs
-
-**Why It Matters**: Mock tests would have hidden this issue indefinitely.
-
-Our no-mocking policy caught this because:
-1. Test made real HTTP call to Gemini
-2. Real response revealed format mismatch
-3. Debug output showed exact failure mode
-
-### Document Format Discoveries
-
-**Critical Knowledge**: API format details are not always documented clearly.
-
-**Preservation**: This discovery is now documented in:
-1. Test file: `tests/comprehensive_integration_tests.rs` (60+ lines of doc comments)
-2. Implementation: `src/models/api.rs:process_streaming_response()` (50+ lines of doc comments)
-3. Specification: `spec.md` section 2.1
-4. This document: Historical record
-
-## Performance Considerations
-
-### Trade-offs of Array Buffering
-
-**Downside:**
-- Must wait for complete response before first chunk
-- Higher memory usage (full response in memory)
-
-**Upside:**
-- Simple, robust implementation
-- Matches actual API behavior
-- Gemini responses are typically small (<1MB) and fast (<1 second)
-
-**Decision**: Buffering is acceptable for Gemini's typical response characteristics.
-
-### Alternative Approaches Considered
-
-1. **True Streaming Parser**: Parse JSON array incrementally
-   - ✅ Lower latency to first chunk
-   - ❌ Complex implementation
-   - ❌ Requires custom JSON array streaming parser
-   - ❌ Not worth complexity for <1 second responses
-
-2. **Chunked Reading**: Read in chunks and attempt parse
-   - ✅ Some memory savings
-   - ❌ Must handle incomplete JSON
-   - ❌ Still requires full buffer for parse
-   - ❌ Adds complexity without benefit
-
-**Conclusion**: Full buffering is the right choice for this use case.
-
-## Files Modified
-
-1. `Cargo.toml`: Added `async-stream` dependency
-2. `src/models/api.rs`: Rewrote `process_streaming_response()` (59 lines changed)
-3. `tests/comprehensive_integration_tests.rs`: Added comprehensive documentation (60+ lines)
-4. `spec.md`: Added section 2.1 documenting streaming format
-5. `docs/streaming_api_format_discovery.md`: This document
-
-## References
-
-- **Test Documentation**: `tests/comprehensive_integration_tests.rs:168-227`
-- **Implementation**: `src/models/api.rs:1187-1270`
-- **Specification**: `spec.md` section 2.1
-- **Bug Fix Date**: 2025-10-12
-- **Level 3 Tests**: All passing (287 tests, 0 failures)
-
-## Keywords for Future Searches
-
-- Gemini streaming format
-- `:streamGenerateContent` endpoint
-- JSON array vs SSE
-- eventsource-stream incompatibility
-- streaming API debugging
-- zero chunks received
-- buffered streaming implementation
-
----
-
-**Status**: Resolved
-**Impact**: High (broke all streaming functionality)
-**Complexity**: Medium (format mismatch, not logic error)
-**Fix Verification**: All 287 level::3 tests passing
+| File | Relationship |
+|------|-------------|
+| `tests/inc/streaming_test.rs` | Integration tests validating streaming behavior |
+| `tests/inc/comprehensive_integration_test.rs` | Streaming format documentation in test comments |

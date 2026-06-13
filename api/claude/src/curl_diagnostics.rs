@@ -264,25 +264,6 @@ mod private
     }
   }
 
-  // These helper functions are for future extensibility
-  #[ allow( dead_code ) ]
-  // Helper function to check if request supports streaming
-  fn is_streaming_request< T >( _request : &T ) -> bool
-  {
-    // This would need to be implemented based on the actual request type
-    // For now, return false as a safe default
-    false
-  }
-
-  #[ allow( dead_code ) ]
-  /// Implement serialization helper for requests that don't implement Serialize directly
-  fn request_to_json< T >( _request : &T ) -> Value
-  where
-    T : ?Sized,
-  {
-    // This is a fallback - in practice, all requests should implement Serialize
-    serde_json::json!( {} )
-  }
 }
 
 #[ cfg( feature = "curl-diagnostics" ) ]

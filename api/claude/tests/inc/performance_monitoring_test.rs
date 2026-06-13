@@ -6,7 +6,8 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
-use std::time::{ Duration, Instant };
+use core::time::Duration;
+use std::time::Instant;
 
 // ============================================================================
 // UNIT TESTS - METRICS COLLECTION
@@ -138,7 +139,7 @@ fn test_performance_metrics_throughput()
   let throughput = metrics.calculate_throughput( "throughput_test", elapsed );
 
   assert!( throughput > 0.0 );
-  println!( "Throughput : {} ops/sec", throughput );
+  println!( "Throughput : {throughput} ops/sec" );
 }
 
 // ============================================================================
@@ -213,9 +214,9 @@ fn test_performance_monitoring_zero_overhead_disabled()
   assert!( overhead_ratio < 2.0, "Disabled monitoring has too much overhead : {overhead_ratio}x" );
 
   println!( "✅ Zero overhead test passed!" );
-  println!( "   Without monitoring : {:?}", duration_without_monitoring );
-  println!( "   With disabled monitoring : {:?}", duration_with_disabled_monitoring );
-  println!( "   Overhead ratio : {:.2}x", overhead_ratio );
+  println!( "   Without monitoring : {duration_without_monitoring:?}" );
+  println!( "   With disabled monitoring : {duration_with_disabled_monitoring:?}" );
+  println!( "   Overhead ratio : {overhead_ratio:.2}x" );
 }
 
 // Helper function for overhead testing
@@ -228,9 +229,8 @@ fn simple_operation() -> u64
 // INTEGRATION TESTS - REAL API MONITORING
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_performance_monitoring_api_request()
 {
   // Test monitoring real API request performance
@@ -260,8 +260,7 @@ async fn integration_performance_monitoring_api_request()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: API call must work : {err}" ),
   };
@@ -279,13 +278,12 @@ async fn integration_performance_monitoring_api_request()
   assert!( !response.id.is_empty() );
 
   println!( "✅ API request monitoring integration test passed!" );
-  println!( "   Request duration : {:?}", duration );
+  println!( "   Request duration : {duration:?}" );
   println!( "   Monitored stats : {} calls, avg {:?}", stats.count(), stats.average_duration() );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_performance_monitoring_multiple_requests()
 {
   // Test monitoring multiple API requests
@@ -325,10 +323,7 @@ async fn integration_performance_monitoring_multiple_requests()
         monitor.record_api_call( "create_message", duration, success );
       },
       Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
-      {
-        println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted on request {i}" );
-        return;
-      },
+        panic!( "INTEGRATION: Credit balance exhausted — top up account to run tests : {}", api_err.message ),
       Err( err ) => panic!( "Request {i} failed : {err}" ),
     }
   }
@@ -350,9 +345,8 @@ async fn integration_performance_monitoring_multiple_requests()
   println!( "   Max duration : {:?}", stats.max_duration() );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_performance_monitoring_throughput_measurement()
 {
   // Test measuring request throughput
@@ -390,10 +384,7 @@ async fn integration_performance_monitoring_throughput_measurement()
         monitor.record_api_call( "create_message", duration, true );
       },
       Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
-      {
-        println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted on request {i}" );
-        return;
-      },
+        panic!( "INTEGRATION: Credit balance exhausted — top up account to run tests : {}", api_err.message ),
       Err( err ) => panic!( "Request {i} failed : {err}" ),
     }
   }
@@ -407,7 +398,7 @@ async fn integration_performance_monitoring_throughput_measurement()
   assert!( throughput < 100.0 ); // Reasonable upper bound
 
   println!( "✅ Throughput measurement integration test passed!" );
-  println!( "   Total time : {:?}", total_elapsed );
-  println!( "   Throughput : {:.2} requests/sec", throughput );
+  println!( "   Total time : {total_elapsed:?}" );
+  println!( "   Throughput : {throughput:.2} requests/sec" );
   println!( "   Average latency : {:?}", monitor.get_stats( "create_message" ).unwrap().average_duration() );
 }

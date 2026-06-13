@@ -288,6 +288,14 @@ mod private
     }
   }
 
+  impl Default for WebSocketPoolConfigBuilder
+  {
+    fn default() -> Self
+    {
+      Self::new()
+    }
+  }
+
   impl WebSocketPoolConfig
   {
     /// Create a new pool config builder
@@ -314,7 +322,7 @@ mod private
   }
 
   /// Metrics for WebSocket operations
-  #[ derive( Debug, Clone, Serialize, Deserialize, PartialEq ) ]
+  #[ derive( Debug, Clone, Serialize, Deserialize, PartialEq, Default ) ]
   pub struct WebSocketMetrics
   {
     /// Total messages sent
@@ -331,22 +339,6 @@ mod private
     pub reconnection_count : u32,
     /// Number of errors encountered
     pub error_count : u32,
-  }
-
-  impl Default for WebSocketMetrics
-  {
-    fn default() -> Self
-    {
-      Self {
-        messages_sent : 0,
-        messages_received : 0,
-        bytes_sent : 0,
-        bytes_received : 0,
-        connection_count : 0,
-        reconnection_count : 0,
-        error_count : 0,
-      }
-    }
   }
 
   /// WebSocket connection management

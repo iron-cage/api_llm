@@ -90,6 +90,7 @@ crate ::mod_interface!
   layer models;
   #[ cfg( feature = "moderation" ) ]
   layer moderations;
+  #[ cfg( feature = "websocket" ) ]
   layer realtime;
   layer responses;
   layer uploads;
@@ -167,6 +168,7 @@ crate ::mod_interface!
   layer streaming_control;
   layer streaming_performance_enhanced;
   layer sync;
+  #[ cfg( feature = "websocket" ) ]
   layer websocket_reliability_enhanced;
   layer websocket_streaming;
 
@@ -236,6 +238,7 @@ crate ::mod_interface!
   exposed use streaming_performance_enhanced;
   exposed use sync;
   exposed use uploads;
+  #[ cfg( feature = "websocket" ) ]
   exposed use websocket_reliability_enhanced;
   exposed use websocket_streaming;
   exposed use error;

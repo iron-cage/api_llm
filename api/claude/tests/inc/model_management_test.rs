@@ -22,9 +22,8 @@ use super::*;
 // INTEGRATION TESTS - REAL API MODEL MANAGEMENT  
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_model_management_real_model_validation()
 {
   let client = the_module::Client::from_workspace()
@@ -55,10 +54,7 @@ async fn integration_model_management_real_model_validation()
     {
       Ok( response ) => response,
       Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
-      {
-        println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-        return;
-      },
+        panic!( "INTEGRATION: Credit balance exhausted — top up account to run tests : {}", api_err.message ),
       Err( err ) => panic!( "INTEGRATION: Valid model {model_name} must work : {err}" ),
     };
 
@@ -74,9 +70,8 @@ async fn integration_model_management_real_model_validation()
   }
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_model_management_invalid_model_handling()
 {
   let client = the_module::Client::from_workspace()
@@ -118,9 +113,9 @@ async fn integration_model_management_invalid_model_handling()
   }
 }
 
-#[ tokio::test ]
 #[ cfg( all( feature = "integration", feature = "tools" ) ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
 async fn integration_model_management_capability_validation()
 {
   let client = the_module::Client::from_workspace()
@@ -146,8 +141,7 @@ async fn integration_model_management_capability_validation()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Tool-capable model must handle tools : {err}" ),
   };

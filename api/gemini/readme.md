@@ -221,7 +221,6 @@ async fn example()
 - **[API Coverage](docs/api_coverage.md)** - Complete endpoint documentation with test counts
 - **[Cookbook](docs/cookbook.md)** - Recipe patterns for common use cases
 - **[Testing Guide](docs/testing.md)** - Test organization and coverage details
-- **[Specification](spec.md)** - Complete technical specification
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/gemini/examples)** - Runnable example programs
 
 ## Dependencies
@@ -260,7 +259,6 @@ This section documents all files and directories in the crate root, ensuring Com
 | `benches/` | Performance benchmarks for client overhead, retry logic, circuit breaker, rate limiting, streaming |
 | `scripts/` | Utility scripts for development, testing, and maintenance workflows |
 | `api/` | Supplementary API documentation directory for future expansion of guides and resources |
-| `spec.md` | Crate specification and requirements - architecture, design decisions, implementation details |
 | `Cargo.toml` | Crate metadata, dependency configuration, feature flags (full, enabled, streaming, etc.) |
 | `readme.md` | Crate overview, quick start, API documentation, and this Responsibility Table |
 | `license` | MIT license text |
@@ -271,4 +269,3 @@ This section documents all files and directories in the crate root, ensuring Com
 - **[Google AI Studio](https://makersuite.google.com/)** - Get your API key
 - **[Gemini API Documentation](https://ai.google.dev/api/rest)** - Official API docs
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/gemini/examples)** - Comprehensive usage examples
-- **[Specification](spec.md)** - Technical specification

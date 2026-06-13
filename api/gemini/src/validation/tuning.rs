@@ -99,7 +99,7 @@ pub fn validate_tuned_model( model : &TunedModel ) -> Result< (), ValidationErro
   // Validate temperature if provided
   if let Some( temperature ) = model.temperature
   {
-    if temperature < 0.0 || temperature > 2.0
+    if !( 0.0..=2.0 ).contains( &temperature )
     {
       return Err( ValidationError::ValueOutOfRange {
         field : "temperature".to_string(),
@@ -113,7 +113,7 @@ pub fn validate_tuned_model( model : &TunedModel ) -> Result< (), ValidationErro
   // Validate top_p if provided
   if let Some( top_p ) = model.top_p
   {
-    if top_p < 0.0 || top_p > 1.0
+    if !( 0.0..=1.0 ).contains( &top_p )
     {
       return Err( ValidationError::ValueOutOfRange {
         field : "top_p".to_string(),
@@ -235,8 +235,8 @@ pub fn validate_dataset( dataset : &Dataset ) -> Result< (), ValidationError >
 pub fn validate_tuning_example( example : &TuningExample ) -> Result< (), ValidationError >
 {
   // At least one of input or output should be provided
-  let has_input = example.text_input.as_ref().map_or( false, |input| !input.trim().is_empty() );
-  let has_output = example.output.as_ref().map_or( false, |output| !output.trim().is_empty() );
+  let has_input = example.text_input.as_ref().is_some_and( |input| !input.trim().is_empty() );
+  let has_output = example.output.as_ref().is_some_and( |output| !output.trim().is_empty() );
 
   if !has_input && !has_output
   {

@@ -21,13 +21,14 @@ mod private
     files ::Files,
     fine_tuning ::FineTuning,
     images ::Images,
-    realtime ::Realtime,
     responses ::Responses,
     vector_stores ::VectorStores,
     enhanced_client_performance ::{ ConnectionPerformanceReport, UnifiedPerformanceDashboard },
   };
 
   // Feature-gated imports
+  #[ cfg( feature = "websocket" ) ]
+  use crate::realtime ::Realtime;
   #[ cfg( feature = "audio" ) ]
   use crate::audio::Audio;
 
@@ -461,6 +462,7 @@ mod private
 
     /// Get realtime API with enhanced connection management
     #[ inline ]
+    #[ cfg( feature = "websocket" ) ]
     pub fn realtime( &self ) -> Realtime< '_, E >
     {
       self.base_client.realtime()

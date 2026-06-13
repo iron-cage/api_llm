@@ -11,4 +11,6 @@ crate::mod_interface!
   layer core;
   #[ cfg( feature = "error-handling" ) ]
   layer enhanced;
+  #[ cfg( feature = "error-handling" ) ]
+  layer enhanced_services;
 }

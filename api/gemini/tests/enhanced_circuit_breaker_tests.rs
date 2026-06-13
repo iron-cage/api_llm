@@ -26,7 +26,6 @@ mod circuit_breaker_execution_tests
 
     // At this point, we can only test that the client builds successfully
     // Actual circuit breaker execution testing will require implementing the circuit breaker logic in task 168
-    assert!( true, "Client with circuit breaker configuration built successfully" );
   }
 
   /// Test that circuit breaker metrics can be enabled
@@ -41,7 +40,6 @@ mod circuit_breaker_execution_tests
     .expect( "Failed to build client" );
 
     // Test that metrics configuration is accepted
-    assert!( true, "Client with circuit breaker metrics configuration built successfully" );
   }
 
   /// Test that circuit breaker timeout can be configured
@@ -56,7 +54,6 @@ mod circuit_breaker_execution_tests
     .expect( "Failed to build client" );
 
     // Test that circuit breaker timeout configuration is accepted
-    assert!( true, "Client with circuit breaker timeout configuration built successfully" );
   }
 
   /// Test that circuit breaker success threshold can be configured
@@ -71,7 +68,6 @@ mod circuit_breaker_execution_tests
     .expect( "Failed to build client" );
 
     // Test that circuit breaker success threshold configuration is accepted
-    assert!( true, "Client with circuit breaker success threshold configuration built successfully" );
   }
 
   /// Test that failure threshold can be configured
@@ -85,7 +81,6 @@ mod circuit_breaker_execution_tests
     .expect( "Failed to build client" );
 
     // Test that failure threshold configuration is accepted
-    assert!( true, "Client with failure threshold configuration built successfully" );
   }
 
   /// Test that all circuit breaker parameters can be combined
@@ -102,7 +97,6 @@ mod circuit_breaker_execution_tests
     .expect( "Failed to build client" );
 
     // Test that comprehensive circuit breaker configuration is accepted
-    assert!( true, "Client with comprehensive circuit breaker configuration built successfully" );
   }
 }
 
@@ -122,6 +116,5 @@ mod circuit_breaker_disabled_tests
     .expect( "Failed to build client" );
 
     // Client should build successfully without circuit breaker features when feature disabled
-    assert!( true, "Client built successfully without circuit breaker feature" );
   }
 }

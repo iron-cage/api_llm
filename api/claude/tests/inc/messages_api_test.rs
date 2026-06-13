@@ -309,9 +309,8 @@ async fn test_create_message_response_structure()
 // INTEGRATION TESTS - REAL API MESSAGE STRUCTURES
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_messages_api_real_request_response_structures()
 {
   let client = the_module::Client::from_workspace()
@@ -339,8 +338,7 @@ async fn integration_messages_api_real_request_response_structures()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Complex messages API call must work : {err}" ),
   };
@@ -368,9 +366,8 @@ async fn integration_messages_api_real_request_response_structures()
   println!( "   Stop reason : {:?}", response.stop_reason );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_messages_api_real_serialization_roundtrip()
 {
   let client = the_module::Client::from_workspace()
@@ -390,8 +387,7 @@ async fn integration_messages_api_real_serialization_roundtrip()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Serialized request must work with real API: {err}" ),
   };

@@ -55,7 +55,7 @@ use super::sync::SyncClientBuilder;
     #[ cfg( feature = "retry" ) ]
     pub( crate ) enable_jitter : bool,
     #[ cfg( feature = "retry" ) ]
-    // xxx : @team : Implement per-request timeout override mechanism
+    // xxx : @team : Implement per-request timeout override mechanism (task/unverified/007)
     // Currently client-level timeout applies to all requests uniformly
     #[ allow( dead_code ) ]
     pub( crate ) request_timeout : Option< Duration >,
@@ -69,7 +69,7 @@ use super::sync::SyncClientBuilder;
     #[ cfg( feature = "retry" ) ]
     pub( crate ) max_elapsed_time : Option< Duration >,
     #[ cfg( feature = "circuit_breaker" ) ]
-    // xxx : @team : Integrate circuit breaker from internal/http.rs into Client API
+    // xxx : @team : Integrate circuit breaker from internal/http.rs into Client API (task/unverified/007, task/verified/003)
     // Circuit breaker is fully implemented in internal::http::CircuitBreaker
     // Need to expose it through Client methods (execute_with_circuit_breaker)
     #[ allow( dead_code ) ]
@@ -92,7 +92,7 @@ use super::sync::SyncClientBuilder;
     #[ allow( dead_code ) ]
     pub( crate ) circuit_breaker_shared_state : bool,
     #[ cfg( feature = "caching" ) ]
-    // xxx : @team : Implement general HTTP response caching layer
+    // xxx : @team : Implement general HTTP response caching layer (task/unverified/007)
     // Domain-specific caches exist (WorkspaceCache, SemanticCache, MediaCache)
     // Need general request/response cache with LRU eviction for all API calls
     #[ allow( dead_code ) ]
@@ -111,7 +111,7 @@ use super::sync::SyncClientBuilder;
     /// General HTTP request cache instance
     pub( crate ) request_cache : Option< std::sync::Arc< crate::internal::http::RequestCache > >,
     #[ cfg( feature = "rate_limiting" ) ]
-    // xxx : @team : Integrate rate limiter from internal/http.rs into Client API
+    // xxx : @team : Integrate rate limiter from internal/http.rs into Client API (task/unverified/007)
     // Rate limiter is fully implemented in internal::http::RateLimiter
     // Need to expose it through Client methods (execute_with_rate_limiting)
     #[ allow( dead_code ) ]

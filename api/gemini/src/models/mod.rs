@@ -49,7 +49,6 @@ mod private
   pub use super::types::streaming::*;
   #[ cfg( feature = "chat" ) ]
   pub use super::types::chat::*;
-  pub use super::types::comparison::*;
   pub use super::types::search::*;
   pub use super::types::function::*;
   pub use super::types::code_execution::*;
@@ -137,20 +136,6 @@ mod private
   #[ cfg( feature = "chat" ) ]
   exposed use private::ChatUsage;
 
-  // Model comparison and recommendation types
-  exposed use private::CompareModelsRequest;
-  exposed use private::CompareModelsResponse;
-  exposed use private::ModelComparison;
-  exposed use private::PerformanceMetrics;
-  exposed use private::CostAnalysis;
-  exposed use private::ModelRecommendation;
-  exposed use private::GetRecommendationsRequest;
-  exposed use private::GetRecommendationsResponse;
-  exposed use private::AdvancedFilterRequest;
-  exposed use private::AdvancedFilterResponse;
-  exposed use private::ModelStatusRequest;
-  exposed use private::ModelStatusResponse;
-  exposed use private::ModelStatus;
 
   // Search and grounding types
   exposed use private::GoogleSearchTool;

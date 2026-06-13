@@ -5,7 +5,7 @@
 
 use reqwest::Method;
 use crate::error::Error;
-use crate::models::{ GenerateContentResponse, Content, Part, Candidate };
+use crate::models::GenerateContentResponse;
 use crate::internal::http;
 
 use super::super::ModelApi;
@@ -743,66 +743,9 @@ impl ModelApi< '_ >
   #[ inline ]
   pub async fn batch_generate_content( &self, prompts : &[ &str ] ) -> Result< Vec< GenerateContentResponse >, Error >
   {
-    // Validate input
-    if prompts.is_empty()
-    {
-      return Err( Error::ValidationError { 
-        message : "Cannot process empty prompt list".to_string() 
-      } );
-    }
-
-    // For now, process prompts individually
-    // qqq : Implement actual batch API when available from Gemini
-    let mut responses = Vec::with_capacity( prompts.len() );
-    let mut successful = 0;
-    let mut failed = 0;
-
-    for prompt in prompts
-    {
-      match self.generate_text( prompt ).await
-      {
-        Ok( text ) => {
-          // Create a mock response structure for now
-          // In a real implementation, we'd use the actual generate_content method
-          let response = GenerateContentResponse {
-            candidates : vec![ Candidate {
-              content : Content {
-                parts : vec![ Part {
-                  text : Some( text ),
-                  ..Default::default()
-                } ],
-                role : "model".to_string(),
-              },
-              finish_reason : Some( "STOP".to_string() ),
-              safety_ratings : None,
-              citation_metadata : None,
-              token_count : None,
-              index : Some( 0 ),
-            } ],
-            prompt_feedback : None,
-            usage_metadata : None,
-            grounding_metadata : None,
-          };
-          responses.push( response );
-          successful += 1;
-        },
-        Err( e ) => {
-          failed += 1;
-          if responses.is_empty()
-          {
-            return Err( e );
-          }
-          let remaining = prompts.len() - successful - failed;
-          return Err( Error::BatchProcessingError {
-            successful,
-            failed : failed + remaining,
-            message : format!( "Batch processing failed on prompt '{prompt}': {e}" ),
-          } );
-        }
-      }
-    }
-
-    Ok( responses )
+    let _ = prompts;
+    // qqq : Implement actual batch API when available from Gemini (task/verified/004)
+    Err( Error::NotImplemented( "batch_generate_content: real batch endpoint not yet available from Gemini".to_string() ) )
   }
   #[ inline ]
   fn validate_generate_content_request( request : &crate::models::GenerateContentRequest ) -> Result< (), Error >

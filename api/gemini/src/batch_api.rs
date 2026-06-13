@@ -3,9 +3,8 @@
 //! Provides methods for creating batch jobs, polling status, and retrieving results.
 //! Batch Mode offers 50% cost discount with 24-hour SLO.
 //!
-//! **NOTE:** As of 2025-10-11, this implementation uses mock responses. The real
-//! Batch API endpoints (e.g., `/v1/batches`) are not yet available in v1beta.
-//! Replace mock implementations with real API calls when the endpoints become available.
+//! **NOTE:** Batch Mode API endpoints are not yet available from Gemini. All methods
+//! return `Error::NotImplemented`. Replace with real HTTP calls when endpoints ship.
 
 use crate::
 {
@@ -14,10 +13,6 @@ use crate::
   models ::
   {
     GenerateContentRequest,
-    GenerateContentResponse,
-    ContentEmbedding,
-    Content,
-    Part,
     batch ::*,
   },
 };
@@ -27,6 +22,7 @@ use std::time::{ Duration, SystemTime };
 #[ derive( Debug ) ]
 pub struct BatchApi< 'a >
 {
+  #[ allow( dead_code ) ] // xxx: @team — reserved for future batch endpoint methods
   client : &'a Client,
 }
 
@@ -59,25 +55,8 @@ impl< 'a > BatchApi< 'a >
     requests : Vec< GenerateContentRequest >
   ) -> Result< BatchJob, Error >
   {
-    // Use client field to access base_url even in mock implementation
-    let _base_url = &self.client.base_url;
-
-    let job_id = format!( "batch_job_{}", uuid::Uuid::new_v4() );
-    let request_count = requests.len();
-
-    // Create batch job (mock implementation - replace with real API call)
-    let batch_job = BatchJob
-    {
-      job_id : job_id.clone(),
-      state : BatchJobState::Pending,
-      model : model.to_string(),
-      request_count,
-      create_time : Some( SystemTime::now() ),
-      expiration_time : Some( SystemTime::now() + Duration::from_secs( 86400 ) ), // 24 hours
-      error : None,
-    };
-
-    Ok( batch_job )
+    let _ = ( model, requests );
+    Err( Error::NotImplemented( "Batch Mode API endpoints not yet available from Gemini".to_string() ) )
   }
 
   /// Get status of a batch job.
@@ -95,18 +74,8 @@ impl< 'a > BatchApi< 'a >
   /// Returns error if job not found or API call fails.
   pub async fn get_status( &self, job_id : &str ) -> Result< BatchJobStatus, Error >
   {
-    // Mock implementation - replace with real API call
-    let status = BatchJobStatus
-    {
-      job_id : job_id.to_string(),
-      state : BatchJobState::Running,
-      completed_count : 0,
-      failed_count : 0,
-      update_time : Some( SystemTime::now() ),
-      error : None,
-    };
-
-    Ok( status )
+    let _ = job_id;
+    Err( Error::NotImplemented( "Batch Mode API endpoints not yet available from Gemini".to_string() ) )
   }
 
   /// Wait for batch job completion and retrieve results.
@@ -184,54 +153,8 @@ impl< 'a > BatchApi< 'a >
   /// Returns error if results not available or expired.
   async fn retrieve_results( &self, job_id : &str ) -> Result< BatchJobResults, Error >
   {
-    // Mock implementation - replace with real API call
-    let results = BatchJobResults
-    {
-      job_id : job_id.to_string(),
-      state : BatchJobState::Succeeded,
-      responses : vec!
-      [
-        GenerateContentResponse
-        {
-          candidates : vec!
-          [
-            crate ::models::Candidate
-            {
-              content : Content
-              {
-                parts : vec!
-                [
-                  Part
-                  {
-                    text : Some( "Mock response".to_string() ),
-                    ..Default::default()
-                  }
-                ],
-                role : "model".to_string(),
-              },
-              finish_reason : Some( "STOP".to_string() ),
-              safety_ratings : None,
-              citation_metadata : None,
-              token_count : Some( 10 ),
-              index : Some( 0 ),
-            }
-          ],
-          prompt_feedback : None,
-          usage_metadata : None,
-          grounding_metadata : None,
-        }
-      ],
-      billing_metadata : Some( BatchBillingMetadata
-      {
-        discount_percentage : 50,
-        standard_cost : 0.02,
-        discounted_cost : 0.01,
-        total_tokens : 100,
-      } ),
-      retrieve_time : Some( SystemTime::now() ),
-    };
-
-    Ok( results )
+    let _ = job_id;
+    Err( Error::NotImplemented( "Batch Mode API endpoints not yet available from Gemini".to_string() ) )
   }
 
   /// Cancel a running batch job.
@@ -245,9 +168,8 @@ impl< 'a > BatchApi< 'a >
   /// Returns error if job cannot be cancelled or not found.
   pub async fn cancel( &self, job_id : &str ) -> Result< (), Error >
   {
-    // Mock implementation - replace with real API call
     let _ = job_id;
-    Ok( () )
+    Err( Error::NotImplemented( "Batch Mode API endpoints not yet available from Gemini".to_string() ) )
   }
 
   /// List all batch jobs.
@@ -289,14 +211,7 @@ impl< 'a > BatchApi< 'a >
     _page_token : Option< String >
   ) -> Result< BatchJobList, Error >
   {
-    // Mock implementation - replace with real API call
-    let list = BatchJobList
-    {
-      jobs : vec![],
-      next_page_token : None,
-    };
-
-    Ok( list )
+    Err( Error::NotImplemented( "Batch Mode API endpoints not yet available from Gemini".to_string() ) )
   }
 
   /// Create a batch job for embedding generation.
@@ -319,21 +234,8 @@ impl< 'a > BatchApi< 'a >
     texts : Vec< String >
   ) -> Result< BatchJob, Error >
   {
-    let job_id = format!( "batch_embed_{}", uuid::Uuid::new_v4() );
-    let request_count = texts.len();
-
-    let batch_job = BatchJob
-    {
-      job_id : job_id.clone(),
-      state : BatchJobState::Pending,
-      model : model.to_string(),
-      request_count,
-      create_time : Some( SystemTime::now() ),
-      expiration_time : Some( SystemTime::now() + Duration::from_secs( 86400 ) ),
-      error : None,
-    };
-
-    Ok( batch_job )
+    let _ = ( model, texts );
+    Err( Error::NotImplemented( "Batch Mode API endpoints not yet available from Gemini".to_string() ) )
   }
 
   /// Wait for embedding batch completion and retrieve results.
@@ -395,27 +297,7 @@ impl< 'a > BatchApi< 'a >
   /// Retrieve embedding results from completed job.
   async fn retrieve_embedding_results( &self, job_id : &str ) -> Result< BatchEmbeddingResults, Error >
   {
-    // Mock implementation - replace with real API call
-    let results = BatchEmbeddingResults
-    {
-      job_id : job_id.to_string(),
-      state : BatchJobState::Succeeded,
-      embeddings : vec!
-      [
-        ContentEmbedding
-        {
-          values : vec![ 0.1, 0.2, 0.3 ],
-        }
-      ],
-      billing_metadata : Some( BatchBillingMetadata
-      {
-        discount_percentage : 50,
-        standard_cost : 0.01,
-        discounted_cost : 0.005,
-        total_tokens : 50,
-      } ),
-    };
-
-    Ok( results )
+    let _ = job_id;
+    Err( Error::NotImplemented( "Batch Mode API endpoints not yet available from Gemini".to_string() ) )
   }
 }

@@ -70,14 +70,14 @@ mod private
 
           if *enable_compression
           {
-            // xxx : Implement compression
+            // xxx : Implement compression (task/unverified/008)
             Ok( json_bytes )
           } else {
             Ok( json_bytes )
           }
         },
         Self::MessagePack { .. } => {
-          // xxx : Implement MessagePack, fallback to JSON for now
+          // xxx : Implement MessagePack, fallback to JSON for now (task/unverified/008)
           serde_json ::to_vec( message )
             .map_err( | e | crate::error::Error::SerializationError( e.to_string() ) )
         },
@@ -680,9 +680,8 @@ mod private
         metrics.bytes_sent += serialized.len() as u64;
       }
 
-      // xxx : Actual WebSocket sending implementation
-      // For now, this is a mock implementation
-      Ok( () )
+      // xxx : Actual WebSocket sending implementation (task/unverified/008)
+      Err( crate::error::Error::NotImplemented( "WebSocket send_message not yet implemented".to_string() ) )
     }
 
     /// Get connection metrics

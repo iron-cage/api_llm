@@ -109,9 +109,8 @@ fn test_system_content_with_cache_serialization()
 // INTEGRATION TESTS - SYSTEM INSTRUCTIONS IN API CALLS
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_single_system_instruction()
 {
   // Test using a single system instruction in API call
@@ -139,8 +138,7 @@ async fn integration_single_system_instruction()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Single system instruction must work : {err}" ),
   };
@@ -151,9 +149,8 @@ async fn integration_single_system_instruction()
   println!( "✅ Single system instruction test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_multi_part_system_instructions()
 {
   // Test using multi-part system instructions
@@ -186,8 +183,7 @@ async fn integration_multi_part_system_instructions()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Multi-part system instructions must work : {err}" ),
   };
@@ -198,9 +194,8 @@ async fn integration_multi_part_system_instructions()
   println!( "✅ Multi-part system instructions test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_system_instructions_with_caching()
 {
   // Test system instructions with prompt caching
@@ -235,8 +230,7 @@ async fn integration_system_instructions_with_caching()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: System instructions with caching must work : {err}" ),
   };
@@ -247,9 +241,8 @@ async fn integration_system_instructions_with_caching()
   println!( "✅ System instructions with caching test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_empty_system_instructions()
 {
   // Test that empty system instructions work (should be same as no system)
@@ -275,8 +268,7 @@ async fn integration_empty_system_instructions()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Empty system instructions must work : {err}" ),
   };
@@ -287,9 +279,8 @@ async fn integration_empty_system_instructions()
   println!( "✅ Empty system instructions test passed!" );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_long_system_instruction()
 {
   // Test with a very long system instruction
@@ -319,8 +310,7 @@ async fn integration_long_system_instruction()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Long system instruction must work : {err}" ),
   };

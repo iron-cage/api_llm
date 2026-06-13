@@ -9,7 +9,6 @@ mod private
   use std::pin::Pin;
   use std::task::{ Context, Poll };
   use std::time::{ Duration, Instant };
-  use tokio::time::Sleep;
 
   /// Configuration for buffered streaming
   #[ derive( Debug, Clone ) ]
@@ -78,8 +77,6 @@ mod private
     buffer : String,
     config : BufferConfig,
     last_flush : Instant,
-    #[ allow( dead_code ) ]
-    flush_timer : Option< Pin< Box< Sleep > > >,
   }
 
   impl< S > BufferedStream< S >
@@ -96,7 +93,6 @@ mod private
         buffer : String::new(),
         config,
         last_flush : Instant::now(),
-        flush_timer : None,
       }
     }
 

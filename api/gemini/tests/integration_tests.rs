@@ -54,31 +54,19 @@
 //! 4. Compare with faster tests (e.g., `test_generate_content_simple`) to isolate issue
 
 
+#[ allow( clippy::duplicate_mod ) ]
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
+
 use api_gemini::{ client::Client, models::*, error::Error };
 use serde_json::json;
-
-/// Create a client for testing - requires real API key (no mock fallback)
-fn create_test_client() -> Client
-{
-  match Client::new()
-  {
-    Ok(client) => client,
-    Err(error) => panic!(
-    "\n❌ INTEGRATION TEST FAILURE: No valid API key found!\n\
-    \n🔑 Required: Set GEMINI_API_KEY environment variable or create secret/gemini_api_key file\n\
-    \n📋 Integration tests run by default and CANNOT be silently skipped\n\
-  \n🚫 Error details : {error:?}\n\
-    \n💡 To run only unit tests: cargo test --no-default-features\n"
-    ),
-  }
-}
 
 /// Macro to setup test client (no mocking allowed)
 macro_rules! setup_test_client
 {
   () =>
   {
-    create_test_client()
+    create_integration_client()
   };
 }
 

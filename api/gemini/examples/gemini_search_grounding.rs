@@ -129,38 +129,26 @@ fn parse_args() -> SearchConfig
   {
     match args[ i ].as_str()
     {
-      "--query" => {
-        if i + 1 < args.len()
-        {
-          config.query = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--query" if i + 1 < args.len() => {
+        config.query = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--mode" => {
-        if i + 1 < args.len()
+      "--mode" if i + 1 < args.len() => {
+        config.mode = match args[ i + 1 ].as_str()
         {
-          config.mode = match args[ i + 1 ].as_str()
-          {
-            "news" => SearchMode::News,
-            "multi-query" => SearchMode::MultiQuery,
-            _ => SearchMode::Basic,
-          };
-          i += 1;
-        }
+          "news" => SearchMode::News,
+          "multi-query" => SearchMode::MultiQuery,
+          _ => SearchMode::Basic,
+        };
+        i += 1;
       },
-      "--topic" => {
-        if i + 1 < args.len()
-        {
-          config.topic = Some( args[ i + 1 ].clone() );
-          i += 1;
-        }
+      "--topic" if i + 1 < args.len() => {
+        config.topic = Some( args[ i + 1 ].clone() );
+        i += 1;
       },
-      "--queries" => {
-        if i + 1 < args.len()
-        {
-          config.queries = args[ i + 1 ].split( ',' ).map( |s| s.trim().to_string() ).collect();
-          i += 1;
-        }
+      "--queries" if i + 1 < args.len() => {
+        config.queries = args[ i + 1 ].split( ',' ).map( |s| s.trim().to_string() ).collect();
+        i += 1;
       },
     _ => {}
     }
@@ -403,7 +391,7 @@ client: &Client,
   println!( "🔬 Search Quality Analysis" );
 println!( "{}", "=".repeat( 80 ) );
 
-  let test_queries = vec![
+  let test_queries = [
   "What is the current state of quantum computing research?",
   "Latest developments in renewable energy technology 2024",
   "Recent breakthroughs in artificial intelligence safety",
@@ -471,7 +459,7 @@ println!( "\n🧪 Test Query {} of {}", i + 1, test_queries.len() );
             quality_metrics.insert( "unique_domains", unique_domains.len() );
 
             let has_recent_content = chunks.iter().any( |c|
-            c.published_date.as_ref().map_or( false, |d| d.contains( "2024" ) )
+            c.published_date.as_ref().is_some_and( |d| d.contains( "2024" ) )
             );
         quality_metrics.insert( "recent_content", if has_recent_content { 1 } else { 0 } );
           }

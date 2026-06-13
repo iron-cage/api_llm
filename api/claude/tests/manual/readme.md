@@ -2,6 +2,14 @@
 
 This directory contains manual test scripts and utilities for testing aspects that cannot be easily automated.
 
+## Responsibility Table
+
+| File | Responsibility |
+|------|----------------|
+| `readme.md` | Directory index and manual test instructions |
+| `test_workspace_secrets.rs` | Manual validation of workspace secret loading |
+
+
 ## Available Tests
 
 ### test_workspace_secrets.rs

@@ -14,6 +14,7 @@
 #[ allow( unused_imports ) ]
 use super::*;
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_secret_validation_format()
 {
@@ -32,6 +33,7 @@ async fn test_secret_validation_format()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_error_handling_types()
 {
@@ -48,6 +50,7 @@ async fn test_error_handling_types()
   assert!( invalid_arg_error.to_string().contains( "Missing parameter" ) );
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_client_from_workspace_method_exists()
 {
@@ -67,6 +70,7 @@ async fn test_client_from_workspace_method_exists()
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_client_from_missing_environment_variable()
 {
@@ -81,9 +85,8 @@ async fn test_client_from_missing_environment_variable()
 // INTEGRATION TESTS - REAL API CLIENT LIFECYCLE
 // ============================================================================
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_client_real_api_lifecycle()
 {
   let client = the_module::Client::from_workspace()
@@ -111,8 +114,7 @@ async fn integration_client_real_api_lifecycle()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Client must successfully make API call : {err}" ),
   };
@@ -128,9 +130,8 @@ async fn integration_client_real_api_lifecycle()
   println!( "   Response ID: {}", response.id );
 }
 
-#[ tokio::test ]
 #[ cfg( feature = "integration" ) ]
-#[ ignore = "Requires workspace secrets file" ]
+#[ tokio::test ]
 async fn integration_client_concurrent_requests()
 {
   let client = the_module::Client::from_workspace()
@@ -172,8 +173,7 @@ async fn integration_client_concurrent_requests()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: First concurrent request must succeed : {err}" ),
   };
@@ -183,8 +183,7 @@ async fn integration_client_concurrent_requests()
     Ok( response ) => response,
     Err( the_module::AnthropicError::Api( ref api_err ) ) if api_err.message.contains( "credit balance is too low" ) =>
     {
-      println!( "INTEGRATION TEST SKIPPED: Credit balance exhausted - this confirms real API usage" );
-      return;
+      panic!( "INTEGRATION: credit balance exhausted - real API call succeeded but account has no credits. Test must fail per Loud Failure Mandate: {}", api_err.message )
     },
     Err( err ) => panic!( "INTEGRATION: Second concurrent request must succeed : {err}" ),
   };

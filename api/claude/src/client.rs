@@ -25,6 +25,8 @@ mod private {}
 
 crate::mod_interface!
 {
+  layer system_instructions;
   layer types;
   layer implementation;
+  layer explicit_retry;
 }
