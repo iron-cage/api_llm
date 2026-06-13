@@ -405,6 +405,8 @@ async fn test_rate_limiter_with_real_api_calls()
       vec![ChatMessage {
   role : "user".to_string( ),
   content : format!( "Say the number {i}" ),
+  tool_calls : None,
+  tool_call_id : None,
       } ],
       Some( 10 ),
       None,
@@ -451,6 +453,8 @@ async fn test_rate_limiter_prevents_api_overload()
   vec![ChatMessage {
           role : "user".to_string( ),
           content : format!( "Count {i}" ),
+          tool_calls : None,
+          tool_call_id : None,
   } ],
   Some( 5 ),
   None,

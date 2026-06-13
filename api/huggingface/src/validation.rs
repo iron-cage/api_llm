@@ -1,5 +1,7 @@
 //! Request validation functionality for `HuggingFace` API
 
+mod private
+{
 use crate::error::{ HuggingFaceError, Result };
 
 /// Maximum allowed input text length (characters)
@@ -584,4 +586,36 @@ pub fn validate_url( url : &str ) -> Result< () >
   }
 
   Ok( () )
+}
+} // end mod private
+
+crate::mod_interface!
+{
+  exposed use private::
+  {
+  MAX_INPUT_LENGTH,
+  MAX_BATCH_SIZE,
+  MAX_STOP_SEQUENCES,
+  MAX_MODEL_ID_LENGTH,
+  MAX_NEW_TOKENS,
+  MAX_IMAGE_SIZE_BYTES,
+  MAX_AUDIO_SIZE_BYTES,
+  validate_input_text,
+  validate_model_identifier,
+  validate_batch_inputs,
+  validate_temperature,
+  validate_max_new_tokens,
+  validate_top_p,
+  validate_repetition_penalty,
+  validate_stop_sequences,
+  validate_top_k,
+  validate_frequency_penalty,
+  validate_presence_penalty,
+  validate_message_role,
+  validate_message_content,
+  validate_tool_choice,
+  validate_image_size,
+  validate_audio_size,
+  validate_url,
+  };
 }

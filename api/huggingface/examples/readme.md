@@ -1,10 +1,10 @@
-# Hugging Face API Examples
+# Examples
 
-## Purpose
+### Purpose
 
 This directory contains interactive examples demonstrating the Hugging Face Inference API client capabilities.
 
-## Organization Principles
+### Organization Principles
 
 Examples are organized by use case and complexity:
 
@@ -13,18 +13,19 @@ Examples are organized by use case and complexity:
 - **Specialized Use Cases**: Domain-specific applications (code assistant, translator, QA system, etc.)
 - **Advanced Features**: Cached content, multi-turn conversations
 
-## Examples
+### Examples
 
-### Basic Examples
+#### Basic Examples
 
 - `huggingface_inference_create.rs` - Basic text generation
 - `huggingface_embeddings_create.rs` - Text embeddings generation
 - `chat.rs` - Simple chat completion
 - `chat_cached_interactive.rs` - Chat with caching
-- `interactive_chat.rs` - Interactive terminal chat
+- `hf_interactive_chat.rs` - Interactive terminal chat
 
-### Specialized Applications
+#### Specialized Applications
 
+- `providers_api_demo.rs` - Providers API demo — Pro plan model discovery and chat
 - `huggingface_developer_code_assistant.rs` - Code generation and assistance
 - `huggingface_intelligent_qa_system.rs` - Question answering system
 - `huggingface_multilingual_translator.rs` - Multi-language translation
@@ -35,7 +36,7 @@ Examples are organized by use case and complexity:
 - `huggingface_chat_conversational.rs` - Conversational chat bot
 - `huggingface_multi_turn_conversation.rs` - Multi-turn dialogue management
 
-## Running Examples
+### Running Examples
 
 All examples require a Hugging Face API key:
 
@@ -53,10 +54,10 @@ cargo run --example huggingface_inference_create
 cargo run --all-features --example chat
 ```
 
-## Navigation Guide
+### Navigation Guide
 
 - **New users**: Start with `huggingface_inference_create.rs` and `chat.rs`
-- **Chat applications**: See `interactive_chat.rs` and `chat_cached_interactive.rs`
+- **Chat applications**: See `hf_interactive_chat.rs` and `chat_cached_interactive.rs`
 - **Domain-specific needs**: Browse specialized applications by use case
 - **Advanced patterns**: Review multi-turn conversation and caching examples
 

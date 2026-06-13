@@ -13,7 +13,7 @@ Integration tests in `api_huggingface` use **real HuggingFace API endpoints excl
 
 ### Enforcement Mechanism
 
-Integration tests must: (1) load real credentials via `Secret::load_with_fallbacks("HUGGINGFACE_API_KEY")`, (2) `panic!` with a clear diagnostic message if no credential is found, (3) call real HuggingFace API endpoints with no fallback path. Unit tests for pure logic may run without credentials but must be clearly separated via `#[cfg(feature = "integration")]` guards.
+Integration tests must: (1) load real credentials via `workspace_tools::workspace()?.load_secrets_from_file("-secrets.sh")` or `Secret::load_from_env("HUGGINGFACE_API_KEY")`, then `panic!` immediately if no credential is found, (2) call real HuggingFace API endpoints with no fallback path. Unit tests for pure logic may run without credentials but must be clearly separated via `#[cfg(feature = "integration")]` guards.
 
 | Permitted | Prohibited |
 |-----------|------------|
@@ -29,10 +29,29 @@ Any mock usage in integration tests requires immediate remediation before merge.
 
 | File | Relationship |
 |------|--------------|
-| `src/secret.rs` | `Secret::load_with_fallbacks()` — credential loading with loud failure |
+| `src/secret.rs` | `Secret::load_from_env()` — environment variable credential loading |
 
 ### Tests
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | All integration test functions demonstrate the `#[cfg(feature = "integration")]` + loud-failure pattern |
+| `tests/` | All integration tests MUST use `#[cfg(feature = "integration")]` gate and loud-failure pattern (no silent skip/pass permitted) |
+| `tests/docs/invariant/02_testing_standards.md` | GWT spec scenarios for this doc instance |
+
+### APIs
+
+| File | Relationship |
+|------|--------------|
+| `api/001_reference.md` | All methods documented there require real-API integration tests under this invariant |
+
+### Invariants
+
+| File | Relationship |
+|------|--------------|
+| `invariant/001_thin_client_principle.md` | Companion invariant — governs no-mock and no-implicit behavior requirements |
+
+### Features
+
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Enterprise features must be tested with real API calls under this invariant |

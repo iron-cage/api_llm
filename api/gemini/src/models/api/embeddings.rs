@@ -107,7 +107,7 @@ impl ModelApi< '_ >
     }
 
     let url = format!(
-      "{}/v1beta/models/{}:embedContent",
+      "{}/v1/models/{}:embedContent",
       self.client.base_url,
       self.model_id
     );

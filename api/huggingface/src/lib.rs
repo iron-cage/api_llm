@@ -120,58 +120,6 @@ pub mod streaming_control;
 
 crate::mod_interface!
 {
-  // Always available core functionality
-  exposed use error;
-  exposed use components;
-  exposed use validation;
-  exposed use diagnostics;
-  exposed use secret;
-
-  // Enterprise reliability features
-  #[ cfg( feature = "reliability" ) ]
-  exposed use reliability;
-
-  // Configuration management
-  #[ cfg( feature = "reliability" ) ]
-  exposed use config;
-
-  // Feature-gated modules
-  #[ cfg( feature = "client" ) ]
-  exposed use client;
-
-  #[ cfg( feature = "client" ) ]
-  exposed use token_counter;
-
-  #[ cfg( feature = "client" ) ]
-  exposed use cache;
-
-  #[ cfg( feature = "client" ) ]
-  exposed use performance;
-
-  #[ cfg( feature = "env-config" ) ]
-  exposed use environment;
-
-  #[ cfg( feature = "inference" ) ]
-  exposed use inference;
-
-  #[ cfg( feature = "embeddings" ) ]
-  exposed use embeddings;
-
-  #[ cfg( feature = "models" ) ]
-  exposed use models;
-
-  #[ cfg( feature = "inference" ) ]
-  exposed use providers;
-
-  #[ cfg( feature = "vision" ) ]
-  exposed use vision;
-
-  #[ cfg( feature = "audio" ) ]
-  exposed use audio;
-
-  #[ cfg( feature = "sync" ) ]
-  exposed use sync;
-
   // Re-export key types at crate root for convenience
   #[ cfg( feature = "client" ) ]
   exposed use client::Client;

@@ -1,5 +1,7 @@
 //! Health checks functionality tests
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
 use api_gemini::client::Client;
 use api_gemini::models::health::*;
 use api_gemini::error::Error;
@@ -12,7 +14,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_health_check_single_endpoint() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Explicit health check call - no automatic behavior
     let health_status = client.health().check_endpoint().await?;
@@ -26,7 +28,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_health_check_with_timeout() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     let health_result = client.health()
     .timeout( core::time::Duration::from_millis( 1000 ) )
@@ -62,7 +64,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_health_metrics_collection() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     let health_status = client.health().check_endpoint().await?;
 

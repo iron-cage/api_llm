@@ -147,8 +147,6 @@ tracing-subscriber = { workspace = true, optional = true }
 rand = { workspace = true, optional = true }
 chrono = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
-serde_with = { workspace = true, optional = true }
-serde_yml = { workspace = true, optional = true }
 base64 = { workspace = true, optional = true }
 # Optional dependencies for features
 # Note: nalgebra not available in workspace, will use alternative for vector operations
@@ -213,4 +211,8 @@ path = "examples/huggingface_sentiment_content_analyzer.rs"
 [[example]]
 name = "educational_ai_tutor"
 path = "examples/huggingface_educational_ai_tutor.rs"
+
+[[example]]
+name = "providers_api_demo"
+path = "examples/providers_api_demo.rs"
 

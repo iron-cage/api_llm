@@ -200,6 +200,26 @@ mod private
     metrics : Arc< Mutex< RateLimiterMetrics > >,
   }
 
+  /// Configuration for request cost calculation
+  #[ derive( Debug, Clone, Copy ) ]
+  pub struct RequestCostConfig
+  {
+    /// Base token cost for any request
+    pub base_cost : u32,
+    /// Divisor applied to `max_tokens` to compute cost contribution; `None` = skip
+    pub max_tokens_divisor : Option< f64 >,
+    /// Flat cost added per message in the conversation; `None` = skip
+    pub message_cost_per_count : Option< u32 >,
+    /// Divisor applied to total system prompt length; `None` = skip
+    pub system_prompt_divisor : Option< f64 >,
+    /// Divisor applied to text content length; `None` = skip
+    pub content_length_divisor : Option< f64 >,
+    /// Flat cost for non-text content blocks (images, etc.); `None` = skip
+    pub non_text_content_cost : Option< u32 >,
+    /// Floor applied after all other costs are summed; `None` = no floor
+    pub minimum_cost : Option< u32 >,
+  }
+
   impl RateLimiter
   {
     /// Create a new rate limiter
@@ -354,23 +374,16 @@ mod private
     }
 
     /// Calculate request cost in tokens with explicit cost configuration
-    #[ allow( clippy::too_many_arguments ) ]
     pub fn calculate_request_cost_with_config(
       &self,
       request : &CreateMessageRequest,
-      base_cost : u32,
-      max_tokens_divisor : Option< f64 >,
-      message_cost_per_count : Option< u32 >,
-      system_prompt_divisor : Option< f64 >,
-      content_length_divisor : Option< f64 >,
-      non_text_content_cost : Option< u32 >,
-      minimum_cost : Option< u32 >,
+      config : RequestCostConfig,
     ) -> u32
     {
-      let mut cost = base_cost;
+      let mut cost = config.base_cost;
 
       // Add cost based on max_tokens (if configured)
-      if let Some( divisor ) = max_tokens_divisor
+      if let Some( divisor ) = config.max_tokens_divisor
       {
         #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
         {
@@ -379,13 +392,13 @@ mod private
       }
 
       // Add cost based on number of messages (if configured)
-      if let Some( per_message_cost ) = message_cost_per_count
+      if let Some( per_message_cost ) = config.message_cost_per_count
       {
         cost += u32::try_from(request.messages.len()).unwrap_or(0) * per_message_cost;
       }
 
       // Add cost based on system prompt length (if configured)
-      if let ( Some( ref system_blocks ), Some( divisor ) ) = ( &request.system, system_prompt_divisor )
+      if let ( Some( ref system_blocks ), Some( divisor ) ) = ( &request.system, config.system_prompt_divisor )
       {
         #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
         {
@@ -395,7 +408,7 @@ mod private
       }
 
       // Add cost based on message content length (if configured)
-      if content_length_divisor.is_some() || non_text_content_cost.is_some()
+      if config.content_length_divisor.is_some() || config.non_text_content_cost.is_some()
       {
         for message in &request.messages
         {
@@ -404,7 +417,7 @@ mod private
             let content_cost = match content
             {
               crate::messages::Content::Text { text, .. } => {
-                if let Some( divisor ) = content_length_divisor
+                if let Some( divisor ) = config.content_length_divisor
                 {
                   #[ allow( clippy::cast_possible_truncation, clippy::cast_sign_loss ) ]
                   {
@@ -416,7 +429,7 @@ mod private
                   0
                 }
               },
-              _ => non_text_content_cost.unwrap_or(0),
+              _ => config.non_text_content_cost.unwrap_or(0),
             };
             cost += content_cost;
           }
@@ -424,7 +437,7 @@ mod private
       }
 
       // Apply minimum cost (if configured)
-      minimum_cost.map_or( cost, | min | cost.max( min ) )
+      config.minimum_cost.map_or( cost, | min | cost.max( min ) )
     }
 
     /// Calculate request cost in tokens (compatibility wrapper)
@@ -432,17 +445,16 @@ mod private
     /// NOTE: This is a compatibility wrapper with sensible defaults. For explicit control, use `calculate_request_cost_with_config()`
     pub fn calculate_request_cost( &self, request : &CreateMessageRequest ) -> u32
     {
-      // Compatibility wrapper with the original magic numbers as explicit values
-      self.calculate_request_cost_with_config(
-        request,
-        1,              // base_cost : 1 token base cost
-        Some( 1000.0 ), // max_tokens_divisor : divide max_tokens by 1000
-        Some( 1 ),      // message_cost_per_count : 1 token per message
-        Some( 100.0 ),  // system_prompt_divisor : divide length by 100
-        Some( 100.0 ),  // content_length_divisor : divide length by 100
-        Some( 50 ),     // non_text_content_cost : 50 tokens for non-text
-        Some( 1 ),      // minimum_cost : minimum 1 token
-      )
+      self.calculate_request_cost_with_config( request, RequestCostConfig
+      {
+        base_cost : 1,
+        max_tokens_divisor : Some( 1000.0 ),
+        message_cost_per_count : Some( 1 ),
+        system_prompt_divisor : Some( 100.0 ),
+        content_length_divisor : Some( 100.0 ),
+        non_text_content_cost : Some( 50 ),
+        minimum_cost : Some( 1 ),
+      } )
     }
 
     /// Get metrics
@@ -728,6 +740,7 @@ crate::mod_interface!
   exposed use
   {
     RateLimiterConfig,
+    RequestCostConfig,
     RateLimiter,
     RateLimiterMetrics,
     AdaptiveRateLimiterConfig,

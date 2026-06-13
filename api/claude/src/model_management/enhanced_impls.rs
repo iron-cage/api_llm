@@ -8,10 +8,7 @@ mod private
   use super::super::enhanced::orphan::*;
   use super::super::core::orphan::*;
   use super::super::manager::orphan::ModelManager;
-  use crate::{
-    error::AnthropicResult,
-    client::Client,
-  };
+  use crate::error::AnthropicResult;
   use std::collections::HashMap;
 
 
@@ -781,29 +778,6 @@ mod private
     }
   }
 
-  // Add enhanced model details to client
-  impl Client
-  {
-    /// Get enhanced model details
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if model not found
-    pub fn get_enhanced_model_details( &self, model_id : &str ) -> AnthropicResult< EnhancedModelDetails >
-    {
-      Ok( EnhancedModelDetails::new( model_id ) )
-    }
-
-    /// Compare two models
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if models not found
-    pub fn compare_models( &self, model_a : &str, model_b : &str ) -> AnthropicResult< ModelComparison >
-    {
-      Ok( ModelComparison::between( model_a, model_b ) )
-    }
-  }
 }
 
 crate::mod_interface!

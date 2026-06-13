@@ -44,16 +44,7 @@ mod private
   pub stream : Option< bool >,
   }
 
-  /// A single message in the chat conversation
-  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
-  pub struct ChatMessage
-  {
-  /// Role of the message sender (system, user, assistant)
-  pub role : String,
-  
-  /// Content of the message
-  pub content : String,
-  }
+  pub use crate::components::inference_shared::ChatMessage;
 
   /// Response from the chat completions endpoint
   #[ derive( Debug, Clone, Serialize, Deserialize ) ]
@@ -290,6 +281,8 @@ mod private
   {
           role : "user".to_string(),
           content : user_message.into(),
+          tool_calls : None,
+          tool_call_id : None,
   }
       ];
 
@@ -317,11 +310,15 @@ mod private
   {
           role : "system".to_string(),
           content : "You are a helpful math assistant. Solve mathematical problems step by step and provide clear, accurate answers.".to_string(),
+          tool_calls : None,
+          tool_call_id : None,
   },
   ChatMessage
   {
-          role : "user".to_string(), 
+          role : "user".to_string(),
           content : math_query.into(),
+          tool_calls : None,
+          tool_call_id : None,
   }
       ];
 

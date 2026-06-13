@@ -163,7 +163,7 @@ use super::super::Client;
       request : &crate::models::BatchEmbedContentsRequest
     ) -> Result< crate::models::BatchEmbedContentsResponse, Error >
     {
-      let url = format!( "{}/v1beta/models/{model_name}:batchEmbedContents", self.client.base_url );
+      let url = format!( "{}/v1/models/{model_name}:batchEmbedContents", self.client.base_url );
 
       crate ::internal::http::execute_legacy::< crate::models::BatchEmbedContentsRequest, crate::models::BatchEmbedContentsResponse >
       (

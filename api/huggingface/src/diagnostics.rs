@@ -88,6 +88,9 @@
 //!   -d '{...}'
 //! ```
 
+mod private
+{
+
 /// Trait for converting API request objects into executable curl commands
 ///
 /// This trait allows you to convert API request objects into executable curl
@@ -464,4 +467,15 @@ pub mod debug_helpers
       None => request.as_curl(),
   }
   }
+}
+} // end mod private
+
+crate::mod_interface!
+{
+  exposed use private::
+  {
+  AsCurl,
+  CurlOptions,
+  debug_helpers,
+  };
 }

@@ -595,7 +595,7 @@ mod private
     }
   }
 
-  // Implementation will fail - this is intentional for TDD
+  // Clone shares Arc<Mutex<CircuitBreakerState>> — cloned instances share circuit state
   impl Clone for CircuitBreaker
   {
     fn clone( &self ) -> Self

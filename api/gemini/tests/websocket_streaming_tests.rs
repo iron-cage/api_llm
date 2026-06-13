@@ -1,6 +1,7 @@
 //! WebSocket streaming functionality tests
 
-use api_gemini::client::Client;
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
 use api_gemini::models::websocket_streaming::*;
 use std::time::Duration;
 use tokio::time::timeout;
@@ -12,7 +13,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_websocket_connection_establishment() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test WebSocket connection establishment with real connection
     let models = client.models();
@@ -95,7 +96,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_websocket_bidirectional_messaging() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test bidirectional messaging capability
     let models = client.models();
@@ -184,7 +185,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_websocket_connection_pooling() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Test connection pooling configuration
     let pool_config = WebSocketPoolConfig::builder()
@@ -203,7 +204,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_websocket_connection_lifecycle() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test complete connection lifecycle : connect -> stream -> disconnect
     let models = client.models();
@@ -288,7 +289,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_websocket_error_handling() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test error handling for various failure scenarios
     let models = client.models();
@@ -348,7 +349,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_websocket_streaming_control() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test streaming control mechanisms
     let models = client.models();
@@ -425,7 +426,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_websocket_fallback_to_http() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test fallback behavior when WebSocket is unavailable
     let models = client.models();

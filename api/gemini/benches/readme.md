@@ -1,5 +1,15 @@
 # Performance Benchmarks
 
+## Responsibility Table
+
+| filename | Responsibility |
+|----------|---------------|
+| client_overhead.rs | Request building and response parsing overhead |
+| retry_logic_overhead.rs | Retry decision and backoff calculation overhead |
+| circuit_breaker_overhead.rs | Circuit breaker state check overhead |
+| rate_limiting_overhead.rs | Token bucket and sliding window overhead |
+| streaming_overhead.rs | Stream buffer management overhead |
+
 This directory contains comprehensive performance benchmarks for the Gemini API client to validate the <50ms overhead claim specified in the requirements.
 
 ## Running Benchmarks

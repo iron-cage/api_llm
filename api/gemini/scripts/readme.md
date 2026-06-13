@@ -1,5 +1,12 @@
 # Scripts
 
+## Responsibility Table
+
+| filename | Responsibility |
+|----------|---------------|
+| dev-setup.sh | Development environment setup and dependency installation |
+| health-check.sh | API connectivity and credential validation |
+
 ## Purpose
 Utility scripts for project maintenance, testing setup, and automation tasks.
 

@@ -74,11 +74,8 @@ mod enhanced_model_details_functionality_tests
     let capabilities = EnhancedModelCapabilities::for_model( "claude-sonnet-4-5-20250929" );
 
     // Test advanced capabilities
-    // Fix(issue-001): Sonnet 4.5 capabilities differ from 3.5 Sonnet
-    // Root cause : Sonnet 4.x family has different capabilities than 3.5 Sonnet
-    // - No function calling (tools) support
-    // - No vision/multimodal support
-    // - Text-only model optimized for speed and efficiency
+    // Fix(BUG-001): Sonnet 4.5 capabilities differ from 3.5 Sonnet
+    // Root cause : Sonnet 4.x family has no tool calling, vision, or multimodal support
     // Pitfall : Capability expectations change between model families - always verify
     assert!( !capabilities.supports_function_calling(), "Sonnet 4.5 does NOT support function calling" );
     assert!( !capabilities.supports_vision(), "Sonnet 4.5 does NOT support vision" );
@@ -113,9 +110,8 @@ mod enhanced_model_details_functionality_tests
     let context_details = ContextWindowDetails::for_model( "claude-sonnet-4-5-20250929" );
 
     // Validate context window information
-    // Fix(issue-001): Update expected values to match Sonnet 4.5 specifications
+    // Fix(BUG-002): Update expected values to match Sonnet 4.5 specifications
     // Root cause : Test expectations needed updating for new model
-    // Sonnet 4.5 has 200k context window and 8k max output tokens
     // Pitfall : Always verify model specifications when updating model versions
     assert_eq!( context_details.get_max_context_tokens(), 200_000, "Max context should be 200k tokens for Sonnet 4.5" );
     assert_eq!( context_details.get_max_output_tokens(), 8_192, "Max output should be 8k tokens for Sonnet 4.5" );

@@ -20,6 +20,7 @@ use api_gemini::client::Client;
 /// let client = create_integration_client();
 /// // Test continues only if API key is valid
 /// ```
+#[ allow( dead_code ) ]
 pub fn create_integration_client() -> Client
 {
   Client::new().unwrap_or_else( |err| {

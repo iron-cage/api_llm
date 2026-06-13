@@ -11,13 +11,17 @@
 //! All tests use the logging feature flag and validate actual log output.
 
 
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
 use std::sync::{ Arc, Mutex };
+#[ cfg( feature = "logging" ) ]
 use std::time::Duration;
 use api_gemini::
 {
   client ::Client,
 };
 use tracing::Level;
+#[ cfg( feature = "logging" ) ]
 use tracing_subscriber::
 {
 fmt ::{ self, format::FmtSpan },
@@ -25,7 +29,9 @@ fmt ::{ self, format::FmtSpan },
   EnvFilter,
 };
 use core::cell::RefCell;
+#[ cfg( feature = "logging" ) ]
 use tracing_subscriber::layer::Layer;
+#[ cfg( feature = "logging" ) ]
 use tracing::{ Event, Subscriber, Instrument };
 
 /// Captured log entry for testing
@@ -58,6 +64,7 @@ impl CaptureLayer
   }
 }
 
+#[ cfg( feature = "logging" ) ]
 impl< S > Layer< S > for CaptureLayer
 where
 S: Subscriber,
@@ -174,8 +181,7 @@ fn create_logging_client() -> Client
   std ::env::set_var( "GEMINI_ENABLE_HTTP_LOGGING", "1" );
 
   // Create client - logging will be enabled via environment variable
-  Client::new()
-  .expect( "Failed to create client for logging tests" )
+  create_integration_client()
 }
 
 /// Test basic HTTP request logging with structured fields
@@ -536,12 +542,14 @@ thread_local! {
 static TEST_CAPTURE: RefCell< Vec< LogEntry > > = const { RefCell::new( Vec::new() ) };
 }
 
+#[ cfg( feature = "logging" ) ]
 #[ allow( dead_code ) ]
 fn setup_test_logging() -> tracing::subscriber::DefaultGuard
 {
   setup_test_logging_with_level( Level::DEBUG )
 }
 
+#[ cfg( feature = "logging" ) ]
 #[ allow( dead_code ) ]
 fn setup_test_logging_with_level( level: Level ) -> tracing::subscriber::DefaultGuard
 {

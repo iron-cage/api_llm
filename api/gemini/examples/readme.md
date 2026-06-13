@@ -1,5 +1,24 @@
 # api_gemini Examples
 
+## Responsibility Table
+
+| filename | Responsibility |
+|----------|---------------|
+| gemini_dry_run.rs | Validate setup patterns without real API calls |
+| gemini_api_basic.rs | Basic text generation request and response |
+| gemini_list_models.rs | List and explore available Gemini models |
+| gemini_embeddings.rs | Text embeddings generation and similarity search |
+| gemini_multimodal.rs | Image analysis with vision capabilities |
+| gemini_safety_settings.rs | Content filtering and safety configuration |
+| gemini_error_handling.rs | Error handling patterns and recovery |
+| gemini_code_execution.rs | Python code generation and execution |
+| gemini_search_grounding.rs | Google Search grounding for real-time data |
+| gemini_system_instructions.rs | System prompt and instruction configuration |
+| gemini_api_interactive.rs | Real-time interactive chat with streaming |
+| gemini_api_cached_interactive.rs | Interactive chat with server-side caching |
+| gemini_function_calling.rs | AI function calling and tool use |
+| gemini_performance_optimization.rs | Performance patterns and monitoring |
+
 Examples demonstrating the `api_gemini` crate, organized by difficulty.
 
 ## Quick Start

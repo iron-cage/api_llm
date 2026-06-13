@@ -1,6 +1,7 @@
 //! Failover functionality tests
 
-use api_gemini::client::Client;
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
 use api_gemini::models::failover::*;
 use core::time::Duration;
 use std::time::SystemTime;
@@ -12,7 +13,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_failover_configuration_basic() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Create failover configuration with multiple endpoints
     let failover_config = FailoverConfig::builder()
@@ -36,7 +37,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_explicit_failover_operation() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Configure failover
     let failover_config = FailoverConfig::builder()
@@ -59,7 +60,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_failover_strategies() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test Priority strategy configuration
     let priority_config = FailoverConfig::builder()
@@ -96,7 +97,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_failover_metrics() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     let failover_config = FailoverConfig::builder()
     .primary_endpoint( "https://primary.googleapis.com".to_string() )
@@ -118,7 +119,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_failover_with_request_execution() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     let failover_config = FailoverConfig::builder()
     .primary_endpoint( "https://invalid-endpoint.example.com".to_string() )

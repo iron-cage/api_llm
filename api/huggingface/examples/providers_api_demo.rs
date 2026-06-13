@@ -1,5 +1,11 @@
-//! Test of `HuggingFace` Inference Providers API for Pro plan models
-//! This example tests the new chat completions endpoint that provides access to Pro models
+//! HuggingFace Inference Providers API Demo — Pro Plan Models
+//!
+//! Demonstrates the chat completions endpoint that provides access to Pro models.
+//! Requires HUGGINGFACE_API_KEY environment variable with Pro plan access.
+//!
+//! ```bash
+//! cargo run --example providers_api_demo --all-features
+//! ```
 
 use api_huggingface::
 {
@@ -108,7 +114,7 @@ async fn test_working_model( providers : &Providers< HuggingFaceEnvironmentImpl 
 #[ tokio::main ]
 async fn main() -> Result< (), Box< dyn std::error::Error > >
 {
-  println!( "🧪 HuggingFace Providers API Test - Pro Plan Models" );
+  println!( "🧪 HuggingFace Providers API Demo - Pro Plan Models" );
   println!( "===============================================" );
 
   let secret = match Secret::load_from_env( "HUGGINGFACE_API_KEY" )
@@ -144,6 +150,6 @@ async fn main() -> Result< (), Box< dyn std::error::Error > >
   println!( "   3. The Inference Providers API endpoint is not accessible" );
   }
 
-  println!( "\n🏁 Test completed" );
+  println!( "\n🏁 Demo completed" );
   Ok( () )
 }

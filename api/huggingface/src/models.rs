@@ -20,6 +20,9 @@ use crate::environment::{ HuggingFaceEnvironment, EnvironmentInterface };
 use serde::{ Deserialize, Serialize };
 use core::time::Duration;
 
+/// HuggingFace Hub API base URL — separate from the inference API base URL
+const HF_HUB_API_BASE : &str = "https://huggingface.co/api";
+
 /// Configuration for model waiting behavior
 #[ derive( Debug, Clone ) ]
 pub struct ModelWaitConfig
@@ -117,9 +120,8 @@ where
   // Validate model identifier
   validate_model_identifier( model_ref )?;
   
-  let endpoint = format!( "/models/{model_ref}" );
-  let url = format!( "https://huggingface.co/api{endpoint}" );
-  
+  let url = format!( "{HF_HUB_API_BASE}/models/{model_ref}" );
+
   self.client.get( &url ).await
   }
   

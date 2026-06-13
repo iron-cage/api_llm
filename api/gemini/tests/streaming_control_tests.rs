@@ -1,6 +1,7 @@
 //! Streaming control functionality tests
 
-use api_gemini::client::Client;
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
 use api_gemini::models::streaming_control::*;
 use std::time::Duration;
 use tokio::time::timeout;
@@ -13,7 +14,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_controllable_stream_creation_and_basic_control() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a test stream from a simple data source
     let test_data = vec![ "chunk1", "chunk2", "chunk3", "chunk4", "chunk5" ];
@@ -47,7 +48,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_stream_pause_resume_functionality() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a test stream with delayed chunks to test pause/resume timing
     use futures::stream::StreamExt;
@@ -111,7 +112,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_stream_cancellation() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a test stream with delays to prevent immediate completion
     use futures::stream::StreamExt;
@@ -172,7 +173,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_stream_pause_with_buffering() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a test stream with more data to test buffering
     use futures::stream::StreamExt;
@@ -267,7 +268,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_concurrent_stream_control_operations() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a test stream
     use futures::stream::StreamExt;
@@ -328,7 +329,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_stream_error_handling() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a stream that will produce an error
     let error_stream = stream::iter( vec![
@@ -377,7 +378,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_stream_timeout_during_pause() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a stream with delays
     use futures::stream::StreamExt;
@@ -432,7 +433,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_stream_invalid_state_transitions() -> Result< (), Box< dyn std::error::Error > >
   {
-    let _client = Client::new()?;
+    let _client = create_integration_client();
 
     // Create a test stream that won't complete immediately
     use futures::stream::StreamExt;

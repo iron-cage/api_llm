@@ -7,13 +7,15 @@ use api_huggingface::
   environment::HuggingFaceEnvironmentImpl,
   secret::Secret,
   inference::Inference,
-  error::HuggingFaceError,
   components::
   {
   input::InferenceParameters,
   models::Models as ModelConstants,
   },
 };
+
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
+use api_huggingface::error::HuggingFaceError;
 
 #[ cfg( feature = "inference-streaming" ) ]
 use tokio::time::{ timeout, Duration };

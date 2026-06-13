@@ -503,9 +503,8 @@ async fn integration_tool_calling_real_math_tool()
     }),
   };
 
-  // Fix(issue-002): Use Claude 3.5 Haiku for tool calling tests
+  // Fix(BUG-001): Use Claude 3.5 Haiku for tool calling tests
   // Root cause : Sonnet 4.5 does not support tool calling - it's a text-only model
-  // Haiku 3.5 supports tools and is perfect for testing tool calling functionality
   // Pitfall : Always verify model capabilities when selecting models for feature-specific tests
   let request = the_module::CreateMessageRequest
   {
@@ -587,9 +586,8 @@ async fn integration_tool_calling_multiple_tools()
     }),
   };
 
-  // Fix(issue-002): Use Claude 3.5 Haiku for tool calling tests
+  // Fix(BUG-001): Use Claude 3.5 Haiku for tool calling tests
   // Root cause : Sonnet 4.5 does not support tool calling - it's a text-only model
-  // Haiku 3.5 supports tools and is perfect for testing tool calling functionality
   // Pitfall : Always verify model capabilities when selecting models for feature-specific tests
   let request = the_module::CreateMessageRequest
   {

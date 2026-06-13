@@ -1,138 +1,107 @@
-# api_huggingface Feature Status
+# Operation: Feature Flag Management
 
-Complete reference of implemented and planned features for the HuggingFace API client library.
+### Scope
 
-## ✅ Implemented Features
+- **Purpose**: Govern how Cargo feature flags are selected, combined, and verified for `api_huggingface` builds and deployments.
+- **Responsibility**: All contributors; feature flag additions or removals require updating this document and the `feature/` doc instance before merge.
+- **In Scope**: Feature selection procedures, combination rules, verification steps, feature tier classification.
+- **Out of Scope**: Source-level implementation details, API method signatures, testing methodology.
 
-### Core APIs
+### Trigger
 
-| Feature | Status | Tier | Description |
-|---------|--------|------|-------------|
-| **Router API** | ✅ Complete | 1 | Chat completions with Pro models (Kimi-K2, Llama-3, Mistral, CodeLlama) |
-| **Chat Completions** | ✅ Complete | 1 | Multi-turn conversations with role-based messages |
-| **Text Generation** | ✅ Complete | 1 | Legacy inference API support |
-| **Embeddings API** | ✅ Complete | 1 | Generate embeddings with similarity calculations |
-| **Model Management** | ✅ Complete | 1 | Query model info, availability, status |
-| **Streaming** | ✅ Complete | 1 | Real-time streaming responses |
-| **Streaming Control** | ✅ Complete | 2 | Pause, resume, and cancel streaming operations with runtime control |
-| **Function Calling** | ✅ Complete | 1 | OpenAI-compatible function calling with tool definitions and choice controls |
+Adding, removing, or changing any Cargo feature flag in `Cargo.toml`, or selecting features for a new integration of `api_huggingface`.
 
-### Enterprise Features
+### Prerequisites
 
-| Feature | Status | Tier | Description |
-|---------|--------|------|-------------|
-| **Circuit Breaker** | ✅ Complete | 2 | Automatic failure detection and recovery |
-| **Rate Limiting** | ✅ Complete | 2 | Token bucket rate limiting (per-second, per-minute, per-hour) |
-| **Failover** | ✅ Complete | 2 | Multi-endpoint failover with strategies (Priority, RoundRobin, Random, Sticky) |
-| **Health Checks** | ✅ Complete | 2 | Background endpoint health monitoring |
-| **Dynamic Config** | ✅ Complete | 2 | Runtime configuration updates with watchers and rollback |
-| **Caching** | ✅ Complete | 2 | LRU caching with TTL and statistics |
-| **Performance Metrics** | ✅ Complete | 2 | Request latency, throughput, error rate tracking |
-| **Token Counting** | ✅ Complete | 2 | Token estimation with multiple strategies |
+- Cargo workspace with `api_huggingface` dependency
+- Understanding of which capability tier is needed (Tier 1 core or Tier 2 enterprise)
+- HuggingFace API key for builds that include `integration`
 
-### Multimodal APIs
+### Steps
 
-| Feature | Status | Tier | Description |
-|---------|--------|------|-------------|
-| **Vision - Classification** | ✅ Complete | 2 | Image classification with confidence scores |
-| **Vision - Detection** | ✅ Complete | 2 | Object detection with bounding boxes |
-| **Vision - Captioning** | ✅ Complete | 2 | Image-to-text caption generation |
-| **Audio - ASR** | ✅ Complete | 2 | Automatic speech recognition (transcription) |
-| **Audio - TTS** | ✅ Complete | 2 | Text-to-speech generation |
-| **Audio - Classification** | ✅ Complete | 2 | Audio classification |
-| **Audio - Transformation** | ✅ Complete | 2 | Audio-to-audio (noise reduction, enhancement) |
+1. Identify required capability tier: Tier 1 (core APIs) or Tier 2 (enterprise features).
+2. Select the minimum feature set: use `enabled` for types-only, `basic` for core API access, `full` for all features.
+3. Add optional capability features as needed (see Feature Reference below).
+4. Verify `integration` feature is present if running integration tests.
+5. Build with `RUSTFLAGS="-D warnings" cargo build --features <selected>` and confirm zero warnings.
+6. Run `cargo nextest run --features <selected>` to verify tests pass for the selected feature combination.
 
-### Development Features
+### Expected Outcome
 
-| Feature | Status | Tier | Description |
-|---------|--------|------|-------------|
-| **Async/Await** | ✅ Complete | 1 | Full Tokio async support |
-| **Sync API** | ✅ Complete | 2 | Blocking wrappers (`sync` feature) |
-| **Explicit Retry** | ✅ Complete | 1 | Configurable retry logic (no automatic retries) |
-| **CURL Diagnostics** | ✅ Complete | 1 | Generate curl commands for debugging |
-| **Type Safety** | ✅ Complete | 1 | Comprehensive Rust types for all operations |
-| **Error Handling** | ✅ Complete | 1 | Detailed error types with recovery guidance |
-| **Model Constants** | ✅ Complete | 1 | Convenient model identifier constants |
+Build succeeds with zero warnings. All tests for the selected feature set pass. No integration test runs without real API credentials.
 
-## Legend
+### Rollback Procedure
 
-- **Tier 1**: Core functionality, production-ready, fully standardized
-- **Tier 2**: Enterprise features, production-ready, contracts standardized
+Remove the newly added feature flag from `Cargo.toml`. Revert any capability-specific code guarded by the removed feature. Re-run build and tests to confirm clean state.
 
-## ❌ Not Implemented
+### Feature Reference
 
-The following HuggingFace Inference API capabilities are **not implemented** in this crate:
+#### Convenience Bundles
 
-### Vision APIs (Advanced)
+| Feature | Includes | Use Case |
+|---------|----------|----------|
+| `default` | `full` (alias) | Development and CI with all features |
+| `full` | `basic` + all enterprise + `integration` | Full capability build |
+| `basic` | `inference` + `embeddings` + `models` + `env-config` | Core APIs without enterprise features |
+| `enabled` | core serialization deps only | Types and serde only, no HTTP |
 
-- Image Segmentation
-- Text-to-Image Generation
-- Zero-Shot Image Classification
-- Image Feature Extraction
+#### Tier 1 — Core API Features
 
-### Audio APIs (Advanced)
+| Feature | Description |
+|---------|-------------|
+| `inference` | Text generation via `/models/{model_id}` |
+| `embeddings` | Embedding generation and feature extraction |
+| `models` | Model metadata and availability queries |
+| `vision` | Image classification, detection, captioning |
+| `audio` | ASR, TTS, audio classification, audio-to-audio |
+| `inference-streaming` | Server-sent event streaming for text generation |
+| `inference-parameters` | `InferenceParameters` for temperature, top-p, etc. |
+| `inference-retry` | Explicit retry logic with exponential backoff |
+| `streaming-control` | Pause, resume, cancel streaming operations |
+| `embeddings-similarity` | Cosine similarity between embedding vectors |
+| `embeddings-batch` | Batch embedding generation |
+| `model-constants` | `Models` struct with named model constants |
+| `env-config` | `HuggingFaceEnvironmentImpl` environment builder |
+| `sync` | Blocking wrappers around all async operations |
+| `logging` | `tracing` integration for request/response logging |
 
-- Audio Segmentation
-- Audio Feature Extraction
+#### Tier 2 — Enterprise Reliability Features
 
-### Multimodal APIs
+| Feature | Description |
+|---------|-------------|
+| `reliability` | Base reliability module (required by all enterprise features) |
+| `circuit-breaker` | Failure detection with automatic open/close state |
+| `rate-limiting` | Token bucket rate limiter per second/minute/hour |
+| `failover` | Multi-endpoint failover with Priority, RoundRobin, Random, Sticky strategies |
+| `health-checks` | Background endpoint health monitoring |
+| `performance-metrics` | Request latency, throughput, and error rate tracking |
+| `caching` | LRU cache with TTL and eviction statistics |
+| `token-counting` | Token estimation with multiple counting strategies |
+| `dynamic-config` | Runtime configuration updates with watcher callbacks |
 
-- Visual Question Answering
-- Document Question Answering
-- Image-Text-to-Text
-- Video-Text-to-Text
-- Audio-Text-to-Text
+#### Testing Features
 
-### Advanced NLP APIs
+| Feature | Description |
+|---------|-------------|
+| `integration` | Enables real-API integration tests (requires `HUGGINGFACE_API_KEY`) |
+| `integration-tests` | Internal alias used by `integration` — do not use directly |
 
-- Fill-Mask
-- Zero-Shot Classification
-- Token Classification (NER)
-- Text Ranking
-- Table Question Answering
-- Tabular Classification/Regression
+### Invariants
 
-### Infrastructure Management
+| File | Relationship |
+|------|--------------|
+| `invariant/001_thin_client_principle.md` | Enterprise features must be opt-in via feature flags — never automatic |
+| `invariant/002_testing_standards.md` | `integration` feature required for all real-API tests |
 
-- Dedicated Inference Endpoint lifecycle
-- Endpoint health checks, logs, metrics
+### Sources
 
-## Implementation Focus
+| File | Relationship |
+|------|--------------|
+| `Cargo.toml` | Canonical feature flag definitions — authoritative for all feature names above |
+| `src/lib.rs` | Feature-gated `pub mod` declarations matching the feature table |
 
-This library focuses on **conversational AI and text embeddings**. The unimplemented features above are specialized ML APIs that may require different endpoint architectures or may not be compatible with the Router API.
+### Tests
 
-## Cargo Features
-
-Control which functionality is included in your build:
-
-### Core Features
-
-- `default`: Core functionality only
-- `full`: All features including integration tests
-
-### Capability Features
-
-- `inference-streaming`: Streaming support for text generation
-- `streaming-control`: Pause, resume, and cancel operations for controlled streams
-- `embeddings-similarity`: Similarity calculation utilities
-- `sync`: Synchronous API wrappers
-
-### Testing Features
-
-- `integration`: Enable integration tests with real API calls
-
-### Feature Combination Examples
-
-```toml
-# Minimal build (async only)
-api_huggingface = "0.2.0"
-
-# With streaming support
-api_huggingface = { version = "0.2.0", features = ["inference-streaming"] }
-
-# Synchronous API
-api_huggingface = { version = "0.2.0", features = ["sync"] }
-
-# Everything (recommended for development)
-api_huggingface = { version = "0.2.0", features = ["full"] }
-```
+| File | Relationship |
+|------|--------------|
+| `tests/docs/operation/01_features.md` | GWT spec scenarios for this doc instance |

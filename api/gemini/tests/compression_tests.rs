@@ -19,6 +19,7 @@ mod compression_tests
     client ::Client,
     CompressionConfig,
     CompressionAlgorithm,
+    internal::http::compression::{ compress, decompress },
   };
 
   #[ test ]
@@ -253,6 +254,67 @@ mod compression_tests
   {
     let algorithm = CompressionAlgorithm::default();
     assert_eq!( algorithm, CompressionAlgorithm::Gzip );
+  }
+
+  #[ test ]
+  fn test_gzip_compression_roundtrip()
+  {
+    // Repetitive data compresses well; avoids gzip header overhead issue on tiny inputs
+    let data = "Hello, World! This is a test of gzip compression. ".repeat( 50 );
+    let data_bytes = data.as_bytes();
+    let config = CompressionConfig::new()
+      .algorithm( CompressionAlgorithm::Gzip )
+      .min_size( 0 );
+
+    let compressed = compress( data_bytes, &config ).unwrap();
+    assert!( compressed.len() < data_bytes.len(), "Compressed data should be smaller" );
+
+    let decompressed = decompress( &compressed, CompressionAlgorithm::Gzip ).unwrap();
+    assert_eq!( &decompressed[ .. ], data_bytes );
+  }
+
+  #[ test ]
+  fn test_deflate_compression_roundtrip()
+  {
+    let data = "Hello, World! This is a test of deflate compression. ".repeat( 50 );
+    let data_bytes = data.as_bytes();
+    let config = CompressionConfig::new()
+      .algorithm( CompressionAlgorithm::Deflate )
+      .min_size( 0 );
+
+    let compressed = compress( data_bytes, &config ).unwrap();
+    assert!( compressed.len() < data_bytes.len(), "Compressed data should be smaller" );
+
+    let decompressed = decompress( &compressed, CompressionAlgorithm::Deflate ).unwrap();
+    assert_eq!( &decompressed[ .. ], data_bytes );
+  }
+
+  #[ test ]
+  fn test_brotli_compression_roundtrip()
+  {
+    let data = "Hello, World! This is a test of brotli compression. ".repeat( 50 );
+    let data_bytes = data.as_bytes();
+    let config = CompressionConfig::new()
+      .algorithm( CompressionAlgorithm::Brotli )
+      .level( 6 )
+      .min_size( 0 );
+
+    let compressed = compress( data_bytes, &config ).unwrap();
+    assert!( compressed.len() < data_bytes.len(), "Compressed data should be smaller" );
+
+    let decompressed = decompress( &compressed, CompressionAlgorithm::Brotli ).unwrap();
+    assert_eq!( &decompressed[ .. ], data_bytes );
+  }
+
+  #[ test ]
+  fn test_small_data_bypasses_compression()
+  {
+    // Data smaller than min_size must pass through unmodified
+    let small_data = b"Hi";
+    let config = CompressionConfig::new().min_size( 1024 );
+
+    let result = compress( small_data, &config ).unwrap();
+    assert_eq!( &result[ .. ], small_data, "Small data should not be compressed" );
   }
 }
 

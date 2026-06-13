@@ -13,8 +13,10 @@
 
 
 #[ path = "common/mod.rs" ] mod common;
+#[ cfg( feature = "integration" ) ]
 use common::create_integration_client;
 
+#[ cfg( feature = "integration" ) ]
 use api_gemini::
 {
   models ::*,
@@ -571,6 +573,7 @@ println!( "Batch audio processing : {successful} successful, {failed} failed" );
 // Helper functions to create test audio data
 
 /// Create test MP3 data (minimal MP3 header for testing)
+#[ cfg( feature = "integration" ) ]
 fn create_test_mp3_data() -> String
 {
   // This is a minimal MP3 frame header encoded in base64
@@ -581,6 +584,7 @@ fn create_test_mp3_data() -> String
 }
 
 /// Create test WAV data (minimal WAV header for testing)
+#[ cfg( feature = "integration" ) ]
 fn create_test_wav_data() -> String
 {
   // Minimal WAV file header
@@ -590,6 +594,7 @@ fn create_test_wav_data() -> String
 }
 
 /// Create test OGG data (minimal OGG header for testing)
+#[ cfg( feature = "integration" ) ]
 fn create_test_ogg_data() -> String
 {
   // Minimal OGG file header
@@ -599,6 +604,7 @@ fn create_test_ogg_data() -> String
 }
 
 /// Create test FLAC data (minimal FLAC header for testing)
+#[ cfg( feature = "integration" ) ]
 fn create_test_flac_data() -> String
 {
   // Minimal FLAC file header
@@ -608,6 +614,7 @@ fn create_test_flac_data() -> String
 }
 
 /// Create test M4A data (minimal M4A header for testing)
+#[ cfg( feature = "integration" ) ]
 fn create_test_m4a_data() -> String
 {
   // Minimal M4A/MP4 file header
@@ -617,6 +624,7 @@ fn create_test_m4a_data() -> String
 }
 
 /// Create larger test audio data for size limit testing
+#[ cfg( feature = "integration" ) ]
 fn create_large_test_audio_data() -> String
 {
   // Create a larger audio data sample (still minimal for testing)

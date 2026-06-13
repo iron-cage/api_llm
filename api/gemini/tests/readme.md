@@ -288,16 +288,12 @@ let result = tokio::time::timeout
 
 **✅ CORRECT: Explicit failure on missing API key**
 ```rust
-// Helper function that fails explicitly
-fn create_test_client() -> Client
-{
-  Client::new().expect( "GEMINI_API_KEY not found - integration tests require valid API key" )
-}
-
+// Use shared helper from tests/common/mod.rs
+// Panics with clear diagnostic message if key missing
 #[ tokio::test ]
 async fn test_generate_content() -> Result< (), Box< dyn std::error::Error > >
 {
-  let client = create_test_client(); // Panics with clear message if key missing
+  let client = create_integration_client();
 
   let request = GenerateContentRequest { /* ... */ };
   let response = client.models().by_name( "gemini-1.5-pro" ).generate_content( &request ).await?;

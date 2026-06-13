@@ -1,35 +1,14 @@
-# API Design Collection
+# API Doc Entity
 
-## Collection Scope
+### Scope
 
-This collection documents API design, endpoints, usage patterns, and reference documentation for the api_huggingface crate.
+- **Purpose**: Document API contracts, endpoint reference, and usage patterns for `api_huggingface`.
+- **Responsibility**: All contributors; new public API endpoints and method signatures require a corresponding api/ instance or update before merge.
+- **In Scope**: Client method signatures, endpoint mapping, request/response types, error types, parameter contracts.
+- **Out of Scope**: Internal implementation details, source-level comments, Cargo configuration infrastructure.
 
-Covers:
-- Client operations (Text Generation, Embeddings, Model Management)
-- API endpoints and parameters
-- Response types and error handling
-- Usage patterns and examples
+### Overview Table
 
-## Responsibility
-
-This table documents all instances in this collection, ensuring Complete Entity Coverage.
-
-| Instance | Purpose |
-|----------|---------|
-| `001_reference.md` | Comprehensive API reference covering client operations, models, environment config, error handling, parameters, and advanced features |
-
-## Overview
-
-| ID | API Component | Category | Complexity | Status |
-|----|---------------|----------|------------|--------|
-| 001 | Reference | Documentation | High | Active |
-
-## Collection Principles
-
-- **Abstract First**: Documentation focuses on API contracts and patterns, not implementation
-- **Instance Granularity**: Each API component documented in separate NNN-prefixed file
-- **Complete Coverage**: All API components listed in Responsibility Table
-
-## Navigation
-
-- For comprehensive API reference: see `001_reference.md`
+| ID | Name | Purpose | Status |
+|----|------|---------|--------|
+| 001 | API Reference | Complete client API, endpoints, error types, parameters | ✅ |

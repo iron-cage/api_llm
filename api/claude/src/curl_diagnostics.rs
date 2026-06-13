@@ -199,30 +199,6 @@ mod private
     }
   }
 
-  // Implement AsCurl for EmbeddingRequest if embeddings feature is enabled
-  #[ cfg( feature = "embeddings" ) ]
-  impl AsCurl for crate::EmbeddingRequest
-  {
-    fn as_curl( &self, url : &str ) -> String
-    {
-      let builder = CurlBuilder::new( url )
-        .method( "POST" )
-        .header( "Content-Type", "application/json" );
-
-      // Serialize request to JSON
-      let json_string = if let Ok( json ) = serde_json::to_value( self )
-      {
-        format_json_for_curl( &json )
-      }
-      else
-      {
-        "{}".to_string()
-      };
-
-      builder.body( json_string ).build()
-    }
-  }
-
   // Implement AsCurlClient for Client
   impl AsCurlClient for crate::Client
   {

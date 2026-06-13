@@ -31,11 +31,40 @@ Any automatic or implicit behavior in client code is a blocking code-review viol
 | File | Relationship |
 |------|--------------|
 | `src/client.rs` | Primary enforcement site — `Client` struct and all API methods |
-| `src/lib.rs` | Feature-gated `layer` declarations — demonstrates explicit opt-in pattern |
-| `src/providers.rs` | Router API — explicit model selection per request, no fallbacks |
+| `src/lib.rs` | Feature-gated `pub mod` declarations — demonstrates explicit opt-in pattern |
+| `src/providers.rs` | Router API — explicit model selection per request |
 
 ### Tests
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Integration tests require real HuggingFace API keys — no mocking, no automatic fallback |
+| `tests/client_tests.rs` | Verifies client construction requires explicit credentials and configuration |
+| `tests/inference_tests.rs` | Verifies inference methods require explicit model selection with no defaults |
+| `tests/providers_api_tests.rs` | Verifies Router API requires explicit model selection per request |
+| `tests/circuit_breaker_tests.rs` | Verifies circuit breaker activates only when explicitly constructed |
+| `tests/failover_tests.rs` | Verifies failover activates only when explicitly configured |
+| `tests/docs/invariant/01_thin_client_principle.md` | GWT spec scenarios for this doc instance |
+
+### APIs
+
+| File | Relationship |
+|------|--------------|
+| `api/001_reference.md` | Documents the one-to-one endpoint mapping this invariant enforces |
+
+### Invariants
+
+| File | Relationship |
+|------|--------------|
+| `invariant/002_testing_standards.md` | Companion invariant — enforces no-mock, real-API testing for all client methods |
+
+### Patterns
+
+| File | Relationship |
+|------|--------------|
+| `pattern/001_module_organization.md` | Module structure supporting explicit re-export of API surface |
+
+### Features
+
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Defines all opt-in enterprise features governed by this invariant |

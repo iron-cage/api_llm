@@ -201,6 +201,8 @@ chrono = { workspace = true, optional = true }
 
 [dev-dependencies]
 criterion = { workspace = true }
+reqwest = { workspace = true }
+tokio-stream = { workspace = true }
 # test_tools = { workspace = true }
 # mockito = { workspace = true } # Mock functionality merged into integration tests
 

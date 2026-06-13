@@ -1,79 +1,77 @@
-# tests
+# Tests
 
-This directory contains all automated tests for the api_huggingface crate.
+Automated tests for the `api_huggingface` crate. All integration tests use real HuggingFace API credentials — no mocking permitted.
 
-## test organization
+### Responsibility Table
 
-Tests are organized by functional domain:
+| File | Responsibility |
+|------|----------------|
+| `audio_tests.rs` | Audio API (ASR, TTS, classification, transformation) tests |
+| `cache_tests.rs` | LRU caching with TTL and statistics tests |
+| `chatbot_example_test.rs` | Conversational chatbot end-to-end workflow |
+| `circuit_breaker_tests.rs` | Circuit breaker failure detection and recovery tests |
+| `client_tests.rs` | Client initialization and configuration tests |
+| `components_tests.rs` | Shared component type serialization tests |
+| `content_generator_example_test.rs` | Content generation end-to-end workflow |
+| `curl_diagnostics_tests.rs` | CURL diagnostics command generation tests |
+| `debug_validation.rs` | Debugging utilities for test validation |
+| `document_search_example_test.rs` | Semantic search end-to-end workflow |
+| `dynamic_config_tests.rs` | Runtime dynamic configuration tests |
+| `embeddings_tests.rs` | Embeddings API and similarity calculation tests |
+| `error_handling_tests.rs` | Error type and recovery path tests |
+| `example_compilation_test.rs` | Validates that example code compiles correctly |
+| `example_error_handling_test.rs` | Error handling patterns from example code |
+| `failover_tests.rs` | Multi-endpoint failover strategy tests |
+| `function_calling_tests.rs` | Function/tool calling with tool definitions tests |
+| `health_check_tests.rs` | Background endpoint health monitoring tests |
+| `inference_tests.rs` | Text generation inference API tests |
+| `models_tests.rs` | Model management (get, status, availability) tests |
+| `performance_metrics_tests.rs` | Request latency and throughput tracking tests |
+| `providers_api_tests.rs` | Pro plan providers API unit tests |
+| `qa_system_example_test.rs` | Question-answering system end-to-end workflow |
+| `rate_limiting_tests.rs` | Token bucket rate limiting tests |
+| `retry_tests.rs` | Explicit retry logic tests |
+| `streaming_control_tests.rs` | Streaming pause, resume, and cancel tests |
+| `streaming_tests.rs` | Streaming response handling tests |
+| `sync_api_tests.rs` | Synchronous API wrapper tests |
+| `sync_cache_tests.rs` | Synchronous caching tests |
+| `sync_streaming_tests.rs` | Synchronous streaming tests |
+| `sync_token_counting_tests.rs` | Synchronous token counting tests |
+| `token_counting_tests.rs` | Token estimation strategy tests |
+| `validation_tests.rs` | Input validation and constraint tests |
+| `vision_tests.rs` | Vision API (classification, detection, captioning) tests |
+| `inc/` | Shared test helper modules (not test binaries) |
+| `docs/` | GWT spec scenarios for all doc entity instances |
 
-**Core API Tests:**
-- `client_tests.rs` - Client initialization and configuration
-- `inference_tests.rs` - Text generation API tests
-- `embeddings_tests.rs` - Embeddings API tests
-- `models_tests.rs` - Model management tests
-- `providers_api_tests.rs` - Pro plan providers API tests
-- `streaming_tests.rs` - Streaming response handling
-- `validation_tests.rs` - Input validation tests
-- `error_handling_tests.rs` - Error handling tests
-- `retry_tests.rs` - Retry logic tests
-- `components_tests.rs` - Shared component tests
-
-**Example-Based Integration Tests:**
-
-Domain-specific integration tests validating complete workflows:
-- `chatbot_example_test.rs` - Conversational chatbot functionality
-- `document_search_example_test.rs` - Semantic search functionality
-- `content_generator_example_test.rs` - Content generation functionality
-- `code_assistant_example_test.rs` - Code assistance functionality
-- `qa_system_example_test.rs` - Question-answering functionality
-- `translation_example_test.rs` - Translation functionality
-- `sentiment_analysis_example_test.rs` - Sentiment analysis functionality
-- `ai_tutor_example_test.rs` - Educational tutoring functionality
-
-**Debugging & Utilities:**
-- `debug_validation.rs` - Debugging utilities for test validation
-
-## running tests
+### Running Tests
 
 ```bash
-# Run all tests
-cargo test
+# Run all tests (includes integration tests — requires API key)
+cargo nextest run --all-features
 
-# Run specific test file
-cargo test --test client_tests
+# Run without integration tests (no API key needed)
+cargo nextest run --no-default-features --features enabled
 
-# Run with integration features
-cargo test --features integration
-
-# Run without integration tests (faster for development)
-cargo test --no-default-features
-
-# Run specific test by name
-cargo test test_client_build_with_valid_environment
+# Run a single test file
+cargo nextest run --test client_tests --all-features
 ```
 
-## test requirements
+### Test Requirements
 
-**Integration Tests:**
-Integration tests require valid HuggingFace API credentials. Tests will fail loudly if credentials are missing.
+Integration tests require a valid HuggingFace API key. Tests panic immediately if credentials are missing — no silent skips.
 
-Setup:
 ```bash
-# Get your API key from https://huggingface.co/settings/tokens
-echo 'HUGGINGFACE_API_KEY=your-key-here' > ../../secret/-huggingface.sh
+# Load from workspace secrets file
+echo 'export HUGGINGFACE_API_KEY=hf_...' >> ../../secret/-huggingface.sh
+
+# Or set environment variable directly
+export HUGGINGFACE_API_KEY=hf_...
 ```
 
-## test strategy
+### Test Policy
 
-**Real API Testing:**
-All integration tests use real HuggingFace API endpoints with authentic credentials. No mocking is used to ensure tests validate actual API behavior, compatibility, and real-world error conditions.
-
-**Loud Failures:**
-Tests fail explicitly with clear error messages when issues occur. Silent passes are prohibited - every test must validate actual functionality.
-
-**Domain-Based Organization:**
-Tests are organized by what they test (domain/functionality) rather than how they test it (unit vs integration).
-
-## test plan
-
-See `test_plan.md` for comprehensive test strategy, coverage details, and testing methodology.
+- All integration tests are gated with `#[cfg(feature = "integration")]`
+- The `integration` feature is included in `default` — `cargo nextest run --all-features` runs everything
+- No mocking: all integration tests call real HuggingFace endpoints
+- Loud failure: tests `panic!` on missing credentials, never silently pass
+- See `docs/invariant/002_testing_standards.md` for the authoritative invariant

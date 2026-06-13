@@ -1,32 +1,14 @@
-# Operational Procedures Collection
+# Operation Doc Entity
 
-## Collection Scope
+### Scope
 
-This collection documents operational procedures for the api_huggingface crate, including:
-- Feature management and cargo features
-- Feature status tracking
-- Configuration and usage patterns
+- **Purpose**: Document operational procedures and Cargo feature flag workflows for `api_huggingface`.
+- **Responsibility**: All contributors; Cargo feature changes require updating the corresponding operation/ instance before merge.
+- **In Scope**: Cargo feature flags and their effects, feature tier classification, implementation status, usage examples.
+- **Out of Scope**: Source-level implementation details, API contract specifications, testing methodology.
 
-## Responsibility
+### Overview Table
 
-This table documents all instances in this collection, ensuring Complete Entity Coverage.
-
-| Instance | Purpose |
-|----------|---------|
-| `001_features.md` | Complete feature tables, cargo features documentation, feature tier classification, and implementation status tracking |
-
-## Overview
-
-| ID | Operation Name | Category | Complexity | Status |
-|----|----------------|----------|------------|--------|
-| 001 | Features | Documentation | Medium | Active |
-
-## Collection Principles
-
-- **Abstract First**: Documentation focuses on feature capabilities and usage, not implementation
-- **Instance Granularity**: Each operational procedure documented in separate NNN-prefixed file
-- **Complete Coverage**: All operational procedures listed in Responsibility Table
-
-## Navigation
-
-- For feature documentation and cargo features: see `001_features.md`
+| ID | Name | Purpose | Status |
+|----|------|---------|--------|
+| 001 | Feature Flag Management | Feature selection procedure, tier classification, verification steps | ✅ |

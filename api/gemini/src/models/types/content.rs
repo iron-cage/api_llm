@@ -13,6 +13,8 @@ pub struct Content
   #[ serde( default ) ]
   pub parts : Vec< Part >,
   /// Role of the content creator.
+  /// Optional to handle cases where API returns content without role (e.g., finishReason=MAX_TOKENS with empty content).
+  #[ serde( default ) ]
   pub role : String,
 }
 

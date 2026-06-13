@@ -13,9 +13,11 @@ Rust's default module system makes it easy to accidentally expose implementation
 
 ### Solution
 
-Every module uses the `mod private { }` + `crate::mod_interface!` structure from the wTools ecosystem. The `mod private { }` block contains all implementation details — everything inside is inaccessible outside the module unless explicitly re-exported via `crate::mod_interface! { }`. `lib.rs` declares all top-level modules as `layer` entries; optional modules are wrapped in `#[cfg(feature = "feature-name")]` on their `layer` declaration line. The `mod private { }` block is always **inline** — never a separate `private.rs` file or `private/` directory.
+Individual feature module files (`inference.rs`, `providers.rs`, `client.rs`, `error.rs`, etc.) use the `mod private { }` + `crate::mod_interface!` structure from the wTools ecosystem. The `mod private { }` block contains all implementation details — imports, type definitions, and impls — everything inside is inaccessible outside the module unless explicitly re-exported via `crate::mod_interface! { exposed use ... }`. The `mod private { }` block is always **inline** — never a separate `private.rs` file or `private/` directory.
 
-Subdirectory modules (`audio/`, `vision/`, `reliability/`, etc.) follow the same pattern: each subdirectory has a root module file (no `mod.rs`) with `mod private { }` + `mod_interface!` declarations, and submodules declared as `layer` entries.
+`lib.rs` declares all top-level modules as `pub mod` entries; optional modules are preceded by `#[cfg(feature = "feature-name")]`. `lib.rs` itself has an empty `mod private {}` and uses `crate::mod_interface! { exposed use ... }` only for a small set of convenience crate-root re-exports.
+
+Subdirectory modules (`audio/`, `vision/`, `reliability/`, etc.) each have a `mod.rs` root file that uses standard `pub mod` declarations for submodules. Some subdirectories (`components/`, `environment/`) additionally use `crate::mod_interface! { exposed use submod; }` to re-export submodule namespaces at the subdirectory level; others (`audio/`, `reliability/`) use direct `pub mod` and `pub use` for submodule access.
 
 ### Applicability
 
@@ -23,19 +25,39 @@ Apply to every `.rs` file and directory under `src/`. Do not use this pattern in
 
 ### Consequences
 
-**Benefits**: Public API surface is explicit and auditable. Feature gating is centralized. Accidental exposure is prevented. **Trade-offs**: Requires `mod_interface` macro overhead. Directory module structure (no `mod.rs`) may be unfamiliar.
+**Benefits**: Public API surface is explicit and auditable. Feature gating is centralized. Accidental exposure is prevented. **Trade-offs**: Requires `mod_interface` macro overhead in individual feature modules. Subdirectory `mod.rs` files have mixed conventions — some use `mod_interface!`, others use standard `pub mod`/`pub use`.
 
 ### Sources
 
 | File | Relationship |
 |------|--------------|
-| `src/lib.rs` | Top-level `mod_interface!` declaration — reference implementation with feature-gated `layer` entries |
-| `src/client.rs` | Example of `mod private { }` + `mod_interface!` in a large single-file module |
-| `src/audio/` | Example of subdirectory module with sub-layer declarations |
-| `src/reliability/` | Example of feature-gated reliability module grouping |
+| `src/lib.rs` | Crate root — empty `mod private {}`, `pub mod` with `#[cfg]` gates, sparse `crate::mod_interface!` re-exports |
+| `src/client.rs` | Individual feature module — `mod private { }` + `crate::mod_interface!` pattern |
+| `src/components/mod.rs` | Subdirectory mod.rs — `pub mod` submodules + `crate::mod_interface! { exposed use submod; }` |
+| `src/audio/mod.rs` | Subdirectory mod.rs — `pub mod` + `pub use` (no `mod_interface!`) |
 
 ### Tests
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Verifies public API surface exposed by `mod_interface` re-exports compiles correctly |
+| `tests/client_tests.rs` | Verifies public API surface exposed by `mod_interface` re-exports compiles correctly |
+| `tests/components_tests.rs` | Verifies shared component types are accessible via module re-exports |
+| `tests/docs/pattern/01_module_organization.md` | GWT spec scenarios for this doc instance |
+
+### APIs
+
+| File | Relationship |
+|------|--------------|
+| `api/001_reference.md` | Defines the public API surface that this module pattern exposes |
+
+### Invariants
+
+| File | Relationship |
+|------|--------------|
+| `invariant/001_thin_client_principle.md` | Governs explicit API exposure — no accidental re-exports permitted |
+
+### Features
+
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Enterprise feature modules follow this pattern with feature-gated `pub mod` declarations |

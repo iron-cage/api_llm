@@ -88,6 +88,8 @@ fn test_count_single_message()
   ChatMessage {
       role : "user".to_string( ),
       content : "Hello, how are you?".to_string( ),
+      tool_calls : None,
+      tool_call_id : None,
   }
   ];
 
@@ -108,14 +110,20 @@ fn test_count_multiple_messages()
   ChatMessage {
       role : "user".to_string( ),
       content : "Hello".to_string( ),
+      tool_calls : None,
+      tool_call_id : None,
   },
   ChatMessage {
       role : "assistant".to_string( ),
       content : "Hi there!".to_string( ),
+      tool_calls : None,
+      tool_call_id : None,
   },
   ChatMessage {
       role : "user".to_string( ),
       content : "How are you?".to_string( ),
+      tool_calls : None,
+      tool_call_id : None,
   },
   ];
 
@@ -146,6 +154,8 @@ fn test_message_with_empty_content()
   ChatMessage {
       role : "user".to_string( ),
       content : String::new( ),
+      tool_calls : None,
+      tool_call_id : None,
   }
   ];
 
@@ -442,6 +452,8 @@ fn test_count_long_conversation()
   messages.push( ChatMessage {
       role : if i % 2 == 0 { "user" } else { "assistant" }.to_string( ),
       content : format!( "This is message number {}", i ),
+      tool_calls : None,
+      tool_call_id : None,
   } );
   }
 

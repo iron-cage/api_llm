@@ -1,331 +1,138 @@
-# api_huggingface API Reference
+# API: Client Interface
 
-Complete API reference for the HuggingFace client library.
+### Scope
 
-## Client Operations
+- **Purpose**: Document the complete public API contract for `api_huggingface` — method signatures, endpoint mapping, error types, and parameter contracts.
+- **Responsibility**: All contributors; new public methods or changed signatures require updating this document before merge.
+- **In Scope**: Client method signatures, endpoint mapping to HuggingFace Inference and Router APIs, request/response type contracts, error enum variants, parameter constraints.
+- **Out of Scope**: Internal implementation details, source-level comments, Cargo feature configuration, example usage code.
 
-The `Client` provides access to all API endpoints through specialized interfaces:
+### Abstract
 
-### Text Generation
+The `api_huggingface` client provides access to HuggingFace Inference API and Router API endpoints through a generic `Client<E>` type parameterized over an environment `E`. All methods map directly to one HuggingFace API endpoint with no implicit behaviors. Enterprise features (circuit breaker, rate limiting, failover, caching, etc.) are accessible only when their corresponding Cargo feature is enabled. Authentication is provided via `Secret` loaded explicitly from an environment variable or workspace secrets file.
 
-Generate text using large language models:
+### Client Construction
 
-```rust
-// Basic generation
-let response = client.inference()
-  .create( "What is the capital of France?", Models::llama_3_1_8b_instruct() )
-  .await?;
+- `Client::build(env)` — construct from an environment, returns `Result<Client<E>>`
+- `Secret::load_from_env(key)` — load API key from an environment variable
+- `HuggingFaceEnvironmentImpl::build(secret, base_url)` — build environment from secret and optional URL override
 
-// With parameters
-let params = InferenceParameters::new()
-  .with_temperature( 0.7 )
-  .with_max_new_tokens( 100 );
+### Inference Operations
 
-let response = client.inference()
-  .create_with_parameters( "Tell me a story", Models::llama_3_1_8b_instruct(), params )
-  .await?;
+Maps to HuggingFace Inference API endpoint `/models/{model_id}`.
 
-// Streaming
-let mut stream = client.inference()
-  .create_stream( "Generate a long response", Models::llama_3_1_8b_instruct() )
-  .await?;
+- `client.inference().create(prompt, model)` — single-turn text generation
+- `client.inference().create_with_parameters(prompt, model, params)` — generation with inference parameters (requires `inference-parameters` feature)
+- `client.inference().create_stream(prompt, model)` — streaming text generation (requires `inference-streaming` feature)
+- `InferenceParameters` — controls temperature, max tokens, top-p, top-k, repetition penalty
 
-while let Some( chunk ) = stream.next().await
-{
-  println!( "{:?}", chunk );
-}
-```
+### Providers Operations
 
-**Methods:**
-- `create(prompt, model)` - Basic text generation
-- `create_with_parameters(prompt, model, params)` - Generation with custom parameters
-- `create_stream(prompt, model)` - Streaming generation
+Maps to HuggingFace Inference Providers API endpoint `/v1/chat/completions` (Pro plan models).
 
-### Embeddings
+- `client.providers().simple_chat(model, message)` — single-message chat completion
+- `client.providers().math_completion(model, question)` — math-specialized completion
+- `client.providers().chat_completion(model, messages, max_tokens, temperature, top_p)` — full chat completion with role-based messages
+- `ChatMessage` — role-based message with `role: String` and `content: String`
 
-Generate vector embeddings for text:
+### Embeddings Operations
 
-```rust
-// Single embedding
-let response = client.embeddings()
-  .create( "Hello, world!", Models::all_minilm_l6_v2() )
-  .await?;
+Maps to HuggingFace Feature Extraction API.
 
-// Batch embeddings
-let texts = vec![ "First text", "Second text" ];
-let response = client.embeddings()
-  .create_batch( &texts, Models::all_minilm_l6_v2() )
-  .await?;
+- `client.embeddings().create(text, model)` — generate single embedding vector
+- `client.embeddings().create_batch(texts, model)` — generate multiple embedding vectors (requires `embeddings-batch` feature)
+- `client.embeddings().similarity(text1, text2, model)` — cosine similarity between two texts (requires `embeddings-similarity` feature)
+- `EmbeddingOptions` — normalize and truncate configuration flags
 
-// Similarity calculation
-let similarity = client.embeddings()
-  .similarity( "I love programming", "Coding is fun", Models::all_minilm_l6_v2() )
-  .await?;
-```
+### Model Management Operations
 
-**Methods:**
-- `create(text, model)` - Generate single embedding
-- `create_batch(texts, model)` - Generate multiple embeddings
-- `similarity(text1, text2, model)` - Calculate cosine similarity
+Maps to HuggingFace Models API.
 
-### Model Management
+- `client.models().get(model)` — retrieve model metadata
+- `client.models().is_available(model)` — check model readiness
+- `client.models().status(model)` — get current model status string
+- `client.models().wait_for_model(model, timeout)` — poll until model available or timeout
 
-Query model information and availability:
+### Vision Operations
 
-```rust
-// Get model info
-let info = client.models()
-  .get( Models::llama_3_1_8b_instruct() )
-  .await?;
+Maps to HuggingFace Vision API endpoints (requires `vision` feature).
 
-// Check availability
-let available = client.models()
-  .is_available( Models::llama_3_1_8b_instruct() )
-  .await?;
+- `client.vision().classify(image, model)` — image classification with confidence scores
+- `client.vision().detect(image, model)` — object detection with bounding boxes
+- `client.vision().caption(image, model)` — image-to-text caption generation
 
-// Get status
-let status = client.models()
-  .status( Models::llama_3_1_8b_instruct() )
-  .await?;
+### Audio Operations
 
-// Wait for model to load
-client.models()
-  .wait_for_model( Models::llama_3_1_8b_instruct(), Duration::from_secs( 30 ) )
-  .await?;
-```
+Maps to HuggingFace Audio API endpoints (requires `audio` feature).
 
-**Methods:**
-- `get(model)` - Retrieve model information
-- `is_available(model)` - Check if model is ready
-- `status(model)` - Get current model status
-- `wait_for_model(model, timeout)` - Wait for model to become available
-
-## Popular Models
-
-The library provides convenient constants for commonly used models:
-
-### Text Generation Models
-
-```rust
-use api_huggingface::components::models::Models;
-
-// Llama models
-Models::llama_3_1_8b_instruct()      // Meta Llama 3.1 8B
-Models::llama_3_2_1b_instruct()      // Meta Llama 3.2 1B
-Models::llama_2_7b_chat()            // Meta Llama 2 7B Chat
-
-// Mistral models
-Models::mistral_7b_instruct()        // Mistral 7B Instruct
-Models::mixtral_8x7b_instruct()      // Mixtral 8x7B
-
-// Other models
-Models::kimi_k2_instruct()           // Moonshot Kimi K2
-```
-
-### Embedding Models
-
-```rust
-// Sentence transformers
-Models::all_minilm_l6_v2()           // All-MiniLM-L6-v2 (fast, 384 dims)
-Models::bge_large_en_v1_5()          // BGE Large English (1024 dims)
-Models::gte_large()                  // GTE Large (1024 dims)
-
-// Specialized embeddings
-Models::nomic_embed_text_v1_5()      // Nomic Embed Text
-```
-
-## Environment Configuration
-
-### Required Environment Variables
-
-```bash
-# API key (required)
-export HUGGINGFACE_API_KEY="hf_..."
-```
-
-### Optional Environment Variables
-
-```bash
-# Custom API endpoint (optional)
-export HUGGINGFACE_BASE_URL="https://api-inference.huggingface.co"
-```
-
-### Loading from Environment
-
-```rust
-use api_huggingface::{ Client, environment::HuggingFaceEnvironmentImpl, secret::Secret };
-
-// Load from environment variable
-let api_key = Secret::load_from_env( "HUGGINGFACE_API_KEY" )?;
-
-// Build environment with default URL
-let env = HuggingFaceEnvironmentImpl::build( api_key, None )?;
-
-// Build environment with custom URL
-let custom_url = Some( "https://custom-endpoint.com".to_string() );
-let env = HuggingFaceEnvironmentImpl::build( api_key, custom_url )?;
-
-// Create client
-let client = Client::build( env )?;
-```
-
-## Error Handling
-
-The library provides comprehensive error types for precise error handling:
+- `client.audio().transcribe(audio, model)` — automatic speech recognition
+- `client.audio().synthesize(text, model)` — text-to-speech generation
+- `client.audio().classify(audio, model)` — audio classification
+- `client.audio().transform(audio, model)` — audio-to-audio transformation
 
 ### Error Types
 
-```rust
-use api_huggingface::error::HuggingFaceError;
+`HuggingFaceError` variants:
 
-match result
-{
-  Ok( response ) => { /* handle success */ }
-  Err( HuggingFaceError::Api( msg ) ) =>
-  {
-    // API-specific errors (invalid request, model errors)
-    eprintln!( "API error: {}", msg );
-  }
-  Err( HuggingFaceError::Authentication( msg ) ) =>
-  {
-    // Authentication failures (invalid key, expired token)
-    eprintln!( "Auth error: {}", msg );
-  }
-  Err( HuggingFaceError::RateLimit( msg ) ) =>
-  {
-    // Rate limiting errors
-    eprintln!( "Rate limit: {}", msg );
-  }
-  Err( HuggingFaceError::ModelUnavailable( msg ) ) =>
-  {
-    // Model loading or availability errors
-    eprintln!( "Model unavailable: {}", msg );
-  }
-  Err( e ) =>
-  {
-    // Other errors
-    eprintln!( "Error: {:?}", e );
-  }
-}
-```
+- `Api(msg)` — invalid requests, model errors, parameter validation failures
+- `Authentication(msg)` — invalid API key, expired tokens, permission errors
+- `RateLimit(msg)` — request rate exceeded, quota limits
+- `ModelUnavailable(msg)` — model loading, cold start, not found
+- `Http(msg)` — connection errors, HTTP transport failures, timeouts, DNS failures
+- `Serialization(msg)` — JSON parsing errors, invalid response formats
 
-### Error Categories
+### Model Constants
 
-- **`Api`** - Invalid requests, model errors, parameter validation
-- **`Authentication`** - Invalid API key, expired tokens, permission errors
-- **`RateLimit`** - Request rate exceeded, quota limits
-- **`ModelUnavailable`** - Model loading, cold start, not found
-- **`Network`** - Connection errors, timeouts, DNS failures
-- **`Serialization`** - JSON parsing errors, invalid response formats
+`Models` struct provides associated functions for commonly used model identifiers:
 
-## Parameters and Options
+- Text generation: `Models::llama_3_1_8b_instruct()`, `Models::mistral_7b_instruct()`, `Models::kimi_k2_instruct()`
+- Embeddings: `Models::all_minilm_l6_v2()`, `Models::bge_large_en_v1_5()`
+- Returns model identifier strings compatible with all API operations above
 
-### InferenceParameters
+### Compatibility Guarantees
 
-Control text generation behavior:
+All public method signatures follow semantic versioning. Breaking changes require a major version increment. Error variant additions are non-breaking (callers should use catch-all arms). Feature flag additions are non-breaking; removals or renames are breaking changes.
 
-```rust
-use api_huggingface::components::input::InferenceParameters;
+### Invariants
 
-let params = InferenceParameters::new()
-  .with_temperature( 0.7 )        // Randomness (0.0-2.0)
-  .with_max_new_tokens( 100 )     // Maximum tokens to generate
-  .with_top_p( 0.95 )             // Nucleus sampling
-  .with_top_k( 50 )               // Top-k sampling
-  .with_repetition_penalty( 1.2 ); // Penalize repetition
-```
+| File | Relationship |
+|------|--------------|
+| `invariant/001_thin_client_principle.md` | Enforces one-endpoint-per-method mapping — no implicit behaviors |
+| `invariant/002_testing_standards.md` | Enforces real API testing for all methods documented here |
 
-**Common Parameters:**
-- `temperature` - Controls randomness (0.0 = deterministic, 2.0 = very random)
-- `max_new_tokens` - Maximum tokens to generate
-- `top_p` - Nucleus sampling threshold
-- `top_k` - Top-k sampling threshold
-- `repetition_penalty` - Penalty for repeating tokens
+### Patterns
 
-### EmbeddingOptions
+| File | Relationship |
+|------|--------------|
+| `pattern/001_module_organization.md` | Module structure exposing all API accessors via `mod_interface!` |
 
-Configure embedding generation:
+### Features
 
-```rust
-use api_huggingface::components::embeddings::EmbeddingOptions;
+| File | Relationship |
+|------|--------------|
+| `feature/001_enterprise_reliability.md` | Enterprise features usable in conjunction with all operations above |
 
-let options = EmbeddingOptions::new()
-  .with_normalize( true )       // Normalize vectors
-  .with_truncate( true );       // Truncate long inputs
-```
+### Sources
 
-## Response Types
+| File | Relationship |
+|------|--------------|
+| `src/secret.rs` | `Secret::load_from_env()` — credential loading |
+| `src/error.rs` | `HuggingFaceError` enum — all variants listed in Error Types |
+| `src/client.rs` | `Client<E>` struct — all accessor methods |
+| `src/inference.rs` | `Inference<E>` — text generation methods |
+| `src/providers.rs` | `Providers<E>` — Router API chat completion methods |
+| `src/embeddings.rs` | `Embeddings<E>` — embedding generation methods |
+| `src/models.rs` | `Models<E>` — model management methods |
+| `src/components/models.rs` | `Models` struct — model constant functions |
+| `src/components/input.rs` | `InferenceParameters` — inference parameter type |
 
-### InferenceResponse
+### Tests
 
-Text generation response:
-
-```rust
-pub struct InferenceResponse
-{
-  pub generated_text : Option< String >,
-  pub details : Option< ResponseDetails >,
-}
-
-// Extract text with fallback
-let text = response.extract_text_or_default( "Default text" );
-```
-
-### EmbeddingResponse
-
-Embedding generation response:
-
-```rust
-pub struct EmbeddingResponse
-{
-  pub embeddings : Vec< Vec< f32 > >,
-  pub model : String,
-}
-
-// Access embeddings
-let vector = &response.embeddings[ 0 ];
-```
-
-### StreamingChunk
-
-Streaming response chunk:
-
-```rust
-pub struct StreamingChunk
-{
-  pub token : Option< String >,
-  pub details : Option< ChunkDetails >,
-}
-```
-
-## Advanced Features
-
-### Synchronous API
-
-For blocking/synchronous contexts:
-
-```rust
-use api_huggingface::sync::SyncClient;
-
-// Create sync client (requires "sync" feature)
-let client = SyncClient::new( "hf_...".to_string() )?;
-
-// Blocking calls
-let response = client.inference()
-  .create( "What is 2+2?", "meta-llama/Llama-3.2-1B-Instruct" )?;
-```
-
-### CURL Diagnostics
-
-Generate curl commands for debugging:
-
-```rust
-// Generate equivalent curl command for debugging
-let curl_command = client.generate_curl_command( request )?;
-println!( "Debug: {}", curl_command );
-```
-
-## See Also
-
-- [Features Overview](features.md) - Complete feature list and status
-- [Examples](../examples/readme.md) - Working code examples
+| File | Relationship |
+|------|--------------|
+| `tests/inference_tests.rs` | Integration tests for Inference operations |
+| `tests/providers_api_tests.rs` | Unit tests for Providers API types |
+| `tests/embeddings_tests.rs` | Integration tests for Embeddings operations |
+| `tests/models_tests.rs` | Integration tests for Model Management |
+| `tests/client_tests.rs` | Client initialization and configuration tests |
+| `tests/docs/api/01_reference.md` | GWT spec scenarios for this doc instance |

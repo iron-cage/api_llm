@@ -449,12 +449,7 @@ mod integration_tests
   // Basic response validation
   println!( "Integration test successful - received response" );
       },
-      Err( e ) => 
-      {
-  // Integration test failures might be due to rate limits, model availability, etc.
-  // Log but don't fail the test
-  println!( "Integration test failed (expected in CI): {e}" );
-      }
+      Err( e ) => panic!( "Integration test failed: {e}" ),
   }
   }
   
@@ -486,10 +481,7 @@ mod integration_tests
       {
   println!( "Integration test with parameters successful" );
       },
-      Err( e ) => 
-      {
-  println!( "Integration test with parameters failed (expected in CI): {e}" );
-      }
+      Err( e ) => panic!( "Integration test with parameters failed: {e}" ),
   }
   }
 }

@@ -301,3 +301,206 @@ async fn integration_tool_choice_mode_transitions()
 
   println!( "✅ Tool choice mode transitions test passed!" );
 }
+
+// ============================================================================
+// UNIT TESTS - TOOL EXECUTOR AND REGISTRY
+// (Migrated from src/enhanced_function_calling.rs #[cfg(test)] block)
+// ============================================================================
+
+struct RegistryTestTool
+{
+  name : String,
+  description : String,
+}
+
+impl the_module::ToolExecutor for RegistryTestTool
+{
+  fn name( &self ) -> &str
+  {
+    &self.name
+  }
+
+  fn description( &self ) -> &str
+  {
+    &self.description
+  }
+
+  fn parameter_schema( &self ) -> serde_json::Value
+  {
+    serde_json::json!(
+    {
+      "type" : "object",
+      "properties" :
+      {
+        "input" :
+        {
+          "type" : "string",
+          "description" : "Test input"
+        }
+      },
+      "required" : [ "input" ]
+    })
+  }
+
+  fn execute( &self, params : serde_json::Value ) -> the_module::ToolResult
+  {
+    let input = params[ "input" ].as_str()
+      .ok_or( "Missing input parameter" )?;
+    Ok( format!( "Executed {} with: {}", self.name, input ) )
+  }
+}
+
+#[ test ]
+fn test_tool_registry_new()
+{
+  let registry = the_module::ToolRegistry::new();
+  assert!( registry.is_empty() );
+  assert_eq!( registry.len(), 0 );
+}
+
+#[ test ]
+fn test_tool_registry_register()
+{
+  let mut registry = the_module::ToolRegistry::new();
+
+  let tool = Box::new( RegistryTestTool
+  {
+    name : "test_tool".to_string(),
+    description : "Test tool".to_string(),
+  } );
+
+  registry.register( tool );
+
+  assert!( !registry.is_empty() );
+  assert_eq!( registry.len(), 1 );
+  assert!( registry.has_tool( "test_tool" ) );
+}
+
+#[ test ]
+fn test_tool_registry_execute()
+{
+  let mut registry = the_module::ToolRegistry::new();
+
+  let tool = Box::new( RegistryTestTool
+  {
+    name : "test_tool".to_string(),
+    description : "Test tool".to_string(),
+  } );
+
+  registry.register( tool );
+
+  let params = serde_json::json!( { "input" : "test value" } );
+  let result = registry.execute( "test_tool", params );
+
+  assert!( result.is_ok() );
+  let output = result.unwrap();
+  assert!( output.contains( "test_tool" ) );
+  assert!( output.contains( "test value" ) );
+}
+
+#[ test ]
+fn test_tool_registry_execute_not_found()
+{
+  let registry = the_module::ToolRegistry::new();
+  let params = serde_json::json!( { "input" : "test" } );
+  let result = registry.execute( "nonexistent", params );
+
+  assert!( result.is_err() );
+  let err = result.unwrap_err();
+  assert!( err.contains( "not found" ) );
+}
+
+#[ test ]
+fn test_tool_registry_definitions()
+{
+  let mut registry = the_module::ToolRegistry::new();
+
+  let tool = Box::new( RegistryTestTool
+  {
+    name : "test_tool".to_string(),
+    description : "Test tool description".to_string(),
+  } );
+
+  registry.register( tool );
+
+  let definitions = registry.definitions();
+  assert_eq!( definitions.len(), 1 );
+  assert_eq!( definitions[ 0 ].name, "test_tool" );
+  assert_eq!( definitions[ 0 ].description, "Test tool description" );
+}
+
+#[ test ]
+fn test_tool_registry_tool_names()
+{
+  let mut registry = the_module::ToolRegistry::new();
+
+  registry.register( Box::new( RegistryTestTool
+  {
+    name : "tool1".to_string(),
+    description : "Tool 1".to_string(),
+  } ) );
+
+  registry.register( Box::new( RegistryTestTool
+  {
+    name : "tool2".to_string(),
+    description : "Tool 2".to_string(),
+  } ) );
+
+  let names = registry.tool_names();
+  assert_eq!( names.len(), 2 );
+  assert!( names.contains( &"tool1".to_string() ) );
+  assert!( names.contains( &"tool2".to_string() ) );
+}
+
+#[ test ]
+fn test_create_tool_definition()
+{
+  let schema = serde_json::json!( { "type" : "object" } );
+  let tool_def = the_module::create_tool_definition( "test", "Test tool", schema.clone() );
+
+  assert_eq!( tool_def.name, "test" );
+  assert_eq!( tool_def.description, "Test tool" );
+  assert_eq!( tool_def.input_schema, schema );
+}
+
+#[ test ]
+fn test_create_parameter_schema()
+{
+  let properties = serde_json::json!(
+  {
+    "location" :
+    {
+      "type" : "string",
+      "description" : "City name"
+    }
+  });
+
+  let schema = the_module::create_parameter_schema( &properties, &[ "location".to_string() ] );
+
+  assert_eq!( schema[ "type" ], "object" );
+  assert!( schema[ "properties" ][ "location" ].is_object() );
+  assert_eq!( schema[ "required" ][ 0 ], "location" );
+}
+
+#[ test ]
+fn test_tool_executor_default_schema()
+{
+  use the_module::ToolExecutor;
+  struct MinimalTool;
+
+  impl the_module::ToolExecutor for MinimalTool
+  {
+    fn name( &self ) -> &'static str { "minimal" }
+    fn description( &self ) -> &'static str { "Minimal tool" }
+    fn execute( &self, _params : serde_json::Value ) -> the_module::ToolResult
+    {
+      Ok( "done".to_string() )
+    }
+  }
+
+  let tool = MinimalTool;
+  let schema = tool.parameter_schema();
+
+  assert_eq!( schema[ "type" ], "object" );
+  assert!( schema[ "properties" ].is_object() );
+}

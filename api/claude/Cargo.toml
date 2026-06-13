@@ -28,7 +28,7 @@ all-features = false
 # Default enables everything for ease of use
 default = [ "full" ]
 # 'full' enables all features, including the base 'enabled'
-full = [ "enabled", "integration", "streaming", "authentication", "content-generation", "model-management", "error-handling", "tools", "vision", "embeddings", "curl-diagnostics", "general-diagnostics", "sync-api", "retry-logic", "circuit-breaker", "rate-limiting", "failover", "health-checks", "batch-processing", "count-tokens", "request-caching", "streaming-control", "compression", "enterprise-quota", "dynamic-config", "model-comparison", "request-templates", "buffered-streaming", "input-validation", "enhanced-function-calling" ]
+full = [ "enabled", "integration", "streaming", "authentication", "content-generation", "model-management", "error-handling", "tools", "vision", "curl-diagnostics", "general-diagnostics", "sync-api", "retry-logic", "circuit-breaker", "rate-limiting", "failover", "health-checks", "batch-processing", "count-tokens", "request-caching", "streaming-control", "compression", "enterprise-quota", "dynamic-config", "model-comparison", "request-templates", "buffered-streaming", "input-validation", "enhanced-function-calling" ]
 # 'enabled' is the master switch for the crate's core functionality
 enabled = [
   "dep:mod_interface",
@@ -58,8 +58,6 @@ error-handling = [ "chrono" ]
 tools = []
 # Feature for vision support functionality
 vision = []
-# Feature for embeddings functionality (placeholder for future)
-embeddings = []
 # Feature for curl diagnostics functionality
 curl-diagnostics = []
 # Feature for general diagnostics functionality

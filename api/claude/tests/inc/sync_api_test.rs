@@ -24,7 +24,7 @@ fn test_sync_client_construction()
     let client_result = SyncClient::from_env();
     assert!( client_result.is_ok() || client_result.is_err(), "Construction should return a result" );
 
-    // Fix(issue-hygiene-001): Fail loudly when ANTHROPIC_API_KEY missing
+    // Fix(BUG-hygiene-001): Fail loudly when ANTHROPIC_API_KEY missing
     // Root cause : Silent skip when env var missing created false positive test pass
     // Previous : if let Ok(secret) silently skipped test when ANTHROPIC_API_KEY unset
     // Fixed : .expect() fails loudly with clear message
@@ -134,10 +134,8 @@ fn test_sync_conversation_flow()
     request1.add_user_message( "My name is Alice." );
     request1.set_max_tokens( 50 );
 
-    // Fix(issue-hygiene-002): Fail loudly if first message fails
+    // Fix(BUG-003): Fail loudly if first message fails
     // Root cause : Silent skip when response1 failed - test falsely passed
-    // Previous : if let Ok silently skipped conversation test when API call failed
-    // Fixed : .expect() fails loudly with clear message about conversation flow requirement
     // Pitfall : Never skip test continuation on API failure - fail loudly to detect issues
     let response1 = client.create_message( &request1 );
     let _message1 = response1
@@ -202,10 +200,8 @@ fn test_sync_client_timeout_configuration()
   {
     use the_module::SyncClientBuilder;
 
-    // Fix(issue-hygiene-003): Fail loudly when builder fails
+    // Fix(BUG-004): Fail loudly when builder fails
     // Root cause : Silent skip when build_from_env failed - timeout test falsely passed
-    // Previous : if let Ok silently skipped timeout verification when client construction failed
-    // Fixed : .expect() fails loudly with clear message about timeout configuration requirement
     // Pitfall : Never skip configuration verification on construction failure - fail loudly
     let client = SyncClientBuilder::new()
       .timeout( Duration::from_secs( 30 ) )
@@ -214,10 +210,8 @@ fn test_sync_client_timeout_configuration()
 
     assert!( client.get_timeout() == Duration::from_secs( 30 ), "Timeout should be configured" );
 
-    // Fix(issue-hygiene-004): Fail loudly when short timeout client fails
+    // Fix(BUG-004): Fail loudly when short timeout client fails
     // Root cause : Silent skip when build_from_env failed - timeout test falsely passed
-    // Previous : if let Ok silently skipped timeout behavior test when client construction failed
-    // Fixed : .expect() fails loudly with clear message about timeout test requirement
     // Pitfall : Never skip timeout behavior verification - fail loudly to detect construction issues
     let client = SyncClientBuilder::new()
       .timeout( Duration::from_millis( 1 ) )
@@ -465,7 +459,7 @@ fn test_sync_error_handling()
       }
     }
 
-    // Fix(issue-hygiene-005): Fail loudly when client unavailable for invalid model test
+    // Fix(BUG-hygiene-005): Fail loudly when client unavailable for invalid model test
     // Root cause : Silent skip when from_env failed - invalid model error handling test falsely passed
     // Previous : if let Ok silently skipped model validation test when client construction failed
     // Fixed : .expect() fails loudly with clear message about model validation requirement

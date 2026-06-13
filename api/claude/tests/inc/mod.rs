@@ -3,6 +3,8 @@ use super::*;
 mod authentication_test;
 #[ cfg( all( feature = "batch-processing", feature = "error-handling" ) ) ]
 mod batch_messages_test;
+#[ cfg( feature = "buffered-streaming" ) ]
+mod buffered_streaming_test;
 mod circuit_breaker_test;
 #[ cfg( feature = "compression" ) ]
 mod compression_test;
@@ -13,7 +15,6 @@ mod core_client_test;
 mod curl_diagnostics_test;
 #[ cfg( feature = "dynamic-config" ) ]
 mod dynamic_config_test;
-mod embeddings_test;
 #[ cfg( all( feature = "retry-logic", feature = "error-handling" ) ) ]
 mod enhanced_retry_logic_test;
 mod enterprise_configuration_test;
@@ -37,6 +38,8 @@ mod performance_monitoring_test;
 mod prompt_caching_tests;
 #[ cfg( feature = "rate-limiting" ) ]
 mod rate_limiting_test;
+#[ cfg( feature = "request-templates" ) ]
+mod request_templates_test;
 mod retry_logic_test;
 mod simple_integration_test;
 mod spec_verification_integration_test;

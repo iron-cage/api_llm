@@ -1,6 +1,7 @@
 //! Dynamic configuration functionality tests
 
-use api_gemini::client::Client;
+#[ path = "common/mod.rs" ] mod common;
+use common::create_integration_client;
 use api_gemini::models::config::*;
 use api_gemini::error::Error;
 use std::time::Duration;
@@ -14,7 +15,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_runtime_configuration_updates_without_restart() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Get initial configuration
     let initial_config = client.config().current();
@@ -124,7 +125,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_configuration_rollback_mechanisms() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test rollback when no history exists
     let rollback_result = client.config().rollback().await;
@@ -211,7 +212,7 @@ mod integration_tests
     println!( "✓ Configuration loaded from JSON file with all fields" );
 
     // Test loading file configuration into client
-    let client = Client::new()?;
+    let client = create_integration_client();
     let updated_client = client.config().load_from_file( &temp_file ).await?;
     let current_config = updated_client.config().current();
     // NOTE: Timeout application not yet implemented, still returns hardcoded 30s
@@ -252,7 +253,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_configuration_change_propagation() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Set up change notification tracking
     let change_events = Arc::new( Mutex::new( Vec::< ConfigChangeEvent >::new() ) );
@@ -305,7 +306,7 @@ mod integration_tests
   #[ tokio::test ]
   async fn test_concurrent_configuration_updates() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Create multiple configuration updates concurrently
     let mut handles = Vec::new();
@@ -374,7 +375,7 @@ println!( "✓ Concurrent configuration updates completed : {} successful, {} fa
   #[ tokio::test ]
   async fn test_configuration_version_management() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Apply several configuration changes to build version history
     let configs = vec![
@@ -439,7 +440,7 @@ println!( "✓ Concurrent configuration updates completed : {} successful, {} fa
   #[ tokio::test ]
   async fn test_configuration_integration_with_client_components() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test that configuration changes affect retry behavior
     let retry_config = DynamicConfig::builder()
@@ -496,7 +497,7 @@ println!( "✓ Concurrent configuration updates completed : {} successful, {} fa
   #[ tokio::test ]
   async fn test_configuration_error_handling_and_recovery() -> Result< (), Box< dyn std::error::Error > >
   {
-    let client = Client::new()?;
+    let client = create_integration_client();
 
     // Test that invalid configuration updates are rejected without affecting current config
     let original_config = client.config().current();

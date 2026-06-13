@@ -532,7 +532,6 @@ pub struct AggregatedMetrics
     }
   }
 
-  // Implementation stubs for testing
   impl DiagnosticsCollector
   {
     /// Create a new diagnostics collector
@@ -570,36 +569,6 @@ pub struct AggregatedMetrics
       "collection-id".to_string()
     }
 
-    /// Complete diagnostics collection for a request
-    #[ inline ]
-    #[ must_use ]
-    pub fn complete_collection< T >( &self, #[ allow( unused_variables ) ] _collection_id : String, #[ allow( unused_variables ) ] _response : &T ) -> DiagnosticsData
-    {
-      DiagnosticsData
-      {
-        curl_representation : Some( r#"curl -X POST "https:// api.anthropic.com/v1/messages" -H "Content-Type : application/json" -d '{"model":"claude-3-haiku-20240307","max_tokens":50}'"#.to_string() ),
-        request_size : 100,
-        estimated_cost : Some( 0.005 ),
-        request_metrics : vec![
-          RequestMetricData {
-            duration : Duration::from_millis(120),
-            success : true,
-          }
-        ],
-      }
-    }
-
-    /// Get aggregated metrics from the collector
-    #[ inline ]
-    #[ must_use ]
-    pub fn get_aggregated_metrics( &self ) -> AggregatedMetrics
-    {
-      AggregatedMetrics
-      {
-        request_count : 50,
-        has_performance_data : true,
-      }
-    }
   }
 
   impl AggregatedMetrics
@@ -702,44 +671,6 @@ pub struct AggregatedMetrics
         .map_or( Duration::from_millis( 100 ), | m | m.duration )
     }
 
-    /// Get the number of tokens used
-    #[ inline ]
-    #[ must_use ]
-    pub fn tokens_used( &self ) -> u32
-    {
-      50 // Mock value
-    }
-
-    /// Get the error category if request failed
-    #[ inline ]
-    #[ must_use ]
-    pub fn error_category( &self ) -> Option< &str >
-    {
-      if self.request_failed()
-      {
-        Some( "test_error" )
-      }
-      else
-      {
-        None
-      }
-    }
-
-    /// Check if the diagnostics data can be exported
-    #[ inline ]
-    #[ must_use ]
-    pub fn can_export( &self ) -> bool
-    {
-      true
-    }
-
-    /// Get the cURL equivalent command
-    #[ inline ]
-    #[ must_use ]
-    pub fn curl_equivalent( &self ) -> &str
-    {
-      self.curl_command()
-    }
   }
 
 

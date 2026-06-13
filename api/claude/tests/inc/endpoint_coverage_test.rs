@@ -136,25 +136,6 @@ async fn test_ap_07()
   // stream type is EventStream = Pin<Box<dyn Stream<...>>>; compilation confirms it exists
 }
 
-/// AP-08: `create_embedding()` returns `NotImplemented`
-#[ cfg( feature = "embeddings" ) ]
-#[ test ]
-fn test_ap_08()
-{
-  let secret = the_module::Secret::new( format!( "sk-ant-api03-{}", "x".repeat( 64 ) ) )
-    .expect( "valid-format key must construct" );
-  let client = the_module::Client::new( secret );
-  let request = the_module::EmbeddingRequest::new()
-    .model( "embeddings-v1" )
-    .input( "test" );
-  let result = client.create_embedding( &request );
-  assert!( result.is_err(), "AP-08: create_embedding must return Err(NotImplemented)" );
-  let err = result.unwrap_err();
-  assert!(
-    matches!( err, the_module::AnthropicError::NotImplemented( _ ) ),
-    "AP-08: error must be NotImplemented variant, got: {err}"
-  );
-}
 
 /// AP-09: `count_message_tokens()` absent without count-tokens feature
 /// This test only compiles when count-tokens is enabled; the types are gated.
@@ -210,22 +191,3 @@ async fn test_ap_11()
   );
 }
 
-/// AP-12: `create_embeddings_batch()` returns `NotImplemented`
-#[ cfg( feature = "embeddings" ) ]
-#[ test ]
-fn test_ap_12()
-{
-  let secret = the_module::Secret::new( format!( "sk-ant-api03-{}", "x".repeat( 64 ) ) )
-    .expect( "valid-format key must construct" );
-  let client = the_module::Client::new( secret );
-  let request = the_module::EmbeddingRequest::new()
-    .model( "embeddings-v1" )
-    .input( "test" );
-  let result = client.create_embeddings_batch( &[ request ] );
-  assert!( result.is_err(), "AP-12: create_embeddings_batch must return Err(NotImplemented)" );
-  let err = result.unwrap_err();
-  assert!(
-    matches!( err, the_module::AnthropicError::NotImplemented( _ ) ),
-    "AP-12: error must be NotImplemented variant, got: {err}"
-  );
-}

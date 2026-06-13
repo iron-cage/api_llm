@@ -23,6 +23,7 @@
 //! - Real API integration
 //! - Concurrent access
 
+#[ cfg( feature = "integration" ) ]
 use api_huggingface::{
   Client,
   environment::HuggingFaceEnvironmentImpl,
@@ -35,10 +36,13 @@ use api_huggingface::{
   },
   Secret,
 };
+#[ cfg( feature = "integration" ) ]
 use core::time::Duration;
+#[ cfg( feature = "integration" ) ]
 use std::sync::Arc;
 
 /// Create a test client with API key from workspace secrets
+#[ cfg( feature = "integration" ) ]
 fn create_test_client() -> Client< HuggingFaceEnvironmentImpl >
 {
   use workspace_tools as workspace;
@@ -58,12 +62,15 @@ fn create_test_client() -> Client< HuggingFaceEnvironmentImpl >
 }
 
 /// Helper function to create test messages
+#[ cfg( feature = "integration" ) ]
 fn create_test_messages() -> Vec< ChatMessage > 
 {
   vec![
   ChatMessage {
       role : "user".to_string( ),
       content : "Hello, how are you?".to_string( ),
+      tool_calls : None,
+      tool_call_id : None,
   }
   ]
 }

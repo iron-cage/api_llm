@@ -113,8 +113,6 @@ crate::mod_interface!
   layer curl_diagnostics;
   #[ cfg( feature = "dynamic-config" ) ]
   layer dynamic_config;
-  #[ cfg( feature = "embeddings" ) ]
-  layer embeddings;
   layer enterprise_config;
   #[ cfg( feature = "enterprise-quota" ) ]
   layer enterprise_quota;

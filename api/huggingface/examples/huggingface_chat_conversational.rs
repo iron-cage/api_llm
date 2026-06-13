@@ -342,6 +342,8 @@ impl ChatbotSystem
   {
       role : "system".to_string(),
       content : system_content.to_string(),
+      tool_calls : None,
+      tool_call_id : None,
   } );
 
   // Add conversation history
@@ -351,12 +353,16 @@ impl ChatbotSystem
       {
   role : "user".to_string(),
   content : user_msg.clone(),
+  tool_calls : None,
+  tool_call_id : None,
       } );
-      
+
       messages.push( ChatMessage
       {
   role : "assistant".to_string(),
   content : bot_msg.clone(),
+  tool_calls : None,
+  tool_call_id : None,
       } );
   }
 
@@ -365,6 +371,8 @@ impl ChatbotSystem
   {
       role : "user".to_string(),
       content : user_input.to_string(),
+      tool_calls : None,
+      tool_call_id : None,
   } );
 
   Ok( messages )

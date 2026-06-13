@@ -294,10 +294,14 @@ mod tests {
       ChatMessage {
   role : "user".to_string( ),
   content : "Hello".to_string( ),
+  tool_calls : None,
+  tool_call_id : None,
       },
       ChatMessage {
   role : "assistant".to_string( ),
   content : "Hi there!".to_string( ),
+  tool_calls : None,
+  tool_call_id : None,
       },
   ];
 

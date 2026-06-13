@@ -9,6 +9,7 @@ Integration and unit test modules for `api_claude`. All modules are declared in 
 | mod.rs | Test module aggregator and shared imports |
 | authentication_test.rs | Authentication feature tests |
 | batch_messages_test.rs | Batch message creation API tests |
+| buffered_streaming_test.rs | Buffered stream configuration and chunk behavior tests |
 | circuit_breaker_test.rs | Circuit breaker state machine tests |
 | comprehensive_integration_test.rs | End-to-end multi-feature integration tests |
 | compression_test.rs | HTTP compression feature tests |
@@ -17,7 +18,6 @@ Integration and unit test modules for `api_claude`. All modules are declared in 
 | core_client_test.rs | Client construction and configuration tests |
 | curl_diagnostics_test.rs | Curl diagnostics feature tests |
 | dynamic_config_test.rs | Dynamic configuration hot-reload tests |
-| embeddings_test.rs | Embeddings stub validation tests |
 | enhanced_function_calling_test.rs | Enhanced function calling integration tests |
 | enhanced_model_details_test.rs | Enhanced model detail retrieval tests |
 | enhanced_retry_logic_test.rs | Retry logic with enhanced error handling tests |
@@ -39,6 +39,7 @@ Integration and unit test modules for `api_claude`. All modules are declared in 
 | prompt_caching_tests.rs | Prompt caching control and cache token tests |
 | rate_limiting_test.rs | Rate limiter token bucket behavior tests |
 | request_caching_test.rs | Request cache hit/miss and TTL tests |
+| request_templates_test.rs | Pre-configured request template builder tests |
 | retry_logic_test.rs | Retry backoff and attempt limit tests |
 | simple_integration_test.rs | Minimal real-API integration smoke tests |
 | spec_verification_integration_test.rs | Specification compliance verification tests |
@@ -53,7 +54,6 @@ Integration and unit test modules for `api_claude`. All modules are declared in 
 | token_validation_test.rs | Token count validation boundary tests |
 | tool_calling_test.rs | Tool definition and choice type tests |
 | vision_support_test.rs | Image content type and vision API tests |
-| workspace_loading_integration_test.rs | Workspace secret loading integration tests |
 | endpoint_coverage_test.rs | Endpoint coverage spec test functions (AP-01..AP-12) |
 | enterprise_reliability_test.rs | Enterprise reliability spec test functions (FT-01..FT-08) |
 | module_organization_test.rs | Module organization spec test functions (PT-01..PT-06) |

@@ -373,6 +373,7 @@ where
           {
             warn!( "Compression failed, using uncompressed body : {}", e );
           }
+          let _ = e;
           ( json_body.into_bytes(), false )
         }
       }

@@ -689,3 +689,122 @@ async fn integration_validation_allows_valid_requests()
 
   println!( "✅ Validation allows valid requests!" );
 }
+
+// ============================================================================
+// UNIT TESTS - VALIDATOR FUNCTIONS
+// (Migrated from src/input_validation.rs #[cfg(test)] block)
+// ============================================================================
+
+#[ test ]
+fn test_validate_model_valid()
+{
+  assert!( the_module::validators::validate_model( "claude-3-opus-20240229" ).is_ok() );
+}
+
+#[ test ]
+fn test_validate_model_empty()
+{
+  let result = the_module::validators::validate_model( "" );
+  assert!( result.is_err() );
+  let err = result.unwrap_err();
+  assert_eq!( err.field, "model" );
+}
+
+#[ test ]
+fn test_validate_model_too_long()
+{
+  let long_model = "a".repeat( 300 );
+  let result = the_module::validators::validate_model( &long_model );
+  assert!( result.is_err() );
+}
+
+#[ test ]
+fn test_validate_max_tokens_valid()
+{
+  assert!( the_module::validators::validate_max_tokens( 1024 ).is_ok() );
+  assert!( the_module::validators::validate_max_tokens( 4096 ).is_ok() );
+}
+
+#[ test ]
+fn test_validate_max_tokens_zero()
+{
+  assert!( the_module::validators::validate_max_tokens( 0 ).is_err() );
+}
+
+#[ test ]
+fn test_validate_max_tokens_too_large()
+{
+  assert!( the_module::validators::validate_max_tokens( 10_000 ).is_err() );
+}
+
+#[ test ]
+fn test_validate_temperature_valid()
+{
+  assert!( the_module::validators::validate_temperature( 0.0 ).is_ok() );
+  assert!( the_module::validators::validate_temperature( 0.5 ).is_ok() );
+  assert!( the_module::validators::validate_temperature( 1.0 ).is_ok() );
+}
+
+#[ test ]
+fn test_validate_temperature_invalid()
+{
+  assert!( the_module::validators::validate_temperature( -0.1 ).is_err() );
+  assert!( the_module::validators::validate_temperature( 1.1 ).is_err() );
+}
+
+#[ test ]
+fn test_validate_top_p_valid()
+{
+  assert!( the_module::validators::validate_top_p( 0.0 ).is_ok() );
+  assert!( the_module::validators::validate_top_p( 0.9 ).is_ok() );
+  assert!( the_module::validators::validate_top_p( 1.0 ).is_ok() );
+}
+
+#[ test ]
+fn test_validate_top_p_invalid()
+{
+  assert!( the_module::validators::validate_top_p( -0.1 ).is_err() );
+  assert!( the_module::validators::validate_top_p( 1.1 ).is_err() );
+}
+
+#[ test ]
+fn test_validate_top_k_valid()
+{
+  assert!( the_module::validators::validate_top_k( 1 ).is_ok() );
+  assert!( the_module::validators::validate_top_k( 40 ).is_ok() );
+  assert!( the_module::validators::validate_top_k( 500 ).is_ok() );
+}
+
+#[ test ]
+fn test_validate_top_k_invalid()
+{
+  assert!( the_module::validators::validate_top_k( 0 ).is_err() );
+  assert!( the_module::validators::validate_top_k( 1000 ).is_err() );
+}
+
+#[ test ]
+fn test_validate_messages_not_empty_valid()
+{
+  let messages = vec![ "message1", "message2" ];
+  assert!( the_module::validators::validate_messages_not_empty( &messages ).is_ok() );
+}
+
+#[ test ]
+fn test_validate_messages_not_empty_invalid()
+{
+  let messages : Vec< String > = vec![];
+  assert!( the_module::validators::validate_messages_not_empty( &messages ).is_err() );
+}
+
+#[ test ]
+fn test_validation_error_display()
+{
+  let err = the_module::ValidationError::new( "temperature", "Invalid value" )
+    .with_value( "2.5" )
+    .with_constraint( "0.0 <= temperature <= 1.0" );
+
+  let display = format!( "{err}" );
+  assert!( display.contains( "temperature" ) );
+  assert!( display.contains( "Invalid value" ) );
+  assert!( display.contains( "2.5" ) );
+}
