@@ -48,7 +48,7 @@ Execute in order. Do not skip or reorder steps.
 
 2. **Read spec files** — read `tests/docs/api/01_reference.md` (AP-07), `tests/docs/feature/01_enterprise_reliability.md` (FE-06), `tests/docs/collection/01_features.md` (CL-06, CL-07) to confirm exact assertion targets for each function.
 
-3. **Confirm providers chat API** — read `src/providers.rs` to identify the `chat()` method signature: parameter types for the messages vec, message struct fields (`role`, `content`), model parameter type, return type, and the exact path through `ChatCompletionResponse` to the reply content field. This is the ground-truth for `test_ap_07`.
+3. **Confirm providers chat API** — the method is `chat_completion` (not `chat`). Confirmed signature: `pub async fn chat_completion(&self, model: impl AsRef<str>, messages: Vec<ChatMessage>, max_tokens: Option<u32>, temperature: Option<f32>, top_p: Option<f32>) -> Result<ChatCompletionResponse>`. Read `src/providers.rs` to confirm the `ChatMessage` struct fields (`role: String`, `content: String`) and the exact path through `ChatCompletionResponse.choices[0].message.content` to the reply content field.
 
 4. **Inspect reliability and cache source files** — read `src/reliability/circuit_breaker.rs`, `src/reliability/rate_limiter.rs`, and `src/cache/implementation.rs` to identify the actual `use` import paths in each file. Confirm the specific cross-module reference strings to assert absent in `test_fe_06` (e.g., check that circuit_breaker does not import from rate_limiter or cache, and that cache/implementation does not import from reliability).
 
@@ -59,7 +59,7 @@ Execute in order. Do not skip or reorder steps.
 7. **Add `test_ap_07`** — integration test for AP-07 (chat completion returns assistant reply):
    - Doc comment: `/// AP-07: Chat completion returns assistant reply`
    - Gates: `#[ cfg( feature = "integration" ) ]` then `#[ tokio::test ]`
-   - Body: call `inc::get_api_key_for_integration()`; build client; construct a single-element messages vec with role `"user"` and content `"What is 2+2?"`; call `client.providers().chat( messages, "meta-llama/Llama-3.3-70B-Instruct" ).await.expect( "chat call should succeed" )`; assert `choices[0].message.content` is non-empty
+   - Body: call `inc::get_api_key_for_integration()`; build client; construct a single-element messages vec with `ChatMessage { role: "user".to_string(), content: "What is 2+2?".to_string() }`; call `client.providers().chat_completion( "meta-llama/Llama-3.3-70B-Instruct", messages, None, None, None ).await.expect( "chat_completion call should succeed" )`; assert `!response.choices[ 0 ].message.content.is_empty()`
 
 8. **Add `test_fe_06`** — static analysis for FE-06 (no cross-module shared state):
    - Doc comment: `/// FE-06: Enterprise feature modules do not share global static state`
@@ -88,7 +88,7 @@ Execute in order. Do not skip or reorder steps.
 
 | # | Scenario ID | Input | Config Under Test | Expected Behavior |
 |---|------------|-------|-------------------|-------------------|
-| T01 | AP-07 | User message `"What is 2+2?"`, model `meta-llama/Llama-3.3-70B-Instruct` | `#[cfg(integration)]` + `#[tokio::test]`; live Router API | Returns `ChatCompletionResponse` with `choices[0].message.content` non-empty; no panic |
+| T01 | AP-07 | `ChatMessage { role: "user", content: "What is 2+2?" }`, model `meta-llama/Llama-3.3-70B-Instruct` | `#[cfg(integration)]` + `#[tokio::test]`; `chat_completion(model, messages, None, None, None)` on live Router API | Returns `ChatCompletionResponse` with `choices[0].message.content` non-empty; no panic |
 | T02 | FE-06 | `src/reliability/circuit_breaker.rs`, `src/reliability/rate_limiter.rs`, `src/cache/implementation.rs` | `std::fs::read_to_string`; cross-module `use` path search | No file contains `use` paths importing from a sibling enterprise module; each module is self-contained |
 | T03 | CL-06 | `Cargo.toml`, `basic` feature line | `std::fs::read_to_string`; substring search on feature line | `basic` line contains all 4 Core features; no enterprise or integration feature names present in the line |
 | T04 | CL-07 | `Cargo.toml`, `default` feature line | `std::fs::read_to_string`; exact substring match | File contains `default = ["full"]` confirming single-member alias |
@@ -159,7 +159,7 @@ Execute in order. Do not skip or reorder steps.
 
 ## Related Documentation
 
-- `docs/api/001_reference.md` — API reference; AP-07 verifies `providers().chat()` contract
+- `docs/api/001_reference.md` — API reference; AP-07 verifies `providers().chat_completion()` contract
 - `docs/feature/001_enterprise_reliability.md` — enterprise reliability feature group; FE-06 verifies module isolation
 - `docs/collection/001_features.md` — feature flag catalog; CL-06 and CL-07 verify bundle and alias entries
 - `tests/docs/api/01_reference.md` — AP-07 GWT scenario this task implements

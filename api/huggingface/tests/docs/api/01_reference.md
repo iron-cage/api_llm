@@ -41,5 +41,5 @@ Spec scenarios for `docs/api/001_reference.md`. Verifies that the documented pub
 ### AP-07: Chat completion returns assistant reply
 
 - **Given:** a valid API key and a Router API chat model (`meta-llama/Llama-3.3-70B-Instruct`)
-- **When:** `client.providers().chat(messages, model)` is awaited with a single user message `"What is 2+2?"`
+- **When:** `client.providers().chat_completion(model, messages, None, None, None)` is awaited with `messages` containing a single `ChatMessage` with `role = "user"` and `content = "What is 2+2?"`
 - **Then:** a `ChatCompletionResponse` is returned with `choices[0].message.content` containing a non-empty `String`; no panic occurs

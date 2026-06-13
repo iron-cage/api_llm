@@ -1,4 +1,5 @@
 //! Example of deleting a response using the OpenAI Responses API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Demonstrates creating a response and then deleting it by ID.
 //!
