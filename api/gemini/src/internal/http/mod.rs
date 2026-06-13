@@ -607,43 +607,6 @@ fn is_authentication_error( message : &str ) -> bool
   msg_lower.contains( "quota exceeded" )
 }
 
-/// Logging-only HTTP dispatch path, bypassing all enterprise features.
-///
-/// This function skips retry logic, circuit-breaking, and rate-limiting entirely.
-/// It wraps [`execute`] with logging configuration only. All callers in
-/// `src/client/api_interfaces/` use this path — they pre-date the enterprise
-/// dispatch path (`execute_with_optional_retries`).
-///
-/// All new callers must use `execute_with_optional_retries` instead.
-/// Migration of existing callers tracked in `task/verified/006_migrate_execute_legacy_callers.md`.
-///
-/// # Errors
-///
-/// Returns the same errors as [`execute`] — see that function's documentation
-/// for detailed error information.
-#[ inline ]
-pub async fn execute_legacy< T, R >
-(
-  client : &Client,
-  method : Method,
-  url : &str,
-  api_key : &str,
-  body : Option< &T >,
-)
-->
-Result< R, Error >
-where
-  T : Serialize,
-  R : for< 'de > Deserialize< 'de >,
-{
-  // Use enhanced config with logging enabled when the logging feature is available
-  #[ cfg( feature = "logging" ) ]
-  let config = HttpConfig::default().with_logging();
-  #[ cfg( not( feature = "logging" ) ) ]
-  let config = HttpConfig::default();
-
-  execute( client, method, url, api_key, body, &config ).await
-}
 
 /// Extract operation name from URL for monitoring purposes
 #[ cfg( feature = "logging" ) ]

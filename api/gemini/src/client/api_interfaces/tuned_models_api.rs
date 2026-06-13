@@ -81,9 +81,9 @@ impl TunedModelsApi< '_ >
   {
     let url = format!( "{}/v1beta/tunedModels", self.client.base_url );
 
-    crate ::internal::http::execute_legacy::< crate::models::CreateTunedModelRequest, crate::models::TunedModel >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< crate::models::CreateTunedModelRequest, crate::models::TunedModel >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::POST,
       &url,
       &self.client.api_key,
@@ -170,9 +170,9 @@ impl TunedModelsApi< '_ >
       url.push_str( &params.join( "&" ) );
     }
 
-    crate ::internal::http::execute_legacy::< (), crate::models::ListTunedModelsResponse >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< (), crate::models::ListTunedModelsResponse >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::GET,
       &url,
       &self.client.api_key,
@@ -222,9 +222,9 @@ impl TunedModelsApi< '_ >
   {
     let url = format!( "{}/v1beta/{}", self.client.base_url, name );
 
-    crate ::internal::http::execute_legacy::< (), crate::models::TunedModel >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< (), crate::models::TunedModel >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::GET,
       &url,
       &self.client.api_key,

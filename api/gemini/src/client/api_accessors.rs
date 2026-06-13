@@ -347,7 +347,7 @@ impl Client
     #[ cfg( feature = "batch_operations" ) ]
     #[ must_use ]
     #[ inline ]
-    pub fn batches( &self ) -> crate::batch_api::BatchApi< '_ >
+    pub fn batches( &self ) -> crate::batch_api::BatchApi
     {
         crate ::batch_api::BatchApi::new( self )
     }

@@ -20,19 +20,17 @@ use std::time::{ Duration, SystemTime };
 
 /// API for managing batch jobs with async processing.
 #[ derive( Debug ) ]
-pub struct BatchApi< 'a >
+pub struct BatchApi
 {
-  #[ allow( dead_code ) ] // xxx: @team — reserved for future batch endpoint methods
-  client : &'a Client,
 }
 
-impl< 'a > BatchApi< 'a >
+impl BatchApi
 {
   /// Create a new BatchApi instance.
   #[ inline ]
-  pub fn new( client : &'a Client ) -> Self
+  pub fn new( _client : &Client ) -> Self
   {
-    Self { client }
+    Self {}
   }
 
   /// Create a batch job with inline content generation requests.

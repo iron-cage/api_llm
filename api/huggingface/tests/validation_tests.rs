@@ -993,3 +993,176 @@ fn test_inference_provider_api()
   let fallback = api_huggingface::providers::Providers::< HuggingFaceEnvironmentImpl >::fallback_model();
   assert!( !fallback.is_empty() );
 }
+
+/// Reproducing test: `validate_temperature` dead code — NaN/Inf checks after range check
+/// are unreachable. NaN input gets "between 0.0 and 2.0" error instead of "valid number".
+///
+/// Root Cause: `!(0.0..=2.0).contains(&NaN)` evaluates to `true` (NaN is never in any range),
+///   so the range-check branch fires first, returning the range error. The subsequent
+///   `is_nan() || is_infinite()` block is dead code — never reached for NaN or Infinity.
+/// Why Not Caught: Prior tests only assert `is_err()`, not the specific message text.
+/// Fix Applied: Move `is_nan() || is_infinite()` check before the range check in all
+///   affected validators so the most-specific error fires first.
+/// Prevention: When writing float validators, always put the NaN/Inf guard first — float
+///   NaN breaks range comparisons silently (NaN `<=`/`>=` always returns false).
+/// Pitfall: `contains()` on a float range catches NaN "accidentally" (NaN comparison
+///   always false → not contained → error returned), but with the wrong message.
+#[ test ]
+fn test_validate_temperature_nan_gives_valid_number_error()
+{
+  use api_huggingface::{ validation::validate_temperature, error::HuggingFaceError };
+
+  let result = validate_temperature( f32::NAN );
+  assert!( result.is_err(), "NaN temperature must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.contains( "valid number" ),
+      "NaN should produce 'valid number' error, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for NaN temperature" );
+  }
+
+  // +Infinity also needs the "valid number" message, not "between 0.0 and 2.0"
+  let result = validate_temperature( f32::INFINITY );
+  assert!( result.is_err(), "INFINITY temperature must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.contains( "valid number" ),
+      "INFINITY should produce 'valid number' error, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for INFINITY temperature" );
+  }
+}
+
+/// Reproducing test: `validate_top_p` dead code — same NaN/Inf dead-check pattern.
+///
+/// Root Cause: Same as VA-01 — range check `!(0.0..=1.0).contains(&NaN)` fires first.
+/// Why Not Caught: Prior tests only assert `is_err()`.
+/// Fix Applied: NaN/Inf check moved before range check.
+/// Prevention/Pitfall: See `test_validate_temperature_nan_gives_valid_number_error`.
+#[ test ]
+fn test_validate_top_p_nan_gives_valid_number_error()
+{
+  use api_huggingface::{ validation::validate_top_p, error::HuggingFaceError };
+
+  let result = validate_top_p( f32::NAN );
+  assert!( result.is_err(), "NaN top_p must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.contains( "valid number" ),
+      "NaN top_p should produce 'valid number' error, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for NaN top_p" );
+  }
+}
+
+/// Reproducing test: `validate_frequency_penalty` dead code — same NaN/Inf dead-check pattern.
+///
+/// Root Cause: Range check `!(-2.0..=2.0).contains(&NaN)` fires first.
+/// Why Not Caught: Prior tests only assert `is_err()`.
+/// Fix Applied: NaN/Inf check moved before range check.
+/// Prevention/Pitfall: See `test_validate_temperature_nan_gives_valid_number_error`.
+#[ test ]
+fn test_validate_frequency_penalty_nan_gives_valid_number_error()
+{
+  use api_huggingface::{ validation::validate_frequency_penalty, error::HuggingFaceError };
+
+  let result = validate_frequency_penalty( f32::NAN );
+  assert!( result.is_err(), "NaN frequency_penalty must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.contains( "valid number" ),
+      "NaN frequency_penalty should produce 'valid number' error, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for NaN frequency_penalty" );
+  }
+}
+
+/// Reproducing test: `validate_presence_penalty` dead code — same NaN/Inf dead-check pattern.
+///
+/// Root Cause: Range check `!(-2.0..=2.0).contains(&NaN)` fires first.
+/// Why Not Caught: Prior tests only assert `is_err()`.
+/// Fix Applied: NaN/Inf check moved before range check.
+/// Prevention/Pitfall: See `test_validate_temperature_nan_gives_valid_number_error`.
+#[ test ]
+fn test_validate_presence_penalty_nan_gives_valid_number_error()
+{
+  use api_huggingface::{ validation::validate_presence_penalty, error::HuggingFaceError };
+
+  let result = validate_presence_penalty( f32::NAN );
+  assert!( result.is_err(), "NaN presence_penalty must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.contains( "valid number" ),
+      "NaN presence_penalty should produce 'valid number' error, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for NaN presence_penalty" );
+  }
+}
+
+/// Reproducing test: `validate_repetition_penalty` dead `is_infinite()` check.
+///
+/// Root Cause: `penalty.is_nan() || penalty.is_infinite()` — the `|| is_infinite()` branch
+///   is dead code. +Inf is caught first by `penalty > 10.0` giving "too high" message;
+///   -Inf is caught by `penalty <= 0.0` giving "must be positive". Only `is_nan()` is
+///   ever reached (because NaN falsifies both `<= 0.0` and `> 10.0`).
+///   Consequence: +Inf gives "too high" instead of "must be a valid number".
+/// Why Not Caught: Prior tests only assert `is_err()`, not the message text.
+/// Fix Applied: NaN/Inf check moved before all other checks.
+/// Prevention: Always validate NaN/Inf before applying numeric comparisons.
+/// Pitfall: `penalty > 10.0` is true for `+Inf`, silently "catching" it with wrong message.
+#[ test ]
+fn test_validate_repetition_penalty_infinity_gives_valid_number_error()
+{
+  use api_huggingface::{ validation::validate_repetition_penalty, error::HuggingFaceError };
+
+  // +Inf must give "valid number" error, not "too high"
+  let result = validate_repetition_penalty( f32::INFINITY );
+  assert!( result.is_err(), "INFINITY repetition_penalty must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.contains( "valid number" ),
+      "INFINITY repetition_penalty should produce 'valid number' error, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for INFINITY repetition_penalty" );
+  }
+
+  // -Inf must also give "valid number" error, not "must be positive"
+  let result = validate_repetition_penalty( f32::NEG_INFINITY );
+  assert!( result.is_err(), "NEG_INFINITY repetition_penalty must be rejected" );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  assert!(
+      msg.contains( "valid number" ),
+      "NEG_INFINITY repetition_penalty should produce 'valid number' error, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for NEG_INFINITY repetition_penalty" );
+  }
+}

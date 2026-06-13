@@ -137,7 +137,15 @@ impl TokenBucket
   } else {
       let tokens_needed = 1.0 - self.tokens;
       let seconds = tokens_needed / self.refill_rate;
-      Some( Duration::from_secs_f64( seconds ))
+      // Fix(bug-rl-01): guard against refill_rate=0.0 (capacity=0) producing +Infinity.
+      // Root cause: f64 divides by 0.0 silently to +Inf; Duration::from_secs_f64(+Inf) panics.
+      // Pitfall: always call is_finite() before passing float seconds to Duration conversion.
+      if seconds.is_finite( )
+      {
+        Some( Duration::from_secs_f64( seconds ))
+      } else {
+        Some( Duration::MAX )
+      }
   }
   }
 }

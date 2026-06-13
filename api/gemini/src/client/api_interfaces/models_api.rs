@@ -83,9 +83,9 @@ use super::super::Client;
     {
       let url = format!( "{}/v1beta/models/{model_name}:batchGenerateContent", self.client.base_url );
 
-      crate ::internal::http::execute_legacy::< crate::models::BatchGenerateContentRequest, crate::models::BatchGenerateContentResponse >
+      crate ::internal::http::enterprise::execute_with_optional_retries::< crate::models::BatchGenerateContentRequest, crate::models::BatchGenerateContentResponse >
       (
-        &self.client.http,
+        self.client,
         reqwest ::Method::POST,
         &url,
         &self.client.api_key,
@@ -165,9 +165,9 @@ use super::super::Client;
     {
       let url = format!( "{}/v1beta/models/{model_name}:batchEmbedContents", self.client.base_url );
 
-      crate ::internal::http::execute_legacy::< crate::models::BatchEmbedContentsRequest, crate::models::BatchEmbedContentsResponse >
+      crate ::internal::http::enterprise::execute_with_optional_retries::< crate::models::BatchEmbedContentsRequest, crate::models::BatchEmbedContentsResponse >
       (
-        &self.client.http,
+        self.client,
         reqwest ::Method::POST,
         &url,
         &self.client.api_key,
@@ -259,9 +259,9 @@ use super::super::Client;
 
       let url = format!( "{}/v1beta/models/{model_name}:batchCountTokens", self.client.base_url );
 
-      crate ::internal::http::execute_legacy::< crate::models::BatchCountTokensRequest, crate::models::BatchCountTokensResponse >
+      crate ::internal::http::enterprise::execute_with_optional_retries::< crate::models::BatchCountTokensRequest, crate::models::BatchCountTokensResponse >
       (
-        &self.client.http,
+        self.client,
         reqwest ::Method::POST,
         &url,
         &self.client.api_key,
@@ -358,9 +358,9 @@ use super::super::Client;
 
       let url = format!( "{}/v1beta/models/{model_name}:analyzeTokens", self.client.base_url );
 
-      crate ::internal::http::execute_legacy::< crate::models::AnalyzeTokensRequest, crate::models::AnalyzeTokensResponse >
+      crate ::internal::http::enterprise::execute_with_optional_retries::< crate::models::AnalyzeTokensRequest, crate::models::AnalyzeTokensResponse >
       (
-        &self.client.http,
+        self.client,
         reqwest ::Method::POST,
         &url,
         &self.client.api_key,

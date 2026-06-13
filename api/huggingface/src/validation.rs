@@ -176,17 +176,22 @@ pub fn validate_batch_inputs( inputs : &[ String ] ) -> Result< () >
 #[ inline ]
 pub fn validate_temperature( temperature : f32 ) -> Result< () >
 {
-  if !( 0.0..=2.0 ).contains( &temperature )
-  {
-  return Err( HuggingFaceError::Validation(
-      format!( "Temperature must be between 0.0 and 2.0, got : {temperature}" )
-  ) );
-  }
-  
+  // Fix(bug-va-01): check NaN/Inf before range check to avoid dead code and wrong message.
+  // Root cause: `contains()` on a float range catches NaN accidentally (NaN comparisons
+  //   always false → not in range → fires first), making the subsequent is_nan/is_infinite
+  //   check unreachable. NaN got "between 0.0 and 2.0" error instead of "valid number".
+  // Pitfall: float range checks silently absorb NaN — always guard NaN/Inf first.
   if temperature.is_nan() || temperature.is_infinite()
   {
   return Err( HuggingFaceError::Validation(
       format!( "Temperature must be a valid number, got : {temperature}" )
+  ) );
+  }
+
+  if !( 0.0..=2.0 ).contains( &temperature )
+  {
+  return Err( HuggingFaceError::Validation(
+      format!( "Temperature must be between 0.0 and 2.0, got : {temperature}" )
   ) );
   }
 
@@ -230,17 +235,20 @@ pub fn validate_max_new_tokens( max_tokens : u32 ) -> Result< () >
 #[ inline ]
 pub fn validate_top_p( top_p : f32 ) -> Result< () >
 {
-  if !( 0.0..=1.0 ).contains( &top_p )
-  {
-  return Err( HuggingFaceError::Validation(
-      format!( "top_p must be between 0.0 and 1.0, got : {top_p}" )
-  ) );
-  }
-
+  // Fix(bug-va-02): check NaN/Inf before range check (same dead-code pattern as bug-va-01).
+  // Root cause: NaN not in `0.0..=1.0` range → range check fires first with wrong message.
+  // Pitfall: see validate_temperature.
   if top_p.is_nan() || top_p.is_infinite()
   {
   return Err( HuggingFaceError::Validation(
       format!( "top_p must be a valid number, got : {top_p}" )
+  ) );
+  }
+
+  if !( 0.0..=1.0 ).contains( &top_p )
+  {
+  return Err( HuggingFaceError::Validation(
+      format!( "top_p must be between 0.0 and 1.0, got : {top_p}" )
   ) );
   }
 
@@ -257,6 +265,19 @@ pub fn validate_top_p( top_p : f32 ) -> Result< () >
 #[ inline ]
 pub fn validate_repetition_penalty( penalty : f32 ) -> Result< () >
 {
+  // Fix(bug-va-05): check NaN/Inf first to eliminate dead is_infinite() branch.
+  // Root cause: +Inf caught by `> 10.0` ("too high"), -Inf by `<= 0.0` ("positive"),
+  //   making `|| is_infinite()` unreachable. Only `is_nan()` was live because NaN
+  //   falsifies all comparisons. Moving guard first gives correct "valid number" message
+  //   for all non-finite inputs.
+  // Pitfall: `penalty > 10.0` is true for +Inf, silently absorbing it with wrong message.
+  if penalty.is_nan() || penalty.is_infinite()
+  {
+  return Err( HuggingFaceError::Validation(
+      format!( "repetition_penalty must be a valid number, got : {penalty}" )
+  ) );
+  }
+
   if penalty <= 0.0
   {
   return Err( HuggingFaceError::Validation(
@@ -268,13 +289,6 @@ pub fn validate_repetition_penalty( penalty : f32 ) -> Result< () >
   {
   return Err( HuggingFaceError::Validation(
       format!( "repetition_penalty is too high ({penalty}). Maximum recommended : 10.0" )
-  ) );
-  }
-
-  if penalty.is_nan() || penalty.is_infinite()
-  {
-  return Err( HuggingFaceError::Validation(
-      format!( "repetition_penalty must be a valid number, got : {penalty}" )
   ) );
   }
 
@@ -363,17 +377,20 @@ pub fn validate_top_k( top_k : u32 ) -> Result< () >
 #[ inline ]
 pub fn validate_frequency_penalty( penalty : f32 ) -> Result< () >
 {
-  if !( -2.0..=2.0 ).contains( &penalty )
-  {
-  return Err( HuggingFaceError::Validation(
-      format!( "frequency_penalty must be between -2.0 and 2.0, got : {penalty}" )
-  ) );
-  }
-
+  // Fix(bug-va-03): check NaN/Inf before range check (same dead-code pattern as bug-va-01).
+  // Root cause: NaN not in `-2.0..=2.0` → range check fires first with wrong message.
+  // Pitfall: see validate_temperature.
   if penalty.is_nan() || penalty.is_infinite()
   {
   return Err( HuggingFaceError::Validation(
       format!( "frequency_penalty must be a valid number, got : {penalty}" )
+  ) );
+  }
+
+  if !( -2.0..=2.0 ).contains( &penalty )
+  {
+  return Err( HuggingFaceError::Validation(
+      format!( "frequency_penalty must be between -2.0 and 2.0, got : {penalty}" )
   ) );
   }
 
@@ -390,17 +407,20 @@ pub fn validate_frequency_penalty( penalty : f32 ) -> Result< () >
 #[ inline ]
 pub fn validate_presence_penalty( penalty : f32 ) -> Result< () >
 {
-  if !( -2.0..=2.0 ).contains( &penalty )
-  {
-  return Err( HuggingFaceError::Validation(
-      format!( "presence_penalty must be between -2.0 and 2.0, got : {penalty}" )
-  ) );
-  }
-
+  // Fix(bug-va-04): check NaN/Inf before range check (same dead-code pattern as bug-va-01).
+  // Root cause: NaN not in `-2.0..=2.0` → range check fires first with wrong message.
+  // Pitfall: see validate_temperature.
   if penalty.is_nan() || penalty.is_infinite()
   {
   return Err( HuggingFaceError::Validation(
       format!( "presence_penalty must be a valid number, got : {penalty}" )
+  ) );
+  }
+
+  if !( -2.0..=2.0 ).contains( &penalty )
+  {
+  return Err( HuggingFaceError::Validation(
+      format!( "presence_penalty must be between -2.0 and 2.0, got : {penalty}" )
   ) );
   }
 

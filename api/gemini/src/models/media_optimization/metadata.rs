@@ -5,8 +5,6 @@ use std::time::{ SystemTime, Instant };
 use std::sync::{ Arc, RwLock };
 use core::sync::atomic::{ AtomicU64, AtomicUsize, Ordering };
 use std::collections::HashMap;
-use std::hash::{ Hash, Hasher };
-use std::collections::hash_map::DefaultHasher;
 use bytes::{ Bytes, BytesMut };
 
 /// Optimized media cache with LRU eviction and compression
@@ -49,9 +47,6 @@ pub struct CachedMediaMetadata
   pub is_compressed : bool,
   /// Compression ratio achieved
   pub compression_ratio : f64,
-  /// File hash for integrity verification
-  #[ allow(dead_code) ]
-  content_hash : String,
 }
 
 /// Cache statistics for performance monitoring
@@ -159,7 +154,6 @@ impl MediaCache
       ( data, false, 1.0 )
     };
 
-    let content_hash = self.calculate_hash( &final_data );
     let entry_size = final_data.len();
 
     // Check if cache would exceed size limit
@@ -174,7 +168,6 @@ impl MediaCache
       original_size,
       is_compressed,
       compression_ratio,
-      content_hash,
     };
 
     let entry = CachedMediaEntry {
@@ -260,14 +253,6 @@ impl MediaCache
     }
 
     Ok( compressed.freeze() )
-  }
-
-  /// Calculate hash of data for integrity verification
-  fn calculate_hash( &self, data : &Bytes ) -> String
-  {
-    let mut hasher = DefaultHasher::new();
-    data.hash( &mut hasher );
-    format!( "{:x}", hasher.finish() )
   }
 
   /// Evict LRU entries to make space

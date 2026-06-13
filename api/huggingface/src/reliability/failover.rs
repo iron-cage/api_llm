@@ -357,7 +357,13 @@ impl FailoverManager
           // This gives the API time to recover from rate limiting or transient issues
           if attempts <= self.config.max_retries
           {
-            let delay_ms = 500 * 2u64.pow( attempts - 1 );
+            // Fix(bug-fm-01): cap exponent before multiply to prevent u64 overflow.
+            // Root cause: 500 * 2^(attempts-1) overflows u64 when attempts-1 >= 56
+            //   (500 * 2^56 > u64::MAX); .min(5000) was applied post-overflow — too late.
+            // Pitfall: cap the exponent, not the result; post-multiply clamping cannot
+            //   prevent the overflow that happens during arithmetic itself.
+            let exp = ( attempts - 1 ).min( 13 );
+            let delay_ms = 500 * 2u64.pow( exp );
             tokio::time::sleep( Duration::from_millis( delay_ms.min( 5000 ) ) ).await;
           }
   }

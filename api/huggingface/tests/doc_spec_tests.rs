@@ -15,6 +15,14 @@ use api_huggingface::
   components::inference_shared::ChatMessage,
 };
 
+#[ cfg( feature = "circuit-breaker" ) ]
+use api_huggingface::reliability::
+{
+  CircuitBreaker,
+  CircuitBreakerConfig,
+  CircuitBreakerError,
+};
+
 #[ cfg( feature = "integration" ) ]
 fn build_client( api_key : &str ) -> Client< HuggingFaceEnvironmentImpl >
 {
@@ -949,6 +957,140 @@ fn test_cl_07()
     cargo.contains( "default = [\"full\"]" ),
     "CL-07: default must list only full as its single member"
   );
+}
+
+// ============================================================================
+// FT-01..FT-06 — Feature Flag Compilation Gates — Added 2026-06-13
+// ============================================================================
+
+/// FT-01: circuit-breaker feature — `CircuitBreaker` returns error when open, no panic.
+#[ cfg( feature = "circuit-breaker" ) ]
+#[ tokio::test ]
+async fn test_ft_01()
+{
+  let cb = CircuitBreaker::new( CircuitBreakerConfig
+  {
+    failure_threshold : 1,
+    success_threshold : 2,
+    timeout : core::time::Duration::from_secs( 60 ),
+  } );
+  // One failure exhausts failure_threshold = 1, tripping the breaker to Open
+  let trip = cb.execute( async { Err::< (), &str >( "fail" ) } ).await;
+  assert!(
+    matches!( trip, Err( CircuitBreakerError::Operation( _ ) ) ),
+    "FT-01: first failure must return Operation error (circuit was Closed)"
+  );
+  assert!( cb.is_open().await, "FT-01: circuit must be Open after failure_threshold failures" );
+  // Second attempt through open circuit — must short-circuit without calling the closure
+  let result : Result< (), CircuitBreakerError< &str > > =
+    cb.execute( async { Ok::< (), &str >( () ) } ).await;
+  assert!(
+    matches!( result, Err( CircuitBreakerError::CircuitOpen ) ),
+    "FT-01: open circuit must return CircuitBreakerError::CircuitOpen without executing the closure"
+  );
+}
+
+/// FT-02: rate-limiting feature gates `RateLimiter` through the reliability dependency.
+#[ test ]
+fn test_ft_02()
+{
+  let cargo = std::fs::read_to_string(
+    format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FT-02: should read Cargo.toml" );
+  let lib_rs = std::fs::read_to_string(
+    format!( "{}/src/lib.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FT-02: should read src/lib.rs" );
+  assert!(
+    cargo.contains( "rate-limiting = [\"reliability\"]" ),
+    "FT-02: rate-limiting must list reliability as its sole dependency in Cargo.toml"
+  );
+  assert!(
+    lib_rs.contains( "#[ cfg( feature = \"reliability\" ) ]\npub mod reliability;" ),
+    "FT-02: lib.rs must gate pub mod reliability with #[cfg(feature = \"reliability\")]"
+  );
+}
+
+/// FT-03: failover feature gates `FailoverManager` through the reliability dependency.
+#[ test ]
+fn test_ft_03()
+{
+  let cargo = std::fs::read_to_string(
+    format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FT-03: should read Cargo.toml" );
+  assert!(
+    cargo.contains( "failover = [\"reliability\"]" ),
+    "FT-03: failover must list reliability as its sole dependency in Cargo.toml"
+  );
+}
+
+/// FT-04: health-checks feature gates `HealthChecker` through the reliability dependency.
+#[ test ]
+fn test_ft_04()
+{
+  let cargo = std::fs::read_to_string(
+    format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FT-04: should read Cargo.toml" );
+  assert!(
+    cargo.contains( "health-checks = [\"reliability\"]" ),
+    "FT-04: health-checks must list reliability as its sole dependency in Cargo.toml"
+  );
+}
+
+/// FT-05: caching feature gates cache module through client, not reliability.
+#[ test ]
+fn test_ft_05()
+{
+  let cargo = std::fs::read_to_string(
+    format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FT-05: should read Cargo.toml" );
+  let lib_rs = std::fs::read_to_string(
+    format!( "{}/src/lib.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FT-05: should read src/lib.rs" );
+  assert!(
+    cargo.contains( "caching = [\"client\"]" ),
+    "FT-05: caching must depend on client in Cargo.toml"
+  );
+  assert!(
+    !cargo.contains( "caching = [\"reliability\"]" ),
+    "FT-05: caching must not list reliability as a dependency"
+  );
+  assert!(
+    lib_rs.contains( "#[ cfg( feature = \"client\" ) ]\npub mod cache;" ),
+    "FT-05: lib.rs must gate pub mod cache with #[cfg(feature = \"client\")]"
+  );
+}
+
+/// FT-06: all enterprise features compile together under the full feature set without conflict.
+#[ test ]
+fn test_ft_06()
+{
+  let cargo = std::fs::read_to_string(
+    format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "FT-06: should read Cargo.toml" );
+  let full_start = cargo
+    .find( "full = [" )
+    .expect( "FT-06: Cargo.toml must define a full feature" );
+  let full_end = cargo[ full_start.. ]
+    .find( ']' )
+    .expect( "FT-06: full feature definition must close with ]" );
+  let full_section = &cargo[ full_start..=( full_start + full_end ) ];
+  let enterprise_flags = &[
+    "\"circuit-breaker\"",
+    "\"rate-limiting\"",
+    "\"failover\"",
+    "\"health-checks\"",
+    "\"dynamic-config\"",
+    "\"caching\"",
+    "\"performance-metrics\"",
+    "\"token-counting\"",
+  ];
+  for flag in enterprise_flags
+  {
+    assert!(
+      full_section.contains( flag ),
+      "FT-06: full feature must include enterprise flag {flag}"
+    );
+  }
 }
 
 // ============================================================================

@@ -75,17 +75,13 @@ use super::sync::SyncClientBuilder;
     #[ allow( dead_code ) ]
     pub( crate ) enable_circuit_breaker : bool,
     #[ cfg( feature = "circuit_breaker" ) ]
-    #[ allow( dead_code ) ]
     pub( crate ) circuit_breaker_failure_threshold : u32,
     #[ cfg( feature = "circuit_breaker" ) ]
-    #[ allow( dead_code ) ]
     pub( crate ) circuit_breaker_success_threshold : u32,
     #[ cfg( feature = "circuit_breaker" ) ]
-    #[ allow( dead_code ) ]
     pub( crate ) circuit_breaker_timeout : Duration,
     #[ cfg( feature = "circuit_breaker" ) ]
     // xxx : @team : Expose circuit breaker metrics through Client::get_circuit_breaker_metrics()
-    #[ allow( dead_code ) ]
     pub( crate ) enable_circuit_breaker_metrics : bool,
     #[ cfg( feature = "circuit_breaker" ) ]
     // xxx : @team : Implement Arc-based shared circuit breaker state across client instances
@@ -117,17 +113,13 @@ use super::sync::SyncClientBuilder;
     #[ allow( dead_code ) ]
     pub( crate ) enable_rate_limiting : bool,
     #[ cfg( feature = "rate_limiting" ) ]
-    #[ allow( dead_code ) ]
     pub( crate ) rate_limit_requests_per_second : f64,
     #[ cfg( feature = "rate_limiting" ) ]
-    #[ allow( dead_code ) ]
     pub( crate ) rate_limit_algorithm : String,
     #[ cfg( feature = "rate_limiting" ) ]
-    #[ allow( dead_code ) ]
     pub( crate ) rate_limit_bucket_size : usize,
     #[ cfg( feature = "rate_limiting" ) ]
     // xxx : @team : Expose rate limiting metrics through Client::get_rate_limiter_metrics()
-    #[ allow( dead_code ) ]
     pub( crate ) enable_rate_limiting_metrics : bool,
     #[ cfg( feature = "compression" ) ]
     /// Compression configuration for request/response optimization

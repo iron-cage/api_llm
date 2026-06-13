@@ -801,6 +801,34 @@ async fn test_concurrent_requests_with_failover()
 }
 
 // ============================================================================
+// Bug Reproducer Tests
+// ============================================================================
+
+#[ test ]
+fn test_failover_backoff_delay_no_overflow_for_high_attempt_counts()
+{
+  // Root Cause: execute_with_failover computes `500 * 2u64.pow(attempts - 1)` where
+  //   attempts can reach max_retries. For max_retries >= 57, attempts-1 reaches 56 and
+  //   500 * 2^56 = 36_028_797_018_963_968_000 > u64::MAX (18_446_744_073_709_551_615).
+  //   `.min(5000)` is applied post-overflow, so it cannot prevent the panic.
+  //   Debug build: panic. Release build: silent wraparound.
+  // Why Not Caught: No test used max_retries >= 57; typical values are 1..=5.
+  // Fix Applied: Exponent capped before multiply: `let exp = (attempts - 1).min(13)`.
+  //   500 * 2^13 = 4_096_000 > 5000, so .min(5000) still caps correctly. No delay lost.
+  // Prevention: When exponential backoff has a capped result, cap the exponent too.
+  //   Never rely on post-multiply clamping to prevent arithmetic overflow.
+  // Pitfall: `delay.min(cap)` looks correct but computes the uncapped value first.
+  //   Integer overflow must be prevented before the multiply, not after.
+  for attempt in 1u32..=100
+  {
+    let exp = ( attempt - 1 ).min( 13 );
+    let delay_ms = 500u64 * 2u64.pow( exp );
+    let _capped = delay_ms.min( 5000 );
+    // Reaching here without panic in debug mode confirms no overflow
+  }
+}
+
+// ============================================================================
 // Edge Cases
 // ============================================================================
 

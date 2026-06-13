@@ -37,9 +37,9 @@ impl CachedContentApi< '_ >
   {
     let url = format!( "{}/v1beta/cachedContents", self.client.base_url );
 
-    crate ::internal::http::execute_legacy::< CreateCachedContentRequest, CachedContentResponse >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< CreateCachedContentRequest, CachedContentResponse >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::POST,
       &url,
       &self.client.api_key,
@@ -84,9 +84,9 @@ impl CachedContentApi< '_ >
       url.push_str( &query_params.join( "&" ) );
     }
 
-    crate ::internal::http::execute_legacy::< (), ListCachedContentsResponse >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< (), ListCachedContentsResponse >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::GET,
       &url,
       &self.client.api_key,
@@ -113,9 +113,9 @@ impl CachedContentApi< '_ >
   {
     let url = format!( "{}/v1beta/cachedContents/{}", self.client.base_url, urlencoding::encode( cache_id ) );
 
-    crate ::internal::http::execute_legacy::< (), CachedContentResponse >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< (), CachedContentResponse >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::GET,
       &url,
       &self.client.api_key,
@@ -143,9 +143,9 @@ impl CachedContentApi< '_ >
   {
     let url = format!( "{}/v1beta/cachedContents/{}", self.client.base_url, urlencoding::encode( cache_id ) );
 
-    crate ::internal::http::execute_legacy::< UpdateCachedContentRequest, CachedContentResponse >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< UpdateCachedContentRequest, CachedContentResponse >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::PATCH,
       &url,
       &self.client.api_key,
@@ -172,9 +172,9 @@ impl CachedContentApi< '_ >
   {
     let url = format!( "{}/v1beta/cachedContents/{}", self.client.base_url, urlencoding::encode( cache_id ) );
 
-    let _response : serde_json::Value = crate::internal::http::execute_legacy
+    let _response : serde_json::Value = crate::internal::http::enterprise::execute_with_optional_retries
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::DELETE,
       &url,
       &self.client.api_key,

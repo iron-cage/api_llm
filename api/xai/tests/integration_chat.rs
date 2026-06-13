@@ -7,9 +7,10 @@
 //!
 //! # Key Insights
 //!
-//! - **Model Selection**: Using `grok-3` (current stable). Previous `grok-2-1212`
-//!   was removed from the API (HTTP 400 "Model not found"). Before that, `grok-beta`
-//!   was deprecated 2025-09-15. Always check XAI docs for latest models.
+//! - **Model Selection**: Using `grok-3` (aliased by xAI to `grok-4.3` as of 2026-06).
+//!   Previous `grok-2-1212` was removed (HTTP 400). Before that, `grok-beta` deprecated
+//!   2025-09-15. grok-4.x models include reasoning tokens (total > prompt+completion).
+//!   Always check XAI docs for latest models.
 //!
 //! - **URL Construction**: Base URL must have trailing slash (`https://api.x.ai/v1/`)
 //!   and endpoint paths must NOT have leading slash (`chat/completions`).
@@ -61,10 +62,14 @@ async fn chat_completion_basic_request_succeeds()
   // Verify usage
   assert!( response.usage.prompt_tokens > 0, "Should have prompt tokens" );
   assert!( response.usage.completion_tokens > 0, "Should have completion tokens" );
-  assert_eq!(
+  // grok-4.x reasoning models include thinking tokens in total_tokens
+  // so total may exceed prompt + completion
+  assert!(
+    response.usage.total_tokens >= response.usage.prompt_tokens + response.usage.completion_tokens,
+    "Total tokens ({}) should be at least sum of prompt ({}) and completion ({}) tokens",
     response.usage.total_tokens,
-    response.usage.prompt_tokens + response.usage.completion_tokens,
-    "Total tokens should equal sum of prompt and completion tokens"
+    response.usage.prompt_tokens,
+    response.usage.completion_tokens,
   );
 
   println!( "✅ Basic chat completion test passed" );

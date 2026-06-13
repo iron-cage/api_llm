@@ -543,11 +543,38 @@ async fn test_rate_limiter_concurrent_try_acquire()
 }
 
 // ============================================================================
+// Bug Reproducer Tests
+// ============================================================================
+
+#[ tokio::test ]
+async fn test_rate_limiter_zero_capacity_try_acquire_no_panic()
+{
+  // Root Cause: TokenBucket::new(0, refill_duration) sets refill_rate = 0.0/duration = 0.0.
+  //   try_consume() always returns false (tokens=0.0 < 1.0). time_until_token() then computes
+  //   tokens_needed / refill_rate = 1.0 / 0.0 = +Infinity (f64 silent div-by-zero).
+  //   Duration::from_secs_f64(+Infinity) panics unconditionally in Rust's stdlib.
+  // Why Not Caught: No existing test used capacity=0; minimum tested capacity was 1.
+  // Fix Applied: time_until_token() guards seconds.is_finite() before converting;
+  //   returns Some(Duration::MAX) when refill_rate=0.0 to signal permanently empty bucket.
+  // Prevention: Always test boundary value 0 for all numeric configuration fields.
+  // Pitfall: Duration::from_secs_f64() panics on non-finite floats. f64 div-by-zero yields
+  //   +Infinity silently — the panic only surfaces at the Duration conversion call site.
+  let rl = RateLimiter::new( RateLimiterConfig
+  {
+    requests_per_second : Some( 0 ),
+    requests_per_minute : None,
+    requests_per_hour : None,
+  } );
+  let result = rl.try_acquire( ).await;
+  assert!( result.is_err( ), "zero-capacity limiter must reject request without panicking" );
+}
+
+// ============================================================================
 // Edge Case Tests
 // ============================================================================
 
 #[ tokio::test ]
-async fn test_rate_limiter_no_limits() 
+async fn test_rate_limiter_no_limits()
 {
   let config = RateLimiterConfig {
   requests_per_second : None,

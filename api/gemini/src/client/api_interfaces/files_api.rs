@@ -163,9 +163,9 @@ impl FilesApi< '_ >
       url.push_str( &query_params.join( "&" ) );
     }
 
-    crate ::internal::http::execute_legacy::< (), crate::models::ListFilesResponse >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< (), crate::models::ListFilesResponse >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::GET,
       &url,
       &self.client.api_key,
@@ -215,9 +215,9 @@ impl FilesApi< '_ >
   {
     let url = format!( "{}/v1beta/{}", self.client.base_url, file_name );
 
-    crate ::internal::http::execute_legacy::< (), crate::models::FileMetadata >
+    crate ::internal::http::enterprise::execute_with_optional_retries::< (), crate::models::FileMetadata >
     (
-      &self.client.http,
+      self.client,
       reqwest ::Method::GET,
       &url,
       &self.client.api_key,

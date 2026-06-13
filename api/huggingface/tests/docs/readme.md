@@ -10,6 +10,6 @@ GWT spec scenarios for all `api_huggingface` doc entity instances. Each subdirec
 | `invariant/` | IN- scenarios mirroring `docs/invariant/` instances |
 | `operation/` | OP- scenarios mirroring `docs/operation/` instances |
 | `pattern/` | PT- scenarios mirroring `docs/pattern/` instances |
-| `feature/` | FE- scenarios mirroring `docs/feature/` instances |
+| `feature/` | FE-/FT- scenarios mirroring `docs/feature/` instances |
 | `collection/` | CL- scenarios mirroring `docs/collection/` instances |
 | `pitfall/` | PF- scenarios mirroring `docs/pitfall/` instances |
