@@ -925,3 +925,51 @@ async fn test_max_retries_limits_attempts()
   _ => panic!( "Expected AllRetriesFailed error" ),
   }
 }
+
+// ============================================================================
+// Unit Tests — no API key required
+// ============================================================================
+
+/// `record_failure` and `record_success` called with a URL that is NOT in the
+/// configured endpoint list must be a no-op (no panic, no state corruption).
+///
+/// Root Cause: N/A — correctness / safety gap.
+/// Why Not Caught: All prior record_failure/record_success calls used a URL that
+///   appeared in the configured endpoint list.  The implementation silently skips
+///   unknown URLs but this was never explicitly verified.
+/// Fix Applied: N/A — test added to document and lock the no-op contract.
+/// Prevention: Whenever a method searches a list and does nothing on miss, add a
+///   test that exercises the miss path to prevent a future refactor from adding a panic.
+/// Pitfall: A `find().unwrap()` refactor would turn a benign miss into a panic.
+#[ cfg( feature = "failover" ) ]
+#[ tokio::test ]
+async fn test_record_on_unknown_endpoint_is_noop()
+{
+  use api_huggingface::reliability::{ FailoverManager, FailoverConfig, FailoverStrategy };
+  use core::time::Duration;
+
+  let config = FailoverConfig
+  {
+  endpoints : vec![ "https://known.endpoint".to_string( ) ],
+  strategy : FailoverStrategy::Priority,
+  max_retries : 3,
+  failure_window : Duration::from_secs( 60 ),
+  failure_threshold : 5,
+  };
+  let failover = FailoverManager::new( config ).expect( "Failover creation should succeed" );
+
+  // Call with a URL that is NOT in the endpoint list — must not panic
+  failover.record_failure( "https://not.in.list" ).await;
+  failover.record_success( "https://not.in.list" ).await;
+
+  // Known endpoint must remain healthy and unaffected
+  let health = failover.health_status( ).await;
+  assert_eq!( health.len(), 1, "still one endpoint" );
+  assert!( health[ 0 ].healthy, "known endpoint must still be healthy" );
+  assert_eq!( health[ 0 ].requests, 0, "known endpoint must have zero recorded requests" );
+
+  // Selection still works (known endpoint returned)
+  let selected = failover.select_endpoint( ).await;
+  assert!( selected.is_ok( ), "should still select the healthy endpoint" );
+  assert_eq!( selected.unwrap( ), "https://known.endpoint" );
+}

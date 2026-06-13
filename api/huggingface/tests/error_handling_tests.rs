@@ -163,7 +163,7 @@ fn test_all_error_variants_display_content()
 /// Why Not Caught: No existing test exercised `ApiErrorWrap` formatting directly.
 /// Fix Applied: N/A — tests added to cover all four branches.
 /// Prevention: When a Display impl has conditional branches, test each branch.
-/// Pitfall: Testing only the "no error_type, no status_code" path leaves "[type]" and
+/// Pitfall: Testing only the "no `error_type`, no `status_code`" path leaves "[type]" and
 ///   "(HTTP NNN)" formatting branches silent.
 #[ test ]
 fn test_api_error_wrap_display_combinations()

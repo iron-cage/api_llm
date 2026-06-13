@@ -1213,13 +1213,13 @@ fn test_validate_repetition_penalty_infinity_gives_valid_number_error()
 }
 
 /// Reproducing test: `validate_input_text` rejects multibyte-character strings whose
-/// **byte** length exceeds MAX_INPUT_LENGTH even though their **character** (code point)
+/// **byte** length exceeds `MAX_INPUT_LENGTH` even though their **character** (code point)
 /// count is well within the limit.
 ///
 /// Root Cause: The length check uses `input.len()` which returns bytes in Rust, not Unicode
 ///   code points. A 2-byte character like 'é' (U+00E9) counts as 2 toward the byte limit
 ///   even though it is one "character" by any common definition. The constant
-///   MAX_INPUT_LENGTH is documented as "characters" and the error message says "characters",
+///   `MAX_INPUT_LENGTH` is documented as "characters" and the error message says "characters",
 ///   so the correct implementation must count code points, not bytes.
 ///
 /// Why Not Caught: All existing tests use ASCII-only strings where `.len() == .chars().count()`.
@@ -1289,6 +1289,82 @@ fn test_validate_input_text_multibyte_character_boundary()
   else
   {
   panic!( "Expected Validation error for text over char limit" );
+  }
+}
+
+/// Reproducing test: `validate_message_content` rejects multibyte-character strings
+/// whose **byte** length exceeds `MAX_INPUT_LENGTH` even though their **character** count
+/// is within the limit — same root cause as `validate_input_text` (BUG-010).
+///
+/// Root Cause: The content length check used `content.len()` (UTF-8 bytes), not
+///   `content.chars().count()` (Unicode code points). A 2-byte char like 'é' (U+00E9)
+///   adds 2 to the byte total even though it is one character by any common definition.
+///   `MAX_INPUT_LENGTH` is documented and displayed as "characters", so character count
+///   is the correct measurement.
+///
+/// Why Not Caught: All prior tests used ASCII strings where `.len() == .chars().count()`.
+///   No test exercised multibyte Unicode content near the length boundary.
+///
+/// Fix Applied: Changed `content.len()` to `content.chars().count()` (and matching error
+///   format args) in `validate_message_content`.
+///
+/// Prevention: When a limit is described as "characters", always use `.chars().count()`.
+///   Reserve `.len()` for byte-length limits and document them clearly as "bytes".
+///
+/// Pitfall: In Rust, `str::len()` is always UTF-8 byte count. For non-ASCII text
+///   `.len()` > `.chars().count()`. The two are equal only for pure ASCII (U+0000–U+007F).
+///
+/// bug_reproducer(BUG-010)
+#[ test ]
+fn test_validate_message_content_multibyte_character_boundary()
+{
+  use api_huggingface::validation::{ validate_message_content, MAX_INPUT_LENGTH };
+
+  let two_byte_char = 'é'; // U+00E9, encoded as 2 UTF-8 bytes
+
+  // Half of MAX_INPUT_LENGTH 2-byte characters: char count = MAX_INPUT_LENGTH/2,
+  // byte length = MAX_INPUT_LENGTH.  Char count is well under limit → must PASS.
+  let half_limit = two_byte_char.to_string().repeat( MAX_INPUT_LENGTH / 2 );
+  assert_eq!( half_limit.len(), MAX_INPUT_LENGTH, "sanity: byte length equals the limit" );
+  assert_eq!( half_limit.chars().count(), MAX_INPUT_LENGTH / 2, "sanity: char count is half" );
+  assert!(
+  validate_message_content( &half_limit ).is_ok(),
+  "Content with {} 2-byte chars (byte_len={}) must be valid; MAX chars={}",
+  MAX_INPUT_LENGTH / 2,
+  half_limit.len(),
+  MAX_INPUT_LENGTH,
+  );
+
+  // MAX_INPUT_LENGTH 2-byte characters: char count exactly at limit → must PASS.
+  let at_char_limit = two_byte_char.to_string().repeat( MAX_INPUT_LENGTH );
+  assert_eq!( at_char_limit.chars().count(), MAX_INPUT_LENGTH );
+  assert!(
+  validate_message_content( &at_char_limit ).is_ok(),
+  "Content at exactly MAX_INPUT_LENGTH 2-byte chars must be valid"
+  );
+
+  // MAX_INPUT_LENGTH + 1 chars of any size → must FAIL.
+  let over_char_limit = "a".repeat( MAX_INPUT_LENGTH + 1 );
+  assert!(
+  validate_message_content( &over_char_limit ).is_err(),
+  "Content with MAX_INPUT_LENGTH+1 chars must be rejected"
+  );
+
+  // Error message reports character count, not byte count.
+  let two_byte_over = two_byte_char.to_string().repeat( MAX_INPUT_LENGTH + 1 );
+  let result = validate_message_content( &two_byte_over );
+  assert!( result.is_err() );
+  if let Err( HuggingFaceError::Validation( msg ) ) = result
+  {
+  let char_count = ( MAX_INPUT_LENGTH + 1 ).to_string();
+  assert!(
+      msg.contains( &char_count ),
+      "Error message must report char count {char_count}, got: {msg}"
+  );
+  }
+  else
+  {
+  panic!( "Expected Validation error for content over char limit" );
   }
 }
 
