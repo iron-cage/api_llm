@@ -13,28 +13,25 @@ Examples are organized by use case and complexity:
 - **Specialized Use Cases**: Domain-specific applications (code assistant, translator, QA system, etc.)
 - **Advanced Features**: Cached content, multi-turn conversations
 
-### Examples
+### Responsibility
 
-#### Basic Examples
-
-- `huggingface_inference_create.rs` - Basic text generation
-- `huggingface_embeddings_create.rs` - Text embeddings generation
-- `chat.rs` - Simple chat completion
-- `chat_cached_interactive.rs` - Chat with caching
-- `hf_interactive_chat.rs` - Interactive terminal chat
-
-#### Specialized Applications
-
-- `providers_api_demo.rs` - Providers API demo — Pro plan model discovery and chat
-- `huggingface_developer_code_assistant.rs` - Code generation and assistance
-- `huggingface_intelligent_qa_system.rs` - Question answering system
-- `huggingface_multilingual_translator.rs` - Multi-language translation
-- `huggingface_sentiment_content_analyzer.rs` - Sentiment analysis
-- `huggingface_document_semantic_search.rs` - Document search and retrieval
-- `huggingface_educational_ai_tutor.rs` - Educational tutoring assistant
-- `huggingface_automated_content_generator.rs` - Automated content creation
-- `huggingface_chat_conversational.rs` - Conversational chat bot
-- `huggingface_multi_turn_conversation.rs` - Multi-turn dialogue management
+| File | Responsibility |
+|------|----------------|
+| `chat.rs` | Minimal chat completion example |
+| `chat_cached_interactive.rs` | Interactive chat with request caching |
+| `hf_interactive_chat.rs` | Terminal-based interactive chat session |
+| `huggingface_inference_create.rs` | Basic text generation via inference API |
+| `huggingface_embeddings_create.rs` | Text embeddings generation |
+| `providers_api_demo.rs` | Pro plan provider discovery and chat completions |
+| `huggingface_developer_code_assistant.rs` | Code generation and assistance |
+| `huggingface_intelligent_qa_system.rs` | Question-answering system end-to-end |
+| `huggingface_multilingual_translator.rs` | Multi-language translation |
+| `huggingface_sentiment_content_analyzer.rs` | Sentiment analysis pipeline |
+| `huggingface_document_semantic_search.rs` | Document semantic search and retrieval |
+| `huggingface_educational_ai_tutor.rs` | Educational tutoring assistant |
+| `huggingface_automated_content_generator.rs` | Automated content creation |
+| `huggingface_chat_conversational.rs` | Multi-turn conversational chatbot |
+| `huggingface_multi_turn_conversation.rs` | Multi-turn dialogue state management |
 
 ### Running Examples
 

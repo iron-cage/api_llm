@@ -26,7 +26,7 @@ fn create_test_client() -> Result< Client< OpenaiEnvironmentImpl >, Box< dyn std
   Ok( Client::build( env )? )
 }
 
-/// Helper function to check if we should run integration tests
+#[ cfg( feature = "integration" ) ]
 fn should_run_integration_tests() -> bool
 {
   std ::env::var( "OPENAI_API_KEY" ).is_ok()

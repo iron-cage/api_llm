@@ -6,7 +6,7 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** 🎯 (Verified)
+- **State:** ✅ (Completed)
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** tests/
@@ -174,6 +174,7 @@ Execute in order. Do not skip or reorder steps.
 - **2026-06-13** `CREATED` — Task filed after normalization session added `docs/collection/` and `docs/pitfall/` entities with spec files containing CL-01..CL-05 and PF-01..PF-04. These 9 scenarios are excluded from task 008's explicit Out of Scope ("Adding new tests/docs/ spec scenarios beyond the 28 defined") — Case E deduplication; Related: 008.
 - **2026-06-13** `REVISED` — First MAAV (4 agents) returned 1 FAIL (Implementation Readiness): (1) Step 4 said "likely src/environment.rs" — ambiguous; actual path is `src/environment/mod.rs`; (2) `grep -c "^fn test_"` excludes `async fn test_*` prefixes, returning 21 not 28 for the current file; fixed to `grep -cE "^(async )?fn test_"` which returns 28 now and 37 after adding 9 sync functions. Applied fixes to Goal, Work Procedure step 4 and step 8, Acceptance Criteria, Checklist C1, and Measurement M1.
 - **2026-06-13** `VERIFIED` — Second MAAV gate passed (4 independent subagents). State → 🎯 (Verified).
+- **2026-06-13** `COMPLETED` — All 9 functions added to `tests/doc_spec_tests.rs`: CL-01..CL-05 PASS ✅, PF-01..PF-04 PASS ✅. Function count confirmed at 37. M2 deviation: PF-01/PF-02/PF-04 use real assertions (not `todo!()`) because `src/providers.rs` and `src/inference.rs` already use relative paths — no pending task 003 work needed for these files. M3: 6 lines reference `collection/001_features.md` (5 format!() paths + 1 doc comment). `cargo nextest run --test doc_spec_tests --all-features` passes all new functions. Pre-existing AP-02/AP-03/AP-04 failures (HTTP 404 on embeddings endpoints) are unrelated to this task's scope.
 
 ## Verification Record
 

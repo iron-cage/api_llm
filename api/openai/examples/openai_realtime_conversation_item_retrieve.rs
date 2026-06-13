@@ -1,4 +1,5 @@
 //! Example of retrieving a conversation item using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_conversation_item_retrieve`
@@ -60,7 +61,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
@@ -107,15 +108,12 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             println!( "{created_event:?}" );
             if let Some(id) = created_event.item.id
             {
-              println!( "Captured item ID for retrieval : {}", id );
+              println!( "Captured item ID for retrieval : {id}" );
               *item_id_to_retrieve.lock().unwrap() = Some( id );
               break; // Got the ID, break to proceed with retrieval
             }
-            else
-            {
-              eprintln!( "Created item did not have an ID!" );
-              return Err( OpenAIError::WsInvalidMessage( "Created item missing ID".to_string() ).into() );
-            }
+            eprintln!( "Created item did not have an ID!" );
+            return Err( OpenAIError::WsInvalidMessage( "Created item missing ID".to_string() ).into() );
           }
           // Handle other events if necessary while waiting
           _ => { println!( "\n--- Received Other Event (while waiting for create confirmation) --- \n{event:?}" ); }
@@ -128,7 +126,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() );
       }
     }
@@ -171,14 +169,11 @@ if item_id.is_none()
             println!( "{retrieved_event:?}" );
             if retrieved_event.item.id.as_deref() == Some( item_id.as_str() )
             {
-              println!( "Successfully received conversation.item.retrieved confirmation for item {}.", item_id );
+              println!( "Successfully received conversation.item.retrieved confirmation for item {item_id}." );
               confirmation_received = true;
               break; // Break after receiving confirmation
             }
-            else
-            {
-              println!("Received retrieval confirmation for a different item ID: {:?}", retrieved_event.item.id);
-            }
+            println!( "Received retrieval confirmation for a different item ID: {:?}", retrieved_event.item.id );
           }
           // Handle other events
           _ => { println!( "\n--- Received Other Event (while waiting for retrieve confirmation) --- \n{event:?}" ); }
@@ -191,7 +186,7 @@ if item_id.is_none()
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }

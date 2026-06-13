@@ -15,6 +15,17 @@ use crate::
   },
 };
 
+/// Binary input for classification endpoints (vision and audio).
+///
+/// Sends raw binary data (base64-encoded) or a URL string to classification models.
+/// Used by both vision and audio classification to avoid duplicating the same type.
+#[ derive( Debug, Serialize ) ]
+pub( crate ) struct BinaryClassificationInput
+{
+  /// Input data — base64-encoded bytes or a URL
+  pub( crate ) inputs : String,
+}
+
 /// Base parameters for `HuggingFace` inference requests
 #[ derive( Debug, Clone, Serialize, Deserialize ) ]
 pub struct InferenceParameters

@@ -170,5 +170,4 @@ pub mod ser
 pub mod error_tools
 {
   pub use::error_tools::*;
-  pub use::error_tools::dependency::thiserror;
 }

@@ -1,4 +1,5 @@
 //! Example of committing the input audio buffer using the OpenAI API.
+#![ allow( clippy::doc_markdown, clippy::too_many_lines ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_input_audio_buffer_commit`
@@ -80,7 +81,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
   tracing ::info!( "WebSocket client connected." );
@@ -88,7 +89,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   // --- Append some audio data first ---
   let dummy_audio_bytes = include_bytes!("data/example.wav");
-  let audio_base64 = base64_engine.encode( &dummy_audio_bytes );
+  let audio_base64 = base64_engine.encode( dummy_audio_bytes );
 
   let append_event = RealtimeClientEventInputAudioBufferAppend::former()
   .audio( audio_base64 )
@@ -98,7 +99,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 
   // Allow a moment for the server to process the append.
   tracing ::info!( "Waiting after append..." );
-  sleep( Duration::from_millis( 3000 ) ).await;
+  sleep( Duration::from_secs( 3 ) ).await;
   tracing ::info!( "Audio append sent and waited." );
 
 
@@ -132,9 +133,8 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       eprintln!("Timeout waiting for commit/create confirmations.");
       // Include state in error message
       return Err( OpenAIError::WsInvalidMessage(
-        format!( "Timeout waiting for commit/create confirmations (commit_confirmed : {}, item_created_confirmed : {})",
-        commit_confirmed, item_created_confirmed
-      ) ).into() );
+        format!( "Timeout waiting for commit/create confirmations (commit_confirmed : {commit_confirmed}, item_created_confirmed : {item_created_confirmed})" )
+      ).into() );
     }
 
     // Use timeout for reading to avoid blocking forever if connection stalls
@@ -148,9 +148,9 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
               RealtimeServerEvent::InputAudioBufferCommitted( committed_event ) =>
               {
                 println!( "\n--- Commit Confirmation Received ---" );
-                println!( "{:?}", committed_event ); // Keep full print for debugging this specific event
+                println!( "{committed_event:?}" ); // Keep full print for debugging this specific event
                 let item_id = committed_event.item_id;
-                println!( "Successfully received input_audio_buffer.committed. User item ID expected : {}", item_id );
+                println!( "Successfully received input_audio_buffer.committed. User item ID expected : {item_id}" );
                 *expected_item_id_clone.lock().unwrap() = Some( item_id ); // Store the expected ID
                 commit_confirmed = true;
                 if item_created_confirmed { break; } // Break if item already confirmed
@@ -165,7 +165,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
                 {
 if created_event.item.id.as_deref() == Some( expected_id.as_str() )
 {
-                       println!( "Successfully received conversation.item.created matching committed item (ID: {}).", expected_id);
+                       println!( "Successfully received conversation.item.created matching committed item (ID: {expected_id})." );
                        item_created_confirmed = true;
                        if commit_confirmed { break; } // Break if commit already confirmed
                     }
@@ -212,9 +212,9 @@ if commit_confirmed
                 eprintln!( "\n--- Received Server Error Event ---" );
                 println!( "{error_event:?}" );
                 // Check if the error is related to the commit event ID we sent
-if error_event.error.event_id.as_deref() == Some(&client_event_id)
+if error_event.error.event_id.as_deref() == Some( client_event_id )
 {
-                  eprintln!("Server error explicitly linked to our commit request (event_id : {}).", client_event_id);
+                  eprintln!( "Server error explicitly linked to our commit request (event_id : {client_event_id})." );
                   // Return the specific API error
                   return Err( OpenAIError::WsInvalidMessage(
                     format!( "Commit failed : type={}, code={:?}, message={}",
@@ -236,14 +236,11 @@ if error_event.error.event_id.as_deref() == Some(&client_event_id)
       }
       Ok( Err( e ) ) => // Error during WebSocket read/deserialization
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
-      Err( _elapsed ) => // Read timed out
-      {
-         // Timeout on read is expected if server is idle, just continue loop and check overall timeout
-         continue;
-      }
+      Err( _elapsed ) => // Read timed out; just continue loop and check overall timeout
+      {}
     }
 
   } // End confirmation loop
@@ -251,15 +248,12 @@ if error_event.error.event_id.as_deref() == Some(&client_event_id)
   // Final check after loop exits (due to break, close, or error)
   if !commit_confirmed || !item_created_confirmed
   {
-    eprintln!("Loop finished without receiving full confirmation (commit : {}, item_created : {}).", commit_confirmed, item_created_confirmed);
+    eprintln!( "Loop finished without receiving full confirmation (commit : {commit_confirmed}, item_created : {item_created_confirmed})." );
     // Determine if connection closed prematurely or confirmations just weren't received
     if session_client.recv_event().await.is_ok() { // Check if connection is still technically open
          return Err( OpenAIError::WsInvalidMessage( "Did not receive expected commit/create confirmations".to_string() ).into() );
     }
-    else
-    {
-         return Err( OpenAIError::Ws( "WebSocket connection closed".to_string() ).into() ); // Assume closed if read fails now
-    }
+    return Err( OpenAIError::Ws( "WebSocket connection closed".to_string() ).into() ); // Assume closed if read fails now
   }
 
   println!( "\nCommit and item creation successfully confirmed." );

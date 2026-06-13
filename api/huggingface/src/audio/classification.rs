@@ -7,16 +7,8 @@ use crate::
   error::Result,
   audio::{ Audio, AudioInput, AudioClassificationResult },
   environment::HuggingFaceEnvironment,
+  components::input::BinaryClassificationInput,
 };
-use serde::Serialize;
-
-/// Audio classification request
-#[ derive( Debug, Serialize ) ]
-struct ClassificationRequest
-{
-  /// Audio data (base64 or URL)
-  inputs : String,
-}
 
 impl< E > Audio< E >
 where
@@ -67,7 +59,7 @@ where
   model : impl AsRef< str >
   ) -> Result< Vec< AudioClassificationResult > >
   {
-  let request = ClassificationRequest
+  let request = BinaryClassificationInput
   {
       inputs : audio.to_base64(),
   };

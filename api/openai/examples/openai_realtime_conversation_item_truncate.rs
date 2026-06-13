@@ -1,5 +1,6 @@
 //! Example of truncating an assistant audio message using the OpenAI API.
 //! This example is self-contained and generates the necessary assistant message first.
+#![ allow( clippy::doc_markdown, clippy::too_many_lines ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_conversation_item_truncate`
@@ -66,7 +67,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 

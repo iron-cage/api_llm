@@ -601,28 +601,28 @@ mod websocket_streaming_tests
     // Test exponential backoff
     assert_eq!(
       WebSocketStreamer::calculate_reconnect_delay( 0, 1000, 10000 ),
-      Duration::from_millis( 1000 )
+      Duration::from_secs( 1 )
     );
 
     assert_eq!(
       WebSocketStreamer::calculate_reconnect_delay( 1, 1000, 10000 ),
-      Duration::from_millis( 2000 )
+      Duration::from_secs( 2 )
     );
 
     assert_eq!(
       WebSocketStreamer::calculate_reconnect_delay( 2, 1000, 10000 ),
-      Duration::from_millis( 4000 )
+      Duration::from_secs( 4 )
     );
 
     assert_eq!(
       WebSocketStreamer::calculate_reconnect_delay( 3, 1000, 10000 ),
-      Duration::from_millis( 8000 )
+      Duration::from_secs( 8 )
     );
 
     // Should cap at max delay
     assert_eq!(
       WebSocketStreamer::calculate_reconnect_delay( 10, 1000, 5000 ),
-      Duration::from_millis( 5000 )
+      Duration::from_secs( 5 )
     );
   }
 

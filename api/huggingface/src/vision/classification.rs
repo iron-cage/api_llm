@@ -7,16 +7,9 @@ use crate::
   error::Result,
   vision::{ Vision, ImageInput, ClassificationResult },
   environment::HuggingFaceEnvironment,
+  components::input::BinaryClassificationInput,
 };
-use serde::{ Serialize, Deserialize };
-
-/// Image classification request
-#[ derive( Debug, Serialize ) ]
-struct ClassificationRequest
-{
-  /// Image data (base64 or URL)
-  inputs : String,
-}
+use serde::Deserialize;
 
 /// Image classification response
 #[ derive( Debug, Deserialize ) ]
@@ -79,7 +72,7 @@ where
   model : impl AsRef< str >
   ) -> Result< Vec< ClassificationResult > >
   {
-  let request = ClassificationRequest
+  let request = BinaryClassificationInput
   {
       inputs : image.to_base64(),
   };

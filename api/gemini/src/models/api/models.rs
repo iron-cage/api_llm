@@ -608,7 +608,8 @@ impl ModelApi< '_ >
   ->
   Result< crate::models::CountTokensResponse, Error >
   {
-    // Validate request before sending
+    // Validate model ID and request before sending
+    self.validate_model_id()?;
     if request.contents.is_empty()
     {
       return Err( Error::InvalidArgument(

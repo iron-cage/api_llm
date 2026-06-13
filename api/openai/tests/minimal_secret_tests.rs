@@ -314,7 +314,7 @@ fn test_error_message_quality()
     ( load_secret_from_env( "DEFINITELY_NONEXISTENT_VAR_12345" ).map(|_| ()), "missing env var", vec![ "DEFINITELY_NONEXISTENT_VAR_12345" ] ),
   ];
 
-  for ( result, test_name, expected_substrings ) in validation_test_cases.into_iter().chain(env_test_cases.into_iter())
+  for ( result, test_name, expected_substrings ) in validation_test_cases.into_iter().chain(env_test_cases)
   {
     assert!( result.is_err(), "Test case '{test_name}' should fail" );
 

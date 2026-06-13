@@ -105,14 +105,29 @@ fn create_basic_request( user_message: &str ) -> GenerateContentRequest
   }
 }
 
-/// Extract response text from a generate content response
+/// Extract response text from a generate content response.
+/// Skips thought parts (gemini-2.5+ thinking models) and returns the first non-empty answer part.
+/// Falls back to thought text if no non-thought parts have content.
 fn extract_response_text( response: &api_gemini::models::GenerateContentResponse ) -> String
 {
-  response.candidates.first()
-  .and_then( |c| c.content.parts.first() )
-  .and_then( |p| p.text.as_ref() )
-  .map( |s| s.to_string() )
-  .unwrap_or_default()
+  let parts = response.candidates.first()
+    .map( |c| &c.content.parts )
+    .map( |v| v.as_slice() )
+    .unwrap_or_default();
+
+  // Prefer non-thought parts (the actual answer)
+  parts.iter()
+    .filter( |p| p.thought != Some( true ) )
+    .find_map( |p| p.text.as_ref().filter( |t| !t.is_empty() ) )
+    .cloned()
+    // Fall back to thought parts if no non-thought text found
+    .or_else( || {
+      parts.iter()
+        .filter( |p| p.thought == Some( true ) )
+        .find_map( |p| p.text.as_ref().filter( |t| !t.is_empty() ) )
+        .cloned()
+    } )
+    .unwrap_or_default()
 }
 
 /// Generate comprehensive diagnostics for API response issues

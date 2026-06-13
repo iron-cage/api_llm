@@ -6,7 +6,7 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** 🎯 (Verified)
+- **State:** ✅ (Completed)
 - **Priority:** 2
 - **Closes:** null
 - **Blocked Reason:** null
@@ -131,3 +131,4 @@ Execute in order. Do not skip or reorder steps.
 - **2026-06-13** `CREATED` — Task filed by code audit session. Goal: fix runtime URL construction bug in providers.rs where leading-slash absolute paths cause Url::join to strip the base URL path; replace with relative paths matching inference.rs.
 - **2026-06-13** `UPDATED` — Router correction: task originally stated "inference.rs already uses correct relative paths; no changes needed" — this was factually wrong. inference.rs lines 204 and 233 use absolute `/models/` paths that also strip `/v1/` from the base URL. Added inference.rs:204,233 to In Scope; updated Goal, Work Procedure, Test Matrix (T06, T07), Acceptance Criteria, Checklist (C6-C8), Measurements (M3, M4), and Anti-faking (AF2, AF3). Removed erroneous AF2 git-diff check.
 - **2026-06-13** `VERIFIED` — MAAV gate passed (4 independent subagents). State → 🎯 (Verified).
+- **2026-06-13** `COMPLETED` — Source fix verified mechanically: providers.rs 0 absolute /v1/ paths, 2 relative "chat/completions" occurrences; inference.rs 0 absolute /models/ paths, 2 relative "models/..." forms at lines 204+233; lines 96+155 "chat/completions" unchanged. PF-01..PF-04 pass in 31/31 structural test run. State → ✅ (Completed).

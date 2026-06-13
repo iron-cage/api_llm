@@ -1,4 +1,5 @@
 //! Example of updating a response using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! This example demonstrates how to:
 //! 1. Create a response
@@ -70,9 +71,9 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
 if let Some(metadata) = updated_response.metadata
 {
     println!("Update verification:");
-    for (key, value) in metadata.0.iter()
+    for (key, value) in &metadata.0
     {
-      println!("  {}: {}", key, value);
+      println!( "  {key}: {value}" );
     }
   }
 

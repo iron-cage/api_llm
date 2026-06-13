@@ -134,19 +134,17 @@ fn inference_parameters_consistency()
 }
 
 #[ cfg( feature = "integration" ) ]
-mod integration_tests
+use api_huggingface::
 {
-  use super::*;
-  use api_huggingface::
-  {
   Client,
   environment::HuggingFaceEnvironmentImpl,
   secret::Secret,
-  };
+};
 
-  #[ tokio::test ]
-  async fn integration_inference_parameters_with_real_api()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_inference_parameters_with_real_api()
+{
   let api_key_string = crate::inc::get_api_key_for_integration();
   
   // Build client with real credentials
@@ -213,9 +211,10 @@ Integration tests require real API access to validate functionality." );
   }
   }
 
-  #[ tokio::test ]
-  async fn integration_model_constants_with_real_api()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_model_constants_with_real_api()
+{
   let api_key_string = crate::inc::get_api_key_for_integration();
 
   // Build client with real credentials
@@ -258,9 +257,10 @@ Integration tests require real API access to validate functionality." );
   }
   }
 
-  #[ tokio::test ]
-  async fn integration_inference_output_with_real_response()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_inference_output_with_real_response()
+{
   let api_key_string = crate::inc::get_api_key_for_integration();
 
   // Build client with real credentials
@@ -331,6 +331,5 @@ TROUBLESHOOTING:
 
 Integration tests require real API access to validate functionality." );
       }
-  }
   }
 }

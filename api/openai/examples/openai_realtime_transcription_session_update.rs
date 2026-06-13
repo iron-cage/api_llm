@@ -1,4 +1,5 @@
 //! Example of updating a transcription session configuration using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_transcription_session_update`
@@ -65,7 +66,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_transcription_session( initial_request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.expect("Client secret").value;
+  let _ = session.client_secret.expect("Client secret").value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
@@ -118,10 +119,9 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             // Verify the updated fields if possible
             let updated_session = updated_event.session;
             let lang_matches = updated_session.input_audio_transcription.as_ref()
-            .map( | t | t.language.as_deref() == Some( new_language ) )
-            .unwrap_or( false );
-            let include_matches =updated_session.input_audio_transcription.as_ref()
-            .and_then( | iat | iat.model.as_deref() ) == Some( &new_model );
+            .map_or( false, | t | t.language.as_deref() == Some( new_language ) );
+            let include_matches = updated_session.input_audio_transcription.as_ref()
+            .and_then( | iat | iat.model.as_deref() ) == Some( new_model );
 
             if lang_matches && include_matches
             {
@@ -129,11 +129,8 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
               confirmation_received = true;
               break; // Break after receiving confirmation
             }
-            else
-            {
-              eprintln!( "Received transcription_session.updated confirmation, but changes did not match request fully (Lang match : {}, Include match : {}).", lang_matches, include_matches);
-              break; // Break, but don't confirm success
-            }
+            eprintln!( "Received transcription_session.updated confirmation, but changes did not match request fully (Lang match : {lang_matches}, Include match : {include_matches})." );
+            break; // Break, but don't confirm success
           }
           RealtimeServerEvent::Error( error_event ) =>
           {
@@ -163,7 +160,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }

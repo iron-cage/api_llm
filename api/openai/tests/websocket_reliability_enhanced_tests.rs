@@ -68,7 +68,7 @@ impl Default for WsReliabilityConfig
     Self
     {
       max_reconnection_attempts : 5,
-      initial_reconnection_delay : Duration::from_millis( 1000 ),
+      initial_reconnection_delay : Duration::from_secs( 1 ),
       max_reconnection_delay : Duration::from_secs( 30 ),
       connection_timeout : Duration::from_secs( 10 ),
       heartbeat_interval : Duration::from_secs( 30 ),
@@ -421,7 +421,7 @@ impl WsReliabilityTestUtils
       max_reconnection_attempts : 3,
       initial_reconnection_delay : Duration::from_millis( 100 ),
       max_reconnection_delay : Duration::from_millis( 500 ),
-      connection_timeout : Duration::from_millis( 1000 ),
+      connection_timeout : Duration::from_secs( 1 ),
       heartbeat_interval : Duration::from_millis( 500 ),
       message_buffer_size : 10,
       health_check_interval : Duration::from_millis( 200 ),
@@ -478,7 +478,7 @@ async fn test_ws_reliability_config_defaults()
   let config = WsReliabilityConfig::default();
 
   assert_eq!( config.max_reconnection_attempts, 5 );
-  assert_eq!( config.initial_reconnection_delay, Duration::from_millis( 1000 ) );
+  assert_eq!( config.initial_reconnection_delay, Duration::from_secs( 1 ) );
   assert_eq!( config.max_reconnection_delay, Duration::from_secs( 30 ) );
   assert_eq!( config.connection_timeout, Duration::from_secs( 10 ) );
   assert_eq!( config.heartbeat_interval, Duration::from_secs( 30 ) );
@@ -670,7 +670,7 @@ async fn test_exponential_backoff_timing()
 async fn test_connection_timeout_handling()
 {
   let config = WsReliabilityTestUtils::create_test_config();
-  assert_eq!( config.connection_timeout, Duration::from_millis( 1000 ) );
+  assert_eq!( config.connection_timeout, Duration::from_secs( 1 ) );
 
   // Test timeout simulation
   let start = Instant::now();

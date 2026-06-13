@@ -1,4 +1,5 @@
 //! Example of updating the session configuration using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_session_update`
@@ -57,7 +58,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( initial_request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
@@ -110,12 +111,9 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
               confirmation_received = true;
               break; // Break after receiving confirmation
             }
-            else
-            {
-              eprintln!( "Received session.updated confirmation, but changes did not match request fully (Temp match : {}, Format match : {}).", temp_matches, format_matches);
-              // Decide how to handle partial matches, here we break but don't confirm success.
-              break;
-            }
+            eprintln!( "Received session.updated confirmation, but changes did not match request fully (Temp match : {temp_matches}, Format match : {format_matches})." );
+            // Decide how to handle partial matches, here we break but don't confirm success.
+            break;
           }
           // Handle SessionCreated (initial event after connection)
           RealtimeServerEvent::SessionCreated( session_info ) =>
@@ -133,7 +131,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }

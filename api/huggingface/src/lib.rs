@@ -39,10 +39,8 @@
 //! - Function Calling - Tool/function calling support for chat completions
 //! - Streaming - Server-sent events for real-time responses
 //!
-//! **Planned Expansion**:
-//! - Computer Vision APIs : Image classification, object detection, text-to-image, etc.
-//! - Audio APIs : ASR, audio classification, text-to-speech
-//! - Multimodal APIs : Document QA, visual QA, video-text-to-text
+//! - Vision APIs (classification, detection, captioning) - `src/vision/`
+//! - Audio APIs (ASR, TTS, classification, transformation) - `src/audio/`
 //!
 //! ## Historical Context
 //!

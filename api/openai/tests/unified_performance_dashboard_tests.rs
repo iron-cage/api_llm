@@ -2,18 +2,19 @@
 //!
 //! Tests for the integrated performance monitoring and analytics dashboard.
 
+use api_openai::enhanced_client ::
+{
+  UnifiedPerformanceDashboard,
+  ConnectionPerformanceReport,
+  PerformanceAnalysis,
+};
+
 #[ cfg( feature = "integration" ) ]
 use api_openai::
 {
   environment ::{ OpenaiEnvironmentImpl, OpenAIRecommended },
   secret ::Secret,
-  enhanced_client ::
-  {
-    EnhancedClientBuilder,
-    UnifiedPerformanceDashboard,
-    ConnectionPerformanceReport,
-    PerformanceAnalysis,
-  },
+  enhanced_client ::EnhancedClientBuilder,
   response_cache ::CacheConfig,
   metrics_framework ::MetricsConfig,
 };

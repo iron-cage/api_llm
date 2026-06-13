@@ -50,8 +50,9 @@ pub fn validate_input_text( input : &str ) -> Result< () >
   ) );
   }
 
-  // Check for valid UTF-8 (should already be guaranteed by &str, but let's be explicit)
-  if !input.is_ascii() && !input.chars().all( | c | !c.is_control() || c == '\n' || c == '\t' )
+  // Reject control characters that are not common whitespace.
+  // '\n', '\r', '\t' are allowed; other control chars (including ASCII NUL, BEL, etc.) are not.
+  if !input.chars().all( | c | !c.is_control() || c == '\n' || c == '\r' || c == '\t' )
   {
   return Err( HuggingFaceError::Validation(
       "Input text contains invalid control characters".to_string()

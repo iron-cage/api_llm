@@ -1,6 +1,8 @@
 //! Comprehensive tests for `HuggingFace` streaming functionality
 
-#[ cfg( feature = "inference-streaming" ) ]
+mod inc;
+
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
 use api_huggingface::
 {
   Client,
@@ -14,28 +16,31 @@ use api_huggingface::
   },
 };
 
+#[ cfg( all( feature = "inference-streaming", not( feature = "integration" ) ) ) ]
+use api_huggingface::components::input::InferenceParameters;
+
 #[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
 use api_huggingface::error::HuggingFaceError;
 
-#[ cfg( feature = "inference-streaming" ) ]
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
 use tokio::time::{ timeout, Duration };
-#[ cfg( feature = "inference-streaming" ) ]
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
 use std::time::Instant;
 
 // ============================================================================
 // Test Helper Functions
 // ============================================================================
 
-#[ cfg( feature = "inference-streaming" ) ]
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
 /// Helper function to create a test client
 fn create_test_client() -> api_huggingface::error::Result< Client< HuggingFaceEnvironmentImpl > >
 {
-  let api_key = Secret::new( "test-api-key".to_string() );
+  let api_key = Secret::new( crate::inc::get_api_key_for_integration() );
   let env = HuggingFaceEnvironmentImpl::build( api_key, None )?;
   Client::build( env )
 }
 
-#[ cfg( feature = "inference-streaming" ) ]
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
 /// Helper function to create test inference API
 fn create_test_inference() -> api_huggingface::error::Result< Inference< HuggingFaceEnvironmentImpl > >
 {
@@ -44,13 +49,9 @@ fn create_test_inference() -> api_huggingface::error::Result< Inference< Hugging
 }
 
 #[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
-mod integration_tests
+#[ tokio::test ]
+async fn test_real_streaming_endpoint_basic()
 {
-  use super::*;
-  
-  #[ tokio::test ]
-  async fn test_real_streaming_endpoint_basic()
-  {
   // Setup
   let inference = create_test_inference().expect( "Should create test inference" );
   let streaming_params = InferenceParameters::new()
@@ -59,7 +60,7 @@ mod integration_tests
       .with_max_new_tokens( 50 );
       
   let input_text = "Once upon a time";
-  let model_id = ModelConstants::mistral_7b_instruct();
+  let model_id = ModelConstants::llama_3_3_70b_instruct();
   
   // Execution
   match inference.create_stream( input_text, model_id, streaming_params ).await
@@ -80,11 +81,7 @@ mod integration_tests
               total_text.push_str( &text );
               println!( "Received chunk {chunks_received}: '{text}'" );
       },
-      Ok( Some( Err( e ) ) ) =>
-      {
-              println!( "Stream error : {e}" );
-              break;
-      },
+      Ok( Some( Err( e ) ) ) => panic!( "Stream error during integration test: {e}" ),
       Ok( None ) =>
       {
               println!( "Stream ended" );
@@ -105,22 +102,14 @@ mod integration_tests
   
   println!( "Integration test - received {chunks_received} chunks, total text : '{total_text}'" );
       },
-      Err( HuggingFaceError::Api( _ ) ) =>
-      {
-  println!( "API error in integration test (expected with test credentials)" );
-  // This is expected behavior with test credentials
-      },
-      Err( e ) =>
-      {
-  println!( "Unexpected error in streaming integration test : {e}" );
-  // Don't fail the test - network issues are common in CI
-      },
+      Err( e ) => panic!( "Streaming API call should succeed in integration tests: {e}" ),
   }
-  }
-  
-  #[ tokio::test ]
-  async fn test_real_streaming_error_handling()
-  {
+}
+
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
+#[ tokio::test ]
+async fn test_real_streaming_error_handling()
+{
   // Setup - Use invalid model to test error handling
   let inference = create_test_inference().expect( "Should create test inference" );
   let streaming_params = InferenceParameters::new().with_streaming( true );
@@ -134,11 +123,7 @@ mod integration_tests
   // Verification - Should handle errors gracefully
   match result
   {
-      Ok( mut _stream_rx ) =>
-      {
-  println!( "Unexpectedly got stream for invalid model (test environment variation)" );
-  // Don't fail - test environments can behave differently
-      },
+      Ok( _ ) => panic!( "Invalid model should not return a stream — API should reject the request" ),
       Err( HuggingFaceError::Api( api_error ) ) =>
       {
   println!( "Expected API error for invalid model : {api_error}" );
@@ -153,7 +138,6 @@ mod integration_tests
   println!( "Other error type for invalid model : {e}" );
   // Acceptable - different error types are valid
       },
-  }
   }
 }
 
@@ -222,13 +206,8 @@ fn test_streaming_parameter_edge_cases()
   let serialized = serde_json::to_string( &params );
   assert!( serialized.is_ok(), "Should serialize case : {case_name}" );
   
-  // Verify validation
-  let validation_result = params.validate();
-  match validation_result
-  {
-      Ok( () ) => println!( "Case '{case_name}' passed validation" ),
-      Err( e ) => println!( "Case '{case_name}' validation error : {e}" ),
-  }
+  // Verify validation does not panic on boundary values
+  let _ = params.validate();
   }
 }
 
@@ -236,7 +215,7 @@ fn test_streaming_parameter_edge_cases()
 // Comprehensive Integration Test
 // ============================================================================
 
-#[ cfg( feature = "inference-streaming" ) ]
+#[ cfg( all( feature = "inference-streaming", feature = "integration" ) ) ]
 #[ tokio::test ]
 async fn test_comprehensive_streaming_workflow()
 {
@@ -265,83 +244,58 @@ async fn test_comprehensive_streaming_workflow()
       .with_max_new_tokens( max_tokens )
       .with_top_p( 0.9 );
       
-  let model_id = ModelConstants::mistral_7b_instruct();
+  let model_id = ModelConstants::llama_3_3_70b_instruct();
   
   // Execution with timeout for the entire workflow
-  let workflow_result = timeout( Duration::from_secs( 30 ), async
+  let ( total_chunks, total_chars ) = timeout( Duration::from_secs( 30 ), async
   {
-      match inference.create_stream( input_prompt, model_id, streaming_params ).await
-      {
-  Ok( mut stream_rx ) =>
+  let mut stream_rx = inference.create_stream( input_prompt, model_id, streaming_params ).await
+      .unwrap_or_else( | e | panic!( "{workflow_name} workflow failed to create stream : {e}" ) );
+
+  let mut total_chunks = 0usize;
+  let mut total_chars = 0usize;
+  let start_time = Instant::now();
+  let mut first_chunk_time = None;
+
+  while let Some( chunk_result ) = stream_rx.recv().await
   {
-          let mut total_chunks = 0;
-          let mut total_chars = 0;
-          let start_time = Instant::now();
-          let mut first_chunk_time = None;
-          
-          while let Some( chunk_result ) = stream_rx.recv().await
-          {
-      match chunk_result
+      let text = chunk_result
+          .unwrap_or_else( | e | panic!( "Stream error in {workflow_name} workflow : {e}" ) );
+
+      total_chunks += 1;
+      total_chars += text.len();
+
+      if first_chunk_time.is_none()
       {
-              Ok( text ) =>
-              {
-        total_chunks += 1;
-        total_chars += text.len();
-        
-        if first_chunk_time.is_none()
-        {
-                  first_chunk_time = Some( start_time.elapsed() );
-        }
-        
-        // Stop if we've gotten reasonable content
-        if total_chunks >= 20 || total_chars >= 200
-        {
-                  break;
-        }
-              },
-              Err( e ) =>
-              {
-        println!( "  Stream error in {workflow_name} workflow : {e}" );
-        break;
-              },
+          first_chunk_time = Some( start_time.elapsed() );
       }
-          }
-          
-          let total_time = start_time.elapsed();
-          
-          println!( "  {workflow_name} workflow results:" );
-          println!( "    Chunks : {total_chunks}" );
-          println!( "    Characters : {total_chars}" );
-          println!( "    Total time : {total_time:?}" );
-          if let Some( first_time ) = first_chunk_time
-          {
+
+      // Stop if we've gotten reasonable content
+      if total_chunks >= 20 || total_chars >= 200
+      {
+          break;
+      }
+  }
+
+  let total_time = start_time.elapsed();
+  println!( "  {workflow_name} workflow results:" );
+  println!( "    Chunks : {total_chunks}" );
+  println!( "    Characters : {total_chars}" );
+  println!( "    Total time : {total_time:?}" );
+  if let Some( first_time ) = first_chunk_time
+  {
       println!( "    First chunk time : {first_time:?}" );
-          }
-          
-          ( total_chunks, total_chars )
-  },
-  Err( e ) =>
-  {
-          println!( "  {workflow_name} workflow failed to create stream : {e}" );
-          ( 0, 0 )
-  },
-      }
-  }).await;
-  
+  }
+
+  ( total_chunks, total_chars )
+  }).await
+  .unwrap_or_else( | _ | panic!( "{workflow_name} workflow timed out after 30s" ) );
+
   // Verification
-  match workflow_result
-  {
-      Ok( ( _chunks, _chars ) ) =>
-      {
+  assert!( total_chunks > 0, "{workflow_name} workflow should receive at least one chunk" );
+  assert!( total_chars > 0, "{workflow_name} workflow should receive at least one character" );
   println!( "  {workflow_name} workflow completed successfully" );
-  // Don't make strict assertions as this depends on real API behavior
-      },
-      Err( _ ) =>
-      {
-  println!( "  {workflow_name} workflow timed out (acceptable in test environment)" );
-      },
   }
-  }
-  
+
   println!( "Comprehensive streaming workflow test completed" );
 }

@@ -38,6 +38,8 @@ mod performance_monitoring_test;
 mod prompt_caching_tests;
 #[ cfg( feature = "rate-limiting" ) ]
 mod rate_limiting_test;
+#[ cfg( feature = "request-caching" ) ]
+mod request_caching_test;
 #[ cfg( feature = "request-templates" ) ]
 mod request_templates_test;
 mod retry_logic_test;

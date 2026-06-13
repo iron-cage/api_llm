@@ -119,18 +119,16 @@ async fn error_chain_propagation()
 }
 
 #[ cfg( feature = "integration" ) ]
-mod integration_tests
+use api_huggingface::
 {
-  use super::*;
-  use api_huggingface::
-  {
   Client,
   components::input::InferenceParameters,
-  };
+};
 
-  #[ tokio::test ]
-  async fn integration_authentication_error_with_invalid_key()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_authentication_error_with_invalid_key()
+{
   // Test with deliberately invalid API key to trigger authentication error
   let invalid_key = Secret::new( "invalid-key-12345".to_string() );
   let env = HuggingFaceEnvironmentImpl::build( invalid_key, None )
@@ -154,9 +152,10 @@ mod integration_tests
   );
   }
 
-  #[ tokio::test ]
-  async fn integration_rate_limit_error_handling()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_rate_limit_error_handling()
+{
   // Get real API key (will panic with clear message if missing)
   let api_key_string = crate::inc::get_api_key_for_integration();
   
@@ -205,9 +204,10 @@ mod integration_tests
   }
   }
 
-  #[ tokio::test ]
-  async fn integration_invalid_model_error_handling()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_invalid_model_error_handling()
+{
   // Get real API key (will panic with clear message if missing)
   let api_key_string = crate::inc::get_api_key_for_integration();
   
@@ -228,15 +228,17 @@ mod integration_tests
   // Verify error contains model-related information
   let error = result.unwrap_err();
   let error_string = format!( "{error}" );
-  assert!( 
-      error_string.contains( "model" ) || error_string.contains( "404" ) || error_string.contains( "not found" ),
-      "Error should indicate model issue : {error_string}" 
+  let lower = error_string.to_lowercase();
+  assert!(
+      lower.contains( "model" ) || lower.contains( "404" ) || lower.contains( "not found" ) || lower.contains( "not supported" ),
+      "Error should indicate model issue : {error_string}"
   );
   }
 
-  #[ tokio::test ]
-  async fn integration_network_error_recovery()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_network_error_recovery()
+{
   // Test with invalid base URL to simulate network errors
   let api_key = Secret::new( crate::inc::get_api_key_for_integration() );
   let invalid_url = Some( "https://invalid-domain-that-does-not-exist-12345.com".to_string() );
@@ -267,5 +269,4 @@ mod integration_tests
       || error_string.contains( "error" );
   
   assert!( has_network_keywords, "Network error should contain relevant keywords : {error_string}" );
-  }
 }

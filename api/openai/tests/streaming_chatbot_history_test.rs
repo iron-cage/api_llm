@@ -3,6 +3,7 @@
 //! This test demonstrates that conversation history should be preserved
 //! across multiple interactions using the `previous_response_id` mechanism.
 
+#[ cfg( feature = "integration" ) ]
 use api_openai::ClientApiAccessors;
 #[ cfg( feature = "integration" ) ]
 use api_openai::

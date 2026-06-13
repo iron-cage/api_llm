@@ -1,4 +1,4 @@
-//! Common data structures and utilities shared across `HuggingFace` API endpoints.
+//! Wire-format types for `HuggingFace` API — error response, response metadata, task type.
 
 use serde::{ Deserialize, Serialize };
 

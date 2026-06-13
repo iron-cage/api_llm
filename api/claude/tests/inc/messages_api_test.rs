@@ -306,6 +306,216 @@ async fn test_create_message_response_structure()
 }
 
 // ============================================================================
+// UNIT TESTS - RESPONSE HELPERS AND USAGE METHODS
+// ============================================================================
+
+#[ tokio::test ]
+async fn test_usage_total_tokens()
+{
+  let usage = the_module::Usage
+  {
+    input_tokens : 50,
+    output_tokens : 150,
+    cache_creation_input_tokens : None,
+    cache_read_input_tokens : None,
+  };
+  assert_eq!( usage.total_tokens(), 200 );
+}
+
+#[ tokio::test ]
+async fn test_usage_total_tokens_with_cache_fields()
+{
+  // cache_creation_input_tokens and cache_read_input_tokens must NOT count
+  // toward total_tokens — they are subsets of input_tokens already billed
+  let usage = the_module::Usage
+  {
+    input_tokens : 100,
+    output_tokens : 80,
+    cache_creation_input_tokens : Some( 40 ),
+    cache_read_input_tokens : Some( 20 ),
+  };
+  assert_eq!(
+    usage.total_tokens(),
+    180,
+    "total_tokens() must equal input_tokens + output_tokens only"
+  );
+}
+
+#[ tokio::test ]
+async fn test_create_message_response_text_with_text_content()
+{
+  let response = the_module::CreateMessageResponse
+  {
+    id : "msg_001".to_string(),
+    r#type : "message".to_string(),
+    role : "assistant".to_string(),
+    content : vec![
+      the_module::ResponseContent { r#type : "text".to_string(), text : Some( "Hello!" .to_string() ) },
+    ],
+    model : "claude-haiku-4-5-20251001".to_string(),
+    stop_reason : Some( "end_turn".to_string() ),
+    stop_sequence : None,
+    usage : the_module::Usage
+    {
+      input_tokens : 10,
+      output_tokens : 5,
+      cache_creation_input_tokens : None,
+      cache_read_input_tokens : None,
+    },
+  };
+  assert_eq!( response.text(), Some( "Hello!" ) );
+}
+
+#[ tokio::test ]
+async fn test_create_message_response_text_with_empty_content()
+{
+  let response = the_module::CreateMessageResponse
+  {
+    id : "msg_002".to_string(),
+    r#type : "message".to_string(),
+    role : "assistant".to_string(),
+    content : vec![],
+    model : "claude-haiku-4-5-20251001".to_string(),
+    stop_reason : None,
+    stop_sequence : None,
+    usage : the_module::Usage
+    {
+      input_tokens : 10,
+      output_tokens : 0,
+      cache_creation_input_tokens : None,
+      cache_read_input_tokens : None,
+    },
+  };
+  assert_eq!( response.text(), None, "Empty content must return None from text()" );
+}
+
+#[ tokio::test ]
+async fn test_create_message_response_text_with_non_text_content()
+{
+  // tool_use content has no text field — text() must return None
+  let response = the_module::CreateMessageResponse
+  {
+    id : "msg_003".to_string(),
+    r#type : "message".to_string(),
+    role : "assistant".to_string(),
+    content : vec![
+      the_module::ResponseContent { r#type : "tool_use".to_string(), text : None },
+    ],
+    model : "claude-haiku-4-5-20251001".to_string(),
+    stop_reason : Some( "tool_use".to_string() ),
+    stop_sequence : None,
+    usage : the_module::Usage
+    {
+      input_tokens : 15,
+      output_tokens : 8,
+      cache_creation_input_tokens : None,
+      cache_read_input_tokens : None,
+    },
+  };
+  assert_eq!( response.text(), None, "Non-text content must return None from text()" );
+}
+
+#[ tokio::test ]
+async fn test_create_message_response_text_returns_first_text_block()
+{
+  // When multiple text blocks, text() must return the first
+  let response = the_module::CreateMessageResponse
+  {
+    id : "msg_004".to_string(),
+    r#type : "message".to_string(),
+    role : "assistant".to_string(),
+    content : vec![
+      the_module::ResponseContent { r#type : "text".to_string(), text : Some( "first".to_string() ) },
+      the_module::ResponseContent { r#type : "text".to_string(), text : Some( "second".to_string() ) },
+    ],
+    model : "claude-haiku-4-5-20251001".to_string(),
+    stop_reason : Some( "end_turn".to_string() ),
+    stop_sequence : None,
+    usage : the_module::Usage
+    {
+      input_tokens : 20,
+      output_tokens : 10,
+      cache_creation_input_tokens : None,
+      cache_read_input_tokens : None,
+    },
+  };
+  assert_eq!( response.text(), Some( "first" ), "text() must return the first text block" );
+}
+
+#[ tokio::test ]
+async fn test_create_message_response_is_truncated_max_tokens()
+{
+  let response = the_module::CreateMessageResponse
+  {
+    id : "msg_005".to_string(),
+    r#type : "message".to_string(),
+    role : "assistant".to_string(),
+    content : vec![
+      the_module::ResponseContent { r#type : "text".to_string(), text : Some( "truncated...".to_string() ) },
+    ],
+    model : "claude-haiku-4-5-20251001".to_string(),
+    stop_reason : Some( "max_tokens".to_string() ),
+    stop_sequence : None,
+    usage : the_module::Usage
+    {
+      input_tokens : 10,
+      output_tokens : 100,
+      cache_creation_input_tokens : None,
+      cache_read_input_tokens : None,
+    },
+  };
+  assert!( response.is_truncated(), "stop_reason=max_tokens must report as truncated" );
+}
+
+#[ tokio::test ]
+async fn test_create_message_response_is_not_truncated_end_turn()
+{
+  let response = the_module::CreateMessageResponse
+  {
+    id : "msg_006".to_string(),
+    r#type : "message".to_string(),
+    role : "assistant".to_string(),
+    content : vec![
+      the_module::ResponseContent { r#type : "text".to_string(), text : Some( "complete.".to_string() ) },
+    ],
+    model : "claude-haiku-4-5-20251001".to_string(),
+    stop_reason : Some( "end_turn".to_string() ),
+    stop_sequence : None,
+    usage : the_module::Usage
+    {
+      input_tokens : 10,
+      output_tokens : 20,
+      cache_creation_input_tokens : None,
+      cache_read_input_tokens : None,
+    },
+  };
+  assert!( !response.is_truncated(), "stop_reason=end_turn must NOT report as truncated" );
+}
+
+#[ tokio::test ]
+async fn test_create_message_response_is_not_truncated_none()
+{
+  let response = the_module::CreateMessageResponse
+  {
+    id : "msg_007".to_string(),
+    r#type : "message".to_string(),
+    role : "assistant".to_string(),
+    content : vec![],
+    model : "claude-haiku-4-5-20251001".to_string(),
+    stop_reason : None,
+    stop_sequence : None,
+    usage : the_module::Usage
+    {
+      input_tokens : 5,
+      output_tokens : 0,
+      cache_creation_input_tokens : None,
+      cache_read_input_tokens : None,
+    },
+  };
+  assert!( !response.is_truncated(), "None stop_reason must NOT report as truncated" );
+}
+
+// ============================================================================
 // INTEGRATION TESTS - REAL API MESSAGE STRUCTURES
 // ============================================================================
 

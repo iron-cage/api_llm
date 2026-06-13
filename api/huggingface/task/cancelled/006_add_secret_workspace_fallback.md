@@ -6,7 +6,7 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** ❓ (Unverified)
+- **State:** ❌ (Cancelled)
 - **Priority:** 2
 - **Closes:** null
 - **Blocked Reason:** null
@@ -136,3 +136,4 @@ Execute in order. Do not skip or reorder steps.
 - **2026-06-13** `VERIFY FAIL` — MAAV gate blocked by D3 (YAGNI): no test currently fails without this function; value is ergonomics-only. Remains ❓ (Unverified) until a concrete failing scenario is documented.
 - **2026-06-13** `AMENDED` — corrected env var from HF_TOKEN to HUGGINGFACE_API_KEY throughout; verified against src/secret.rs, src/environment/mod.rs, and tests/ helper functions. Also corrected workspace_tools API call pattern from `load_secret_key("HUGGINGFACE_API_KEY", "-secrets.sh")` to `load_secrets_from_file( "-secrets.sh" )?.get( "HUGGINGFACE_API_KEY" )` — confirmed by tests/inc/mod.rs, tests/sync_api_tests.rs (6 call sites), and tests/embeddings_tests.rs; `load_secrets_from_file` is the method used exclusively throughout this crate.
 - **2026-06-13** `VERIFY FAIL (Re-VERIFY)` — Second MAAV run confirms D3 block unchanged. AMENDED corrections valid but do not resolve YAGNI gate. Crate-local invariant does not mandate `load_with_fallbacks()`; `tests/inc/mod.rs` already provides workspace secrets access without it. Remains ❓ (Unverified) until: (a) a concrete failing test is documented, OR (b) crate-local invariant is updated to mandate the workspace `load_with_fallbacks()` pattern.
+- **2026-06-13** `CANCELLED` — YAGNI gate blocked twice; no concrete failing test documented. Fresh V01/V02 audit confirmed integration tests load credentials correctly via `tests/inc/mod.rs` using workspace_tools directly — `load_with_fallbacks()` is not needed for any passing scenario. State → ❌ (Cancelled).

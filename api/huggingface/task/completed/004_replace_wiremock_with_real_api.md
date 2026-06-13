@@ -6,13 +6,13 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** 🎯 (Verified)
+- **State:** ✅ (Completed)
 - **Priority:** 2
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** tests/
-- **Validated By:** null
-- **Validation Date:** null
+- **Validated By:** MAAV (adversarial + completeness subagents)
+- **Validation Date:** 2026-06-13
 
 ## Goal
 
@@ -125,3 +125,4 @@ Execute in order. Do not skip or reorder steps.
 
 - **2026-06-13** `CREATED` — Task filed by code audit session. Goal: remove wiremock from health_check_tests.rs (violates no-mock invariant IN-09) and replace with real HuggingFace API calls gated by #[cfg(feature = "integration")].
 - **2026-06-13** `VERIFIED` — MAAV gate passed (4 independent subagents). State → 🎯 (Verified).
+- **2026-06-13** `COMPLETED` — Implementation validated by MAAV (adversarial + completeness subagents): 0 wiremock refs, 0 MockServer/Mock::given usages, 15 real-API tests properly gated with `#[cfg(feature = "integration")]`, 3 ungated tests correctly identified as pure unit tests (no network calls, labeled "no network" in file comments), JoinHandle `if let Ok( Ok( _ ) )` at line 433 confirmed legitimate (explicit `assert_eq!` assertion follows). State → ✅ (Completed).

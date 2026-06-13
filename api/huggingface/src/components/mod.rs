@@ -9,7 +9,7 @@
 //! ## Core Components
 //! Foundation components used across all API endpoints:
 //! - [`models`] - `HuggingFace` model definitions  
-//! - [`common`] - Common types and utilities
+//! - [`wire_types`] - Wire-format types — error response, metadata, task type
 //! - [`input`] - Common input handling
 //! - [`output`] - Common output handling
 //!
@@ -29,7 +29,7 @@ mod private
 }
 
 // === CORE COMPONENTS ===
-pub mod common;
+pub mod wire_types;
 pub mod input;
 pub mod models;
 pub mod output;
@@ -45,7 +45,7 @@ pub mod tools;
 
 crate::mod_interface!
 {
-  exposed use common;
+  exposed use wire_types;
   exposed use embeddings;
   exposed use inference_shared;
   exposed use input;

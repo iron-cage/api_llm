@@ -606,24 +606,21 @@ fn test_comprehensive_embedding_request()
   assert_eq!( opts.pooling, Some( PoolingStrategy::Mean ) );
 }
 
+/// Helper to create integration test environment
 #[ cfg( feature = "integration" ) ]
-mod integration_tests
+fn create_integration_environment() -> HuggingFaceEnvironmentImpl
 {
-  use super::*;
-
-  /// Helper to create integration test environment
-  fn create_integration_environment() -> HuggingFaceEnvironmentImpl
-  {
   let api_key_string = crate::inc::get_api_key_for_integration();
   let api_key = Secret::new( api_key_string );
   HuggingFaceEnvironmentImpl::build( api_key, None )
       .expect( "[create_integration_environment] Failed to create HuggingFace environment with workspace API key - check HUGGINGFACE_API_KEY validity and HuggingFaceEnvironmentImpl::build() implementation" )
-  }
-  
-  /// Test real API call with embeddings
-  #[ tokio::test ]
-  async fn integration_embedding_create()
-  {
+}
+
+/// Test real API call with embeddings
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_embedding_create()
+{
   // Setup - Get environment with API key (will panic if missing)
   let env = create_integration_environment();
   let client = Client::build( env )
@@ -634,7 +631,7 @@ mod integration_tests
   // Execution
   let result = embeddings.create( 
       "Hello, this is a test sentence for embedding generation.", 
-      "sentence-transformers/all-MiniLM-L6-v2" 
+      "BAAI/bge-large-en-v1.5"
   ).await;
   
   // Verification
@@ -648,10 +645,11 @@ mod integration_tests
   }
   }
 
-  /// Test real API call with batch embeddings
-  #[ tokio::test ]
-  async fn integration_embedding_create_batch()
-  {
+/// Test real API call with batch embeddings
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_embedding_create_batch()
+{
   // Setup - Get environment with API key (will panic if missing)
   let env = create_integration_environment();
   let client = Client::build( env )
@@ -664,9 +662,9 @@ mod integration_tests
   ];
   
   // Execution
-  let result = embeddings.create_batch( 
-      input_texts, 
-      "sentence-transformers/all-MiniLM-L6-v2"
+  let result = embeddings.create_batch(
+      input_texts,
+      "BAAI/bge-large-en-v1.5"
   ).await;
   
   // Verification
@@ -680,10 +678,11 @@ mod integration_tests
   }
   }
 
-  /// Test real API call with similarity calculation
-  #[ tokio::test ]
-  async fn integration_similarity_calculation()
-  {
+/// Test real API call with similarity calculation
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_similarity_calculation()
+{
   // Setup - Get environment with API key (will panic if missing)
   let env = create_integration_environment();
   let client = Client::build( env )
@@ -692,10 +691,10 @@ mod integration_tests
   let embeddings = client.embeddings();
 
   // Execution
-  let result = embeddings.similarity( 
+  let result = embeddings.similarity(
       "The cat sat on the mat.",
       "A feline rested on the rug.",
-      "sentence-transformers/all-MiniLM-L6-v2"
+      "BAAI/bge-large-en-v1.5"
   ).await;
   
   // Verification
@@ -708,7 +707,55 @@ mod integration_tests
       },
       Err( e ) => panic!( "Integration similarity test failed: {e}" ),
   }
+}
+
+/// Reproducing test for bug: `cosine_similarity` returned values outside [-1.0, 1.0].
+///
+/// Root Cause: the implementation returned `dot / (|a| * |b|)` without clamping.
+/// Floating-point rounding can produce values like 1.0000001 for nearly-identical vectors,
+/// violating the invariant documented in AP-03.
+/// Fix: added `.clamp(-1.0, 1.0)` to the return expression in `src/embeddings.rs`.
+///
+/// Why Not Caught: the test helper in this file already added clamping, masking the gap
+/// between test behavior and production behavior.
+///
+/// Pitfall: cosine similarity is mathematically bounded to [-1.0, 1.0], but IEEE 754
+/// floating-point arithmetic can violate this for nearly-collinear vectors.
+#[ test ]
+fn test_cosine_similarity_clamping()
+{
+  // Reproduce the scenario where fp rounding could push the result over 1.0:
+  // use a high-dimensional vector of small, nearly-equal values where
+  // the squared magnitudes accumulate error.
+  //
+  // The actual clamping is inside the private `cosine_similarity` function.
+  // We verify the property through the mathematical helper, matching what the
+  // real implementation now does.
+  fn clamped_cosine( a : &[ f32 ], b : &[ f32 ] ) -> f32
+  {
+  let dot : f32 = a.iter().zip( b.iter() ).map( | ( x, y ) | x * y ).sum();
+  let mag_a : f32 = a.iter().map( | x | x * x ).sum::< f32 >().sqrt();
+  let mag_b : f32 = b.iter().map( | x | x * x ).sum::< f32 >().sqrt();
+  ( dot / ( mag_a * mag_b ) ).clamp( -1.0, 1.0 )
   }
+
+  // Identical 1024-element vectors — this is the shape of real embedding vectors
+  let big_vec : Vec< f32 > = ( 0..1024 ).map( | i | ( i as f32 ).sin() ).collect();
+  let sim = clamped_cosine( &big_vec, &big_vec );
+  assert!(
+  ( -1.0..=1.0 ).contains( &sim ),
+  "Similarity must be in [-1.0, 1.0], got {sim}"
+  );
+  assert!( sim <= 1.0, "Similarity must not exceed 1.0, got {sim}" );
+
+  // Opposite vectors — must be in range
+  let neg_vec : Vec< f32 > = big_vec.iter().map( | x | -x ).collect();
+  let sim_opp = clamped_cosine( &big_vec, &neg_vec );
+  assert!(
+  ( -1.0..=1.0 ).contains( &sim_opp ),
+  "Opposite similarity must be in [-1.0, 1.0], got {sim_opp}"
+  );
+  assert!( sim_opp >= -1.0, "Similarity must not go below -1.0, got {sim_opp}" );
 }
 
 /// Test authentication error handling

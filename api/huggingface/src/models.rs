@@ -139,20 +139,11 @@ where
   
   // Validate model identifier
   validate_model_identifier( model_ref )?;
-  
-  let endpoint = format!( "/models/{model_ref}" );
-  let url = self.client.environment.endpoint_url( &endpoint )?;
-  
-  // Send a minimal request to check availability
-  let test_request = serde_json::json!
-  ({
-      "inputs": "test",
-      "options": {
-  "wait_for_model": false
-      }
-  });
-  
-  match self.client.post::< serde_json::Value, serde_json::Value >( url.as_str(), &test_request ).await
+
+  // Use Hub API to check existence — inference endpoints are provider-specific
+  let url = format!( "{HF_HUB_API_BASE}/models/{model_ref}" );
+
+  match self.client.get::< serde_json::Value >( &url ).await
   {
       Ok( _ ) => Ok( true ),
       Err( _ ) => Ok( false ),
@@ -173,30 +164,17 @@ where
   
   // Validate model identifier
   validate_model_identifier( model_ref )?;
-  
-  let endpoint = format!( "/models/{model_ref}" );
-  let url = self.client.environment.endpoint_url( &endpoint )?;
-  
-  // Send a minimal request with wait_for_model=false to get status
-  let status_request = serde_json::json!
-  ({
-      "inputs": "status check",
-      "options": {
-  "wait_for_model": false
-      }
-  });
-  
-  match self.client.post::< serde_json::Value, serde_json::Value >( url.as_str(), &status_request ).await
+
+  // Use Hub API to determine model status — inference endpoints are provider-specific
+  let url = format!( "{HF_HUB_API_BASE}/models/{model_ref}" );
+
+  match self.client.get::< serde_json::Value >( &url ).await
   {
       Ok( _ ) => Ok( ModelStatus::Available ),
       Err( e ) =>
       {
   let error_msg = e.to_string().to_lowercase();
-  if error_msg.contains( "loading" ) || error_msg.contains( "cold" )
-  {
-          Ok( ModelStatus::Loading )
-  }
-  else if error_msg.contains( "not found" ) || error_msg.contains( "does not exist" )
+  if error_msg.contains( "not found" ) || error_msg.contains( "does not exist" )
   {
           Ok( ModelStatus::NotFound )
   }

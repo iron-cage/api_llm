@@ -10,14 +10,14 @@
 
 // Unit tests run without feature flags, integration tests require integration feature
 
-use api_openai::ClientApiAccessors;
 use api_openai::components::
 {
   embeddings ::{ CreateEmbeddingResponse, Embedding },
-  embeddings_request ::CreateEmbeddingRequest,
   common ::ResponseUsage,
 };
 
+#[ cfg( feature = "integration" ) ]
+use api_openai::ClientApiAccessors;
 #[ cfg( feature = "integration" ) ]
 use api_openai::
 {
@@ -25,7 +25,7 @@ use api_openai::
   error ::Result,
   environment ::OpenaiEnvironmentImpl,
   secret ::Secret,
-  components ::embeddings_request::EmbeddingInput,
+  components ::embeddings_request::{ CreateEmbeddingRequest, EmbeddingInput },
 };
 
 // json macro is no longer needed with typed requests

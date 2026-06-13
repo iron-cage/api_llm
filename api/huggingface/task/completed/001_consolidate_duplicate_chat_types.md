@@ -6,13 +6,13 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** 🎯 (Verified)
+- **State:** ✅ (Completed)
 - **Priority:** 2
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** src/
-- **Validated By:** null
-- **Validation Date:** null
+- **Validated By:** MAAV (adversarial + completeness subagents)
+- **Validation Date:** 2026-06-13
 
 ## Goal
 
@@ -116,3 +116,4 @@ Execute in order. Do not skip or reorder steps.
 
 - **2026-06-13** `CREATED` — Task filed by code audit session. Goal: remove duplicate ChatCompletionRequest/ChatMessage/ChatChoice/Usage definitions from providers.rs and consolidate to inference_shared.rs as sole source of truth.
 - **2026-06-13** `VERIFIED` — MAAV gate passed (4 independent subagents). State → 🎯 (Verified).
+- **2026-06-13** `COMPLETED` — Implementation validated by MAAV (adversarial + completeness subagents): 0 struct defs remaining in providers.rs, 4 canonical types in inference_shared.rs unchanged, import path correct (`ChatUsage as Usage` alias via `pub use`), 0 type aliases masking duplication, build clean. State → ✅ (Completed).

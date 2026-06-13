@@ -10,59 +10,42 @@ use api_huggingface::
 #[ test ]
 fn debug_temperature_validation()
 {
-  let invalid_params = InferenceParameters::new()
-  .with_temperature( -0.1 )
-  .validate();
-  
-  match invalid_params
-  {
-  Ok( () ) => println!( "Expected error but got OK" ),
-  Err( e ) => println!( "Got error : {e}" ),
-  }
+  let result = InferenceParameters::new()
+      .with_temperature( -0.1 )
+      .validate();
+  assert!( result.is_err(), "Temperature -0.1 is invalid and should fail validation" );
 }
 
 #[ test ]
 fn debug_model_identifier_validation()
 {
   use api_huggingface::validation::validate_model_identifier;
-  
   let result = validate_model_identifier( "" );
-  match result
-  {
-  Ok( () ) => println!( "Expected error but got OK" ),
-  Err( e ) => println!( "Got error : {e}" ),
-  }
+  assert!( result.is_err(), "Empty model identifier is invalid and should fail validation" );
 }
 
 #[ test ]
 fn debug_batch_validation()
 {
   use api_huggingface::validation::validate_batch_inputs;
-  
   let large_batch : Vec< String > = ( 0..1001 ).map( | i | format!( "input_{i}" ) ).collect();
   let result = validate_batch_inputs( &large_batch );
-  match result
-  {
-  Ok( () ) => println!( "Expected error but got OK" ),
-  Err( e ) => println!( "Got error : {e}" ),
-  }
+  assert!( result.is_err(), "Batch of 1001 inputs exceeds the limit and should fail validation" );
 }
 
 #[ cfg( feature = "integration" ) ]
-mod integration_tests
+use api_huggingface::
 {
-  use super::*;
-  use api_huggingface::
-  {
   Client,
   environment::HuggingFaceEnvironmentImpl,
   secret::Secret,
   validation::{ validate_model_identifier, validate_batch_inputs },
-  };
+};
 
-  #[ tokio::test ]
-  async fn integration_validation_with_real_api_calls()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_validation_with_real_api_calls()
+{
   let api_key_string = crate::inc::get_api_key_for_integration();
   
   // Build client with real credentials
@@ -88,9 +71,10 @@ mod integration_tests
   assert!( api_result.is_err(), "Invalid parameters should cause API call to fail" );
   }
 
-  #[ tokio::test ]  
-  async fn integration_model_validation_with_real_api()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_model_validation_with_real_api()
+{
   let api_key_string = crate::inc::get_api_key_for_integration();
 
   // Build client with real credentials
@@ -114,9 +98,10 @@ mod integration_tests
   assert!( result.is_err(), "Invalid model name should cause API failure : {result:?}" );
   }
 
-  #[ tokio::test ]
-  async fn integration_batch_validation_with_real_api()
-  {
+#[ cfg( feature = "integration" ) ]
+#[ tokio::test ]
+async fn integration_batch_validation_with_real_api()
+{
   let api_key_string = crate::inc::get_api_key_for_integration();
 
   // Build client with real credentials
@@ -135,7 +120,7 @@ mod integration_tests
 
   // Test that valid small batch works with real API  
   let response = client.embeddings()
-      .create_batch( small_batch.clone(), "sentence-transformers/all-MiniLM-L6-v2" )
+      .create_batch( small_batch.clone(), "BAAI/bge-large-en-v1.5" )
       .await;
 
   // Handle API response gracefully - external API may be unavailable
@@ -152,10 +137,6 @@ mod integration_tests
           }
   }
       },
-      Err( e ) => {
-  println!( "Integration test skipped due to API unavailability : {e}" );
-  // Test passes - external API unavailability should not fail tests
-      }
-  }
+      Err( e ) => panic!( "Integration embedding batch should succeed with valid credentials: {e}" ),
   }
 }

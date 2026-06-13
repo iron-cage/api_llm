@@ -86,10 +86,11 @@ impl ModelApi< '_ >
   ->
   Result< crate::models::EmbedContentResponse, Error >
   {
-    // Validate request before sending
+    // Validate model ID and request before sending
+    self.validate_model_id()?;
     if request.content.parts.is_empty()
     {
-      return Err( Error::InvalidArgument( 
+      return Err( Error::InvalidArgument(
         "Embed content request cannot have empty content parts. Please provide text to embed.".to_string()
       ) );
     }

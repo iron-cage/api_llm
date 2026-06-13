@@ -44,6 +44,7 @@ Automated tests for the `api_huggingface` crate. All integration tests use real 
 | `vision_tests.rs` | Vision API (classification, detection, captioning) tests |
 | `inc/` | Shared test helper modules (not test binaries) |
 | `docs/` | GWT spec scenarios for all doc entity instances |
+| `manual/` | Manual testing plans and execution scripts |
 
 ### Running Tests
 

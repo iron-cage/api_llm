@@ -17,7 +17,7 @@ use super::*;
 mod request_caching_functionality_tests
 {
   use super::*;
-  use std::time::{ Duration, Instant };
+  use core::time::Duration;
 
   /// Test cache configuration validation
   #[ test ]
@@ -44,6 +44,11 @@ mod request_caching_functionality_tests
       .with_max_entries( 0 ); // Should fail - max entries must be > 0
 
     assert!( !invalid_config2.is_valid() );
+
+    let invalid_config3 = the_module::CacheConfig::new()
+      .with_memory_limit_mb( 0 ); // Should fail - memory limit must be > 0
+
+    assert!( !invalid_config3.is_valid() );
   }
 
   /// Test cache key generation
@@ -141,6 +146,8 @@ mod request_caching_functionality_tests
       {
         input_tokens : 10,
         output_tokens : 5,
+        cache_creation_input_tokens : None,
+        cache_read_input_tokens : None,
       },
     };
 
@@ -196,6 +203,8 @@ mod request_caching_functionality_tests
       {
         input_tokens : 8,
         output_tokens : 4,
+        cache_creation_input_tokens : None,
+        cache_read_input_tokens : None,
       },
     };
 
@@ -222,7 +231,7 @@ mod request_caching_functionality_tests
     let cache = the_module::RequestCache::new( config );
 
     // Create 3 different requests
-    let requests = vec![
+    let requests = [
       the_module::CreateMessageRequest
       {
         model : "claude-haiku-4-5-20251001".to_string(),
@@ -284,6 +293,8 @@ mod request_caching_functionality_tests
         {
           input_tokens : 5,
           output_tokens : 3,
+          cache_creation_input_tokens : None,
+          cache_read_input_tokens : None,
         },
       };
 
@@ -336,6 +347,8 @@ mod request_caching_functionality_tests
       {
         input_tokens : 6,
         output_tokens : 4,
+        cache_creation_input_tokens : None,
+        cache_read_input_tokens : None,
       },
     };
 
@@ -393,6 +406,8 @@ mod request_caching_functionality_tests
       {
         input_tokens : 5,
         output_tokens : 3,
+        cache_creation_input_tokens : None,
+        cache_read_input_tokens : None,
       },
     };
 
@@ -437,23 +452,8 @@ mod request_caching_functionality_tests
 mod request_caching_integration_tests
 {
   use super::*;
-  use std::time::{ Duration, Instant };
-
-  /// Test client integration with caching
-  #[ test ]
-  fn test_client_with_caching()
-  {
-    // REMOVED: This test used fake API keys and is not needed
-    // Real testing is covered by integration tests using from_workspace()
-  }
-
-  /// Test cache behavior with real requests (mock)
-  #[ tokio::test ]
-  async fn test_cached_message_requests()
-  {
-    // REMOVED: This test used fake API keys and is not needed
-    // Real testing is covered by integration tests using from_workspace()
-  }
+  use core::time::Duration;
+  use std::time::Instant;
 
   /// Test cache performance characteristics
   #[ test ]
@@ -474,7 +474,7 @@ mod request_caching_integration_tests
       {
         model : "claude-haiku-4-5-20251001".to_string(),
         max_tokens : 100,
-        messages : vec![ the_module::Message::user( &format!( "Message {}", i ) ) ],
+        messages : vec![ the_module::Message::user( format!( "Message {i}" ) ) ],
         system : None,
         temperature : None,
         stream : None,
@@ -486,13 +486,13 @@ mod request_caching_integration_tests
 
       let response = the_module::CreateMessageResponse
       {
-        id : format!( "msg_{}", i ),
+        id : format!( "msg_{i}" ),
         r#type : "message".to_string(),
         role : "assistant".to_string(),
         content : vec![ the_module::ResponseContent
         {
           r#type : "text".to_string(),
-          text : Some( format!( "Response {}", i ) ),
+          text : Some( format!( "Response {i}" ) ),
         } ],
         model : "claude-haiku-4-5-20251001".to_string(),
         stop_reason : Some( "end_turn".to_string() ),
@@ -501,6 +501,8 @@ mod request_caching_integration_tests
         {
           input_tokens : 5,
           output_tokens : 3,
+          cache_creation_input_tokens : None,
+          cache_read_input_tokens : None,
         },
       };
 
@@ -518,7 +520,7 @@ mod request_caching_integration_tests
       {
         model : "claude-haiku-4-5-20251001".to_string(),
         max_tokens : 100,
-        messages : vec![ the_module::Message::user( &format!( "Message {}", i ) ) ],
+        messages : vec![ the_module::Message::user( format!( "Message {i}" ) ) ],
         system : None,
         temperature : None,
         stream : None,

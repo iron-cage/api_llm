@@ -161,9 +161,12 @@ mod presets;
         let api_key = self.api_key
           .ok_or_else( || Error::AuthenticationError( "API key is required".to_string() ) )?;
 
-        if api_key.is_empty()
+        // Reject both empty and whitespace-only keys — neither is a valid credential.
+        // Root cause of previous bug: `is_empty()` passed "   " (spaces) to the HTTP layer
+        // where it caused an unhelpful authentication failure with no client-side context.
+        if api_key.trim().is_empty()
         {
-          return Err( Error::AuthenticationError( "API key cannot be empty".to_string() ) );
+          return Err( Error::AuthenticationError( "API key cannot be empty or blank".to_string() ) );
         }
 
         // Validate retry configuration when retry feature is enabled

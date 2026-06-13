@@ -497,13 +497,13 @@ mod failover_tests
     let manager = FailoverManager::new( config, vec![] );
 
     // Test exponential backoff
-    assert_eq!( manager.calculate_retry_delay( 1 ), Duration::from_millis( 1000 ) ); // 1000 * 2^0
-    assert_eq!( manager.calculate_retry_delay( 2 ), Duration::from_millis( 2000 ) ); // 1000 * 2^1
-    assert_eq!( manager.calculate_retry_delay( 3 ), Duration::from_millis( 4000 ) ); // 1000 * 2^2
-    assert_eq!( manager.calculate_retry_delay( 4 ), Duration::from_millis( 8000 ) ); // 1000 * 2^3
+    assert_eq!( manager.calculate_retry_delay( 1 ), Duration::from_secs( 1 ) ); // 1000 * 2^0
+    assert_eq!( manager.calculate_retry_delay( 2 ), Duration::from_secs( 2 ) ); // 1000 * 2^1
+    assert_eq!( manager.calculate_retry_delay( 3 ), Duration::from_secs( 4 ) ); // 1000 * 2^2
+    assert_eq!( manager.calculate_retry_delay( 4 ), Duration::from_secs( 8 ) ); // 1000 * 2^3
 
     // Should cap at max delay
-    assert_eq!( manager.calculate_retry_delay( 5 ), Duration::from_millis( 10000 ) ); // Capped
+    assert_eq!( manager.calculate_retry_delay( 5 ), Duration::from_secs( 10 ) ); // Capped
   }
 
   // ===== FAILOVER EXECUTOR TESTS =====

@@ -165,26 +165,24 @@ impl ChatApi< '_ >
     // Create optimized generation config only when parameters are specified
     let generation_config = Self::build_generation_config( request );
 
-    // Handle system instruction by prepending it as the first user message
-    // This is more memory efficient than inserting at index 0
-    if let Some( system_content ) = system_instruction
-    {
-      let system_content_obj = Content
+    // Map system message to Gemini's native system_instruction field (OP-10).
+    // This is the correct approach: the API treats system_instruction with higher priority
+    // and different semantics than user messages.
+    // Previous (wrong): embedding as "System: {content}" user message used extra tokens
+    // and gave weaker model adherence than the dedicated field.
+    let system_instruction_field = system_instruction.map( | system_content |
+      crate::models::SystemInstruction
       {
-        parts : vec![ Part
-        {
-          text : Some( format!( "System : {system_content}" ) ),
-          ..Default::default()
-        } ],
-        role : "user".to_string(),
-      };
-      contents.insert( 0, system_content_obj );
-    }
-    
+        role : "system".to_string(),
+        parts : vec![ Part { text : Some( system_content ), ..Default::default() } ],
+      }
+    );
+
     Ok( GenerateContentRequest
     {
       contents,
       generation_config,
+      system_instruction : system_instruction_field,
       ..Default::default()
     } )
   }

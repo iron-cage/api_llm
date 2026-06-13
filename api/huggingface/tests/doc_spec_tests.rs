@@ -95,6 +95,38 @@ fn test_fe_04()
   assert!( cargo_toml.contains( "health-checks" ), "FE-04: health-checks feature must be defined" );
 }
 
+/// FE-05: caching, performance-metrics, and token-counting do not depend on the reliability module.
+/// Verifies Cargo.toml feature deps: those three list only "client", not "reliability".
+#[ test ]
+fn test_fe_05()
+{
+  let cargo = std::fs::read_to_string(
+  format!( "{}/Cargo.toml", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "Should read Cargo.toml" );
+
+  for feature in [ "caching", "performance-metrics", "token-counting" ]
+  {
+    let line = cargo.lines()
+    .find( | l | l.trim_start().starts_with( feature ) && l.contains( '=' ) )
+    .unwrap_or_else( || panic!( "FE-05: {feature} feature must be defined in Cargo.toml" ) );
+    assert!(
+    !line.contains( "reliability" ),
+    "FE-05: {feature} must not depend on reliability — expected only \"client\"; got: {line}"
+    );
+  }
+
+  for feature in [ "circuit-breaker", "rate-limiting", "failover", "health-checks", "dynamic-config" ]
+  {
+    let line = cargo.lines()
+    .find( | l | l.trim_start().starts_with( feature ) && l.contains( '=' ) )
+    .unwrap_or_else( || panic!( "FE-05: {feature} feature must be defined in Cargo.toml" ) );
+    assert!(
+    line.contains( "reliability" ),
+    "FE-05: {feature} must depend on reliability; got: {line}"
+    );
+  }
+}
+
 // ============================================================================
 // AP: API Spec — Reference (tests/docs/api/)
 // ============================================================================
@@ -125,7 +157,7 @@ async fn test_ap_02()
   let client = build_integration_client();
   let result = client.embeddings().create(
   "hello world",
-  "sentence-transformers/all-MiniLM-L6-v2",
+  "BAAI/bge-large-en-v1.5",
   ).await;
 
   let response = result.expect( "AP-02: embeddings.create should succeed" );
@@ -156,7 +188,7 @@ async fn test_ap_03()
   let result = client.embeddings().similarity(
   text,
   text,
-  "sentence-transformers/all-MiniLM-L6-v2",
+  "BAAI/bge-large-en-v1.5",
   ).await;
 
   let score = result.expect( "AP-03: similarity should succeed" );
@@ -182,7 +214,7 @@ async fn test_ap_04()
 
   let result = client.inference().create_stream(
   "Once upon a time",
-  "mistralai/Mistral-7B-Instruct-v0.1",
+  "meta-llama/Llama-3.3-70B-Instruct",
   params,
   ).await;
 
@@ -617,6 +649,217 @@ fn test_pt_04()
   has_cfg_gate,
   "PT-04: lib.rs must use #[cfg(feature = \"...\")] to gate optional pub mod declarations"
   );
+}
+
+// ============================================================================
+// CL: Collection Spec — Features (tests/docs/collection/)
+// ============================================================================
+
+/// CL-01: integration feature exists in the catalog.
+/// Verifies `docs/collection/001_features.md` documents integration with `HUGGINGFACE_API_KEY`.
+#[ test ]
+fn test_cl_01()
+{
+  let doc = std::fs::read_to_string(
+    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-01: Should read docs/collection/001_features.md" );
+
+  assert!(
+    doc.contains( "integration" ),
+    "CL-01: docs/collection/001_features.md must document the integration feature"
+  );
+  assert!(
+    doc.contains( "HUGGINGFACE_API_KEY" ),
+    "CL-01: integration feature entry must reference HUGGINGFACE_API_KEY"
+  );
+}
+
+/// CL-02: full convenience bundle includes basic and enterprise features.
+/// Verifies the `full` row in the Convenience Bundles table mentions enterprise and integration.
+#[ test ]
+fn test_cl_02()
+{
+  let doc = std::fs::read_to_string(
+    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-02: Should read docs/collection/001_features.md" );
+
+  assert!(
+    doc.contains( "`full`" ) || doc.contains( "| full |" ),
+    "CL-02: docs/collection/001_features.md must have a full feature row"
+  );
+  assert!(
+    doc.contains( "enterprise" ) || doc.contains( "Tier 2" ),
+    "CL-02: full bundle documentation must mention enterprise features"
+  );
+  assert!(
+    doc.contains( "integration" ),
+    "CL-02: full bundle documentation must mention integration"
+  );
+}
+
+/// CL-03: Tier 1 features do not include enterprise reliability features.
+/// Verifies circuit-breaker and rate-limiting appear only after the Tier 2 heading.
+#[ test ]
+fn test_cl_03()
+{
+  let doc = std::fs::read_to_string(
+    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-03: Should read docs/collection/001_features.md" );
+
+  let tier1_pos = doc.find( "Tier 1" ).expect( "CL-03: Tier 1 section must exist" );
+  let tier2_pos = doc.find( "Tier 2" ).expect( "CL-03: Tier 2 section must exist" );
+
+  let circuit_pos = doc.find( "circuit-breaker" )
+    .expect( "CL-03: circuit-breaker must be documented" );
+  let rate_pos = doc.find( "rate-limiting" )
+    .expect( "CL-03: rate-limiting must be documented" );
+
+  assert!( circuit_pos > tier2_pos, "CL-03: circuit-breaker must appear in Tier 2, not Tier 1" );
+  assert!( rate_pos > tier2_pos, "CL-03: rate-limiting must appear in Tier 2, not Tier 1" );
+
+  let tier1_section = &doc[ tier1_pos..tier2_pos ];
+  assert!(
+    !tier1_section.contains( "circuit-breaker" ),
+    "CL-03: circuit-breaker must not appear in Tier 1 section"
+  );
+  assert!(
+    !tier1_section.contains( "rate-limiting" ),
+    "CL-03: rate-limiting must not appear in Tier 1 section"
+  );
+}
+
+/// CL-04: enabled bundle provides types without HTTP client.
+/// Verifies the `enabled` row is described as serialization-only (no HTTP client).
+#[ test ]
+fn test_cl_04()
+{
+  let doc = std::fs::read_to_string(
+    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-04: Should read docs/collection/001_features.md" );
+
+  assert!(
+    doc.contains( "enabled" ),
+    "CL-04: docs/collection/001_features.md must document the enabled feature"
+  );
+  assert!(
+    doc.contains( "serde" ) || doc.contains( "serialization" ) || doc.contains( "no HTTP" ),
+    "CL-04: enabled bundle must be described as types/serde only, without HTTP client"
+  );
+}
+
+/// CL-05: Classification section describes Tier 1 vs Tier 2 semantics.
+/// Verifies endpoint mapping for Tier 1 and explicit construction for Tier 2.
+#[ test ]
+fn test_cl_05()
+{
+  let doc = std::fs::read_to_string(
+    format!( "{}/docs/collection/001_features.md", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "CL-05: Should read docs/collection/001_features.md" );
+
+  assert!(
+    doc.contains( "Classification" ),
+    "CL-05: docs/collection/001_features.md must have a Classification section"
+  );
+  assert!(
+    doc.contains( "endpoint" ) || doc.contains( "HTTP" ),
+    "CL-05: Classification must describe Tier 1 as mapping to API endpoints"
+  );
+  assert!(
+    doc.contains( "explicit" ) || doc.contains( "opt-in" ),
+    "CL-05: Classification must describe Tier 2 as requiring explicit construction"
+  );
+}
+
+// ============================================================================
+// PF: Pitfall Spec — URL Join Absolute Path (tests/docs/pitfall/)
+// ============================================================================
+
+/// PF-01: providers.rs uses relative path for Router API endpoint.
+/// Verifies `"chat/completions"` (no leading slash) in providers.rs.
+#[ test ]
+fn test_pf_01()
+{
+  let src = std::fs::read_to_string(
+    format!( "{}/src/providers.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "PF-01: Should read src/providers.rs" );
+
+  assert!(
+    src.contains( "\"chat/completions\"" ),
+    "PF-01: providers.rs must use relative path \"chat/completions\" (no leading slash)"
+  );
+  assert!(
+    !src.contains( "\"/chat/completions\"" ) && !src.contains( "\"/v1/chat/completions\"" ),
+    "PF-01: providers.rs must not use absolute path /chat/completions or /v1/chat/completions"
+  );
+}
+
+/// PF-02: inference.rs uses relative path for model endpoint.
+/// Verifies `"models/{id}"` format (no leading slash) in inference.rs.
+#[ test ]
+fn test_pf_02()
+{
+  let src = std::fs::read_to_string(
+    format!( "{}/src/inference.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "PF-02: Should read src/inference.rs" );
+
+  assert!(
+    src.contains( "\"models/" ),
+    "PF-02: inference.rs must use relative path \"models/{{id}}\" (no leading slash)"
+  );
+  assert!(
+    !src.contains( "\"/models/" ) && !src.contains( "\"/v1/models/" ),
+    "PF-02: inference.rs must not use absolute path /models/ or /v1/models/"
+  );
+}
+
+/// PF-03: base URL carries the version prefix.
+/// Verifies the recommended base URL string ends with `/v1/`.
+#[ test ]
+fn test_pf_03()
+{
+  let src = std::fs::read_to_string(
+    format!( "{}/src/environment/mod.rs", env!( "CARGO_MANIFEST_DIR" ) )
+  ).expect( "PF-03: Should read src/environment/mod.rs" );
+
+  assert!(
+    src.contains( "/v1/\"" ),
+    "PF-03: environment must define a base URL string ending with /v1/"
+  );
+}
+
+/// PF-04: no leading-slash path literals in providers.rs and inference.rs.
+/// Scans the two primary endpoint files documented in PF-01/PF-02 for `"/` patterns.
+/// Note: models.rs and audio/vision modules retain leading-slash paths and need a
+/// separate fix tracked by the pitfall doc.
+#[ test ]
+fn test_pf_04()
+{
+  let target_files = [
+    "src/providers.rs",
+    "src/inference.rs",
+  ];
+
+  for rel in target_files
+  {
+    let path = format!( "{}/{rel}", env!( "CARGO_MANIFEST_DIR" ) );
+    let content = std::fs::read_to_string( &path )
+      .unwrap_or_else( |_| String::new() );
+
+    for ( line_num, line ) in content.lines().enumerate()
+    {
+      let trimmed = line.trim();
+      if trimmed.starts_with( "//" ) || trimmed.starts_with( '*' ) { continue; }
+      if trimmed.contains( "\"/" )
+         && !trimmed.contains( "https://" )
+         && !trimmed.contains( "http://" )
+      {
+        panic!(
+          "PF-04: leading-slash path literal in {rel} line {}: {trimmed}",
+          line_num + 1
+        );
+      }
+    }
+  }
 }
 
 // ============================================================================

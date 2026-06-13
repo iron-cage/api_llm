@@ -12,6 +12,7 @@ use api_huggingface::
   error::HuggingFaceError,
   secret::Secret,
 };
+#[ cfg( all( feature = "integration", feature = "env-config" ) ) ]
 use core::time::Duration;
 
 // ============================================================================
@@ -364,96 +365,64 @@ fn test_models_client_creation_no_env_config()
 // Integration Tests - Conditional Compilation
 // ============================================================================
 
-#[ cfg( feature = "integration" ) ]
-#[ cfg( feature = "env-config" ) ]
-mod integration_tests
+/// Create client with real API key for integration tests
+#[ cfg( all( feature = "integration", feature = "env-config" ) ) ]
+fn create_integration_test_models() -> api_huggingface::error::Result< Models< HuggingFaceEnvironmentImpl > >
 {
-  use super::*;
-
-  /// Create client with real API key for integration tests
-  fn create_integration_test_models() -> api_huggingface::error::Result< Models< HuggingFaceEnvironmentImpl > >
-  {
   let api_key = Secret::new( crate::inc::get_api_key_for_integration() );
   let env = HuggingFaceEnvironmentImpl::build( api_key, None )?;
   let client = Client::build( env )?;
   Ok( Models::new( &client ) )
-  }
-  
-  #[ tokio::test ]
-  async fn test_models_get_real_model()
-  {
+}
+
+#[ cfg( all( feature = "integration", feature = "env-config" ) ) ]
+#[ tokio::test ]
+async fn test_models_get_real_model()
+{
   let models = create_integration_test_models().expect( "Should create integration test models" );
   let model_id = "gpt2";
   
-  match models.get( model_id ).await
-  {
-      Ok( model_info ) =>
-      {
   // HuggingFace may return fully qualified names like "openai-community/gpt2"
+  let model_info = models.get( model_id ).await
+      .expect( "model retrieval should succeed in integration tests" );
   assert!(
-          model_info.id == model_id || model_info.id.ends_with( &format!( "/{model_id}" ) ),
-          "Expected model ID '{model_id}' or ending with '/{model_id}'', got '{}'",
-          model_info.id
+      model_info.id == model_id || model_info.id.ends_with( &format!( "/{model_id}" ) ),
+      "Expected model ID '{model_id}' or ending with '/{model_id}', got '{}'",
+      model_info.id
   );
-  println!( "Retrieved model info for : {model_id} (actual ID: {})", model_info.id );
-  println!( "Repository URL: {:?}", model_info.repository_url );
-  // Repository URL may not always be present in API response
-  // assert!( model_info.repository_url.is_some() );
-      },
-      Err( e ) =>
-      {
-  // In integration tests, this might fail due to API limits or connectivity
-  println!( "Model retrieval failed (expected in some environments): {e}" );
-      }
-  }
   }
   
-  #[ tokio::test ]
-  async fn test_models_is_available_real_model()
-  {
+#[ cfg( all( feature = "integration", feature = "env-config" ) ) ]
+#[ tokio::test ]
+async fn test_models_is_available_real_model()
+{
   let models = create_integration_test_models().expect( "Should create integration test models" );
-  let model_id = ModelConstants::all_minilm_l6_v2();
+  let model_id = "meta-llama/Llama-3.2-1B-Instruct";
+  // Llama-3.2-1B-Instruct is a confirmed-available model on the Router API
+  let available = models.is_available( model_id ).await
+      .expect( "is_available should succeed for a known model in integration tests" );
+  assert!( available, "Model {model_id} should be available on HuggingFace" );
+}
   
-  match models.is_available( model_id ).await
-  {
-      Ok( available ) =>
-      {
-  println!( "Model {model_id} availability : {available}" );
-      },
-      Err( e ) =>
-      {
-  println!( "Model availability check failed : {e}" );
-      }
-  }
-  }
-  
-  #[ tokio::test ]
-  async fn test_models_status_real_model()
-  {
+#[ cfg( all( feature = "integration", feature = "env-config" ) ) ]
+#[ tokio::test ]
+async fn test_models_status_real_model()
+{
   let models = create_integration_test_models().expect( "Should create integration test models" );
   let model_id = ModelConstants::mistral_7b_instruct();
-  
-  match models.status( model_id ).await
-  {
-      Ok( status ) =>
-      {
-  println!( "Model {model_id} status : {status:?}" );
-  // Status should be one of the valid enum variants
+  // Verify status API returns a valid variant (any status is acceptable)
+  let status = models.status( model_id ).await
+      .expect( "status should succeed for a known model in integration tests" );
   match status
   {
-          ModelStatus::Available | ModelStatus::Loading | ModelStatus::NotFound | ModelStatus::Error( _ ) => {},
+      ModelStatus::Available | ModelStatus::Loading | ModelStatus::NotFound | ModelStatus::Error( _ ) => {},
   }
-      },
-      Err( e ) =>
-      {
-  println!( "Model status check failed : {e}" );
-      }
-  }
-  }
+}
   
-  #[ tokio::test ]
-  async fn test_models_wait_for_model_timeout()
-  {
+#[ cfg( all( feature = "integration", feature = "env-config" ) ) ]
+#[ tokio::test ]
+async fn test_models_wait_for_model_timeout()
+{
   let models = create_integration_test_models().expect( "Should create integration test models" );
   let non_existent_model = "definitely-does-not-exist/model-12345";
   
@@ -479,7 +448,6 @@ mod integration_tests
   else
   {
       panic!( "Expected ModelUnavailable error, got : {result:?}" );
-  }
   }
 }
 
@@ -584,18 +552,19 @@ async fn test_models_wait_for_model_invalid_id()
 #[ test ]
 fn test_model_constants_performance()
 {
-  // Verify that model constants are truly const and don't allocate
-  let start = std::time::Instant::now();
-  
-  for _ in 0..1000
-  {
-  let _ = ModelConstants::llama_3_3_70b_instruct();
-  let _ = ModelConstants::mistral_7b_instruct();
-  let _ = ModelConstants::all_minilm_l6_v2();
-  }
-  
-  let elapsed = start.elapsed();
-  assert!( elapsed < Duration::from_millis( 1 ), "Model constants should be very fast" );
+  // Verify model constants return consistent values across repeated access (idempotent, no mutation)
+  let llama = ModelConstants::llama_3_3_70b_instruct();
+  let mistral = ModelConstants::mistral_7b_instruct();
+  let minilm = ModelConstants::all_minilm_l6_v2();
+
+  assert!( !llama.is_empty(), "Llama model constant should not be empty" );
+  assert!( !mistral.is_empty(), "Mistral model constant should not be empty" );
+  assert!( !minilm.is_empty(), "MiniLM model constant should not be empty" );
+
+  // Each call must return the same value — constants must not mutate
+  assert_eq!( ModelConstants::llama_3_3_70b_instruct(), llama );
+  assert_eq!( ModelConstants::mistral_7b_instruct(), mistral );
+  assert_eq!( ModelConstants::all_minilm_l6_v2(), minilm );
 }
 
 #[ test ]

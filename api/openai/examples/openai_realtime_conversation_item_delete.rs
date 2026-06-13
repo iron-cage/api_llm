@@ -1,4 +1,5 @@
 //! Example of deleting a conversation item using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_conversation_item_delete`
@@ -61,7 +62,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
@@ -108,15 +109,12 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             println!( "{created_event:?}" );
 if let Some(id) = created_event.item.id
 {
-              println!( "Captured item ID for deletion : {}", id );
+              println!( "Captured item ID for deletion : {id}" );
               *item_id_to_delete.lock().unwrap() = Some( id );
               break; // Got the ID, break to proceed with deletion
             }
-            else
-            {
-              eprintln!( "Created item did not have an ID!" );
-              return Err( OpenAIError::WsInvalidMessage( "Created item missing ID".to_string() ).into() );
-            }
+            eprintln!( "Created item did not have an ID!" );
+            return Err( OpenAIError::WsInvalidMessage( "Created item missing ID".to_string() ).into() );
           }
           // Handle other events if necessary while waiting
           _ => { println!( "\n--- Received Other Event (while waiting for create confirmation) --- \n{event:?}" ); }
@@ -124,7 +122,7 @@ if let Some(id) = created_event.item.id
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() );
       }
       _ => {}
@@ -133,10 +131,7 @@ if let Some(id) = created_event.item.id
 
   // --- Now Delete the Item ---
   let item_id = item_id_to_delete.lock().unwrap().clone();
-if item_id.is_none()
-{
-    panic!( "Failed to obtain item ID for deletion" );
-  }
+  assert!( item_id.is_some(), "Failed to obtain item ID for deletion" );
   let item_id = item_id.unwrap();
 
   // 10. Prepare the client event to delete the conversation item.
@@ -167,14 +162,11 @@ if item_id.is_none()
             println!( "{deleted_event:?}" );
             if deleted_event.item_id == item_id
             {
-              println!( "Successfully received conversation.item.deleted confirmation for item {}.", item_id );
+              println!( "Successfully received conversation.item.deleted confirmation for item {item_id}." );
               confirmation_received = true;
               break; // Break after receiving confirmation
             }
-            else
-            {
-              println!("Received deletion confirmation for a different item ID: {}", deleted_event.item_id);
-            }
+            println!( "Received deletion confirmation for a different item ID: {}", deleted_event.item_id );
           }
           // Handle other events
           _ => { println!( "\n--- Received Other Event (while waiting for delete confirmation) --- \n{event:?}" ); }
@@ -187,7 +179,7 @@ if item_id.is_none()
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }

@@ -31,3 +31,15 @@ Spec scenarios for `docs/collection/001_features.md`. Verifies that the Cargo fe
 - **Given:** `docs/collection/001_features.md` Classification section
 - **When:** the section is read
 - **Then:** Tier 1 is described as mapping to HuggingFace API endpoints with no runtime state beyond the HTTP client; Tier 2 is described as requiring explicit construction at the call site with runtime state per feature
+
+### CL-06: basic bundle composes exactly inference, embeddings, models, and env-config
+
+- **Given:** `Cargo.toml` feature definitions for `api_huggingface`
+- **When:** the `basic` feature entry is inspected
+- **Then:** `basic` includes `inference`, `embeddings`, `models`, and `env-config` — and no enterprise or testing features
+
+### CL-07: default feature is an alias for full
+
+- **Given:** `Cargo.toml` feature definitions for `api_huggingface`
+- **When:** the `default` feature entry is inspected
+- **Then:** `default` lists only `"full"` as its single member, making it a complete alias that activates all features including enterprise and integration

@@ -19,7 +19,9 @@
 #![ allow( clippy::cast_possible_truncation ) ]
 #![allow(clippy::missing_inline_in_public_items)]
 
+#[ cfg( feature = "integration" ) ]
 use api_openai::ClientApiAccessors;
+#[ cfg( feature = "integration" ) ]
 use api_openai::
 {
   Client,
@@ -36,7 +38,9 @@ use std::
   sync ::{ Arc, Mutex },
   time ::{ Duration, Instant },
 };
-use tokio::{ sync::{ mpsc, Semaphore }, time::timeout };
+use tokio::{ sync::mpsc, time::timeout };
+#[ cfg( feature = "integration" ) ]
+use tokio::sync::Semaphore;
 
 /// Performance metrics for streaming operations
 #[ derive( Debug, Clone ) ]
@@ -172,6 +176,7 @@ impl StreamingPerformanceMonitor
   }
 }
 
+#[ cfg( feature = "integration" ) ]
 /// Helper function to create test client
 fn create_test_client() -> Result< Client< OpenaiEnvironmentImpl >, Box< dyn std::error::Error > >
 {

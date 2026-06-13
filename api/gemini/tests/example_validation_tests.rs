@@ -281,7 +281,7 @@ fn test_error_handling_client_builder()
   {
     api_gemini ::error::Error::AuthenticationError( msg ) =>
     {
-      assert_eq!( msg, "API key cannot be empty" );
+      assert_eq!( msg, "API key cannot be empty or blank" );
     },
     _ => panic!( "Expected AuthenticationError" ),
   }

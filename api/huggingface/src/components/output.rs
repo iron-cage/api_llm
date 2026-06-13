@@ -1,7 +1,7 @@
 //! Output handling and response processing for `HuggingFace` API.
 
 use serde::{ Deserialize, Serialize };
-use super::common::ResponseMetadata;
+use super::wire_types::ResponseMetadata;
 
 /// Base response structure for `HuggingFace` inference
 #[ derive( Debug, Clone, Serialize, Deserialize ) ]

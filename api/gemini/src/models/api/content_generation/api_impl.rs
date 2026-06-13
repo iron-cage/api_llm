@@ -99,10 +99,11 @@ impl ModelApi< '_ >
   ->
   Result< crate::models::GenerateContentResponse, Error >
   {
-    // Validate request before sending
+    // Validate model ID and request before sending
+    self.validate_model_id()?;
     if request.contents.is_empty()
     {
-      return Err( Error::InvalidArgument( 
+      return Err( Error::InvalidArgument(
         "Generate content request cannot have empty contents. Please provide at least one content item.".to_string()
       ) );
     }
@@ -326,7 +327,8 @@ impl ModelApi< '_ >
   ->
   Result< impl futures::Stream< Item = Result< crate::models::StreamingResponse, Error > >, Error >
   {
-    // Validate request
+    // Validate model ID and request
+    self.validate_model_id()?;
     Self::validate_generate_content_request( request )?;
     
     // Build streaming request

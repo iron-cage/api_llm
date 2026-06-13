@@ -95,12 +95,9 @@ async fn create_response_stream()
 
               match event
               {
-                ResponseStreamEvent::ResponseTextDelta( delta_event ) =>
+                ResponseStreamEvent::ResponseTextDelta( delta_event ) if !delta_event.delta.is_empty() =>
                 {
-                  if !delta_event.delta.is_empty()
-                  {
-                    has_content = true;
-                  }
+                  has_content = true;
                 },
                 ResponseStreamEvent::ResponseTextDone( _ ) =>
                 {

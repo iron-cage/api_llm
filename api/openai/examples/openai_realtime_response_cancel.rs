@@ -1,4 +1,5 @@
 //! Example of cancelling an in-progress response using the OpenAI API,
+#![ allow( clippy::doc_markdown, clippy::too_many_lines ) ]
 //! after explicitly triggering the response with `response.create`.
 //!
 //! Run with:
@@ -61,7 +62,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
@@ -112,10 +113,7 @@ if let Some(id) = created_event.item.id
                   }
                   break; // User message confirmed, proceed to trigger response
               }
-              else
-              {
-                  println!("\n--- Received Other Item Created --- \n{created_event:?}");
-              }
+              println!("\n--- Received Other Item Created --- \n{created_event:?}");
           }
           Ok(Some(event)) =>
           {
@@ -129,7 +127,7 @@ if let Some(id) = created_event.item.id
           }
           Err(e) =>
           {
-              eprintln!("\nError reading from WebSocket : {:?}", e);
+              eprintln!("\nError reading from WebSocket : {e:?}");
               return Err( e.into() );
           }
       }
@@ -167,7 +165,7 @@ if user_message_id_arc.lock().unwrap().is_none()
             println!("\n--- Explicit Response Created Event Received ---");
             println!("{created_event:?}");
             let response_id = created_event.response.id;
-            println!("Captured response ID for cancellation : {}", response_id);
+            println!("Captured response ID for cancellation : {response_id}");
             *response_id_clone.lock().unwrap() = Some(response_id);
             break; // Got the ID, proceed to cancel
         }
@@ -183,7 +181,7 @@ if user_message_id_arc.lock().unwrap().is_none()
         }
         Err(e) =>
         {
-            eprintln!("\nError reading from WebSocket : {:?}", e);
+            eprintln!("\nError reading from WebSocket : {e:?}");
             return Err( e.into() );
         }
     }
@@ -230,21 +228,15 @@ if response_id.is_none()
             {
               if done_event.response.status == "cancelled"
               {
-                println!( "Successfully received response.done confirmation with status 'cancelled' for response {}.", response_id );
+                println!( "Successfully received response.done confirmation with status 'cancelled' for response {response_id}." );
                 confirmation_received = true;
                 break; // Break after receiving confirmation
               }
-              else
-              {
-                println!( "Received response.done for response {}, but status was '{}', not 'cancelled'.", response_id, done_event.response.status );
-                // Treat this as unexpected and break without confirming success
-                break;
-              }
+              println!( "Received response.done for response {response_id}, but status was '{}', not 'cancelled'.", done_event.response.status );
+              // Treat this as unexpected and break without confirming success
+              break;
             }
-            else
-            {
-              println!( "Received response.done for a different response ID: {}", done_event.response.id );
-            }
+            println!( "Received response.done for a different response ID: {}", done_event.response.id );
           }
           // Handle other events that might still arrive after cancellation request
           RealtimeServerEvent::ResponseTextDelta( _ ) |
@@ -262,7 +254,7 @@ if response_id.is_none()
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }
@@ -270,7 +262,7 @@ if response_id.is_none()
 
   if !confirmation_received
   {
-    eprintln!("Loop finished without receiving response.done (status : cancelled) confirmation for response {}.", response_id);
+    eprintln!("Loop finished without receiving response.done (status : cancelled) confirmation for response {response_id}.");
     return Err( OpenAIError::WsInvalidMessage( "Did not receive expected cancellation confirmation".to_string() ).into() );
   }
 

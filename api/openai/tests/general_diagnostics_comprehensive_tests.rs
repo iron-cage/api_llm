@@ -14,31 +14,34 @@
 #![ allow( clippy::needless_bool ) ]
 #![ allow( clippy::float_cmp ) ]
 
+use api_openai::diagnostics ::
+{
+  DiagnosticsCollector,
+  DiagnosticsConfig,
+  DiagnosticsCollectionConfig,
+  DiagnosticsPerformanceConfig,
+  RequestMetrics,
+  ResponseMetrics,
+  ErrorMetrics,
+  PerformanceMetrics,
+  DiagnosticsReport,
+};
+use api_openai::components ::common::ResponseUsage;
+
+#[ cfg( feature = "integration" ) ]
 use api_openai::ClientApiAccessors;
+#[ cfg( feature = "integration" ) ]
 use api_openai::
 {
   Client,
   environment ::OpenaiEnvironmentImpl,
   secret ::Secret,
-  diagnostics ::
-  {
-    DiagnosticsCollector,
-    DiagnosticsConfig,
-    DiagnosticsCollectionConfig,
-    DiagnosticsPerformanceConfig,
-    RequestMetrics,
-    ResponseMetrics,
-    ErrorMetrics,
-    PerformanceMetrics,
-    DiagnosticsReport,
-  },
   components ::embeddings_request::CreateEmbeddingRequest,
-  components ::common::ResponseUsage,
 };
 
 use std::time::{ Duration, Instant };
 
-/// Helper function to create test client with diagnostics enabled
+#[ cfg( feature = "integration" ) ]
 fn create_diagnostic_client() -> Result< Client< OpenaiEnvironmentImpl >, Box< dyn std::error::Error > >
 {
   let secret = Secret::load_from_env( "OPENAI_API_KEY" )?;
@@ -63,7 +66,7 @@ fn create_diagnostic_client() -> Result< Client< OpenaiEnvironmentImpl >, Box< d
   Ok( Client::build( env )? )
 }
 
-/// Helper function to check if we should run integration tests
+#[ cfg( feature = "integration" ) ]
 fn should_run_integration_tests() -> bool
 {
   std ::env::var( "OPENAI_API_KEY" ).is_ok()

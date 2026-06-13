@@ -31,3 +31,9 @@ Spec scenarios for `docs/feature/001_enterprise_reliability.md`. Verifies that e
 - **Given:** `Cargo.toml` feature dependency declarations for all eight enterprise reliability features
 - **When:** the deps lists for `caching`, `performance-metrics`, and `token-counting` are inspected
 - **Then:** each of `caching`, `performance-metrics`, and `token-counting` depends only on `"client"` — none lists `"reliability"`; meanwhile `circuit-breaker`, `rate-limiting`, `failover`, `health-checks`, and `dynamic-config` each list `"reliability"` as a dep
+
+### FE-06: Enterprise feature modules do not share global static state
+
+- **Given:** `api_huggingface` compiled with `circuit-breaker`, `rate-limiting`, and `caching` features enabled
+- **When:** `src/reliability/circuit_breaker.rs`, `src/reliability/rate_limiter.rs`, and `src/cache/implementation.rs` are inspected for cross-module static references
+- **Then:** no `static` or `lazy_static!` declaration is shared between those three modules; each module manages its own internal state through its own struct fields with no global singletons

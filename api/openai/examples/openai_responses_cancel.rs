@@ -1,4 +1,5 @@
 //! Example of canceling a response using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! This example demonstrates how to:
 //! 1. Create a streaming response

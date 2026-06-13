@@ -729,7 +729,7 @@ mod tests
   {
   let client = create_integration_client();
 
-  let engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
+  let engine = DocumentSearchEngine::new( client, Models::bge_large_en_v1_5().to_string() );
 
   // Test search with empty index
   let query = SearchQuery
@@ -741,10 +741,10 @@ mod tests
       metadata_filters : HashMap::new(),
   };
 
-  let results = engine.search( query ).await;
-  // The search should succeed but return empty results
-  // We can't test this without making actual API calls, so we just verify the structure
-  assert!( results.is_ok() || results.is_err() ); // Either outcome is valid depending on API availability
+  // Search on empty index: query embedding is computed but no documents match
+  let results = engine.search( query ).await
+      .expect( "search on empty index should succeed (returns empty results)" );
+  assert!( results.is_empty(), "Search on empty index should return no results, got {}", results.len() );
   }
 
   #[ cfg( feature = "integration" ) ]
@@ -753,26 +753,12 @@ mod tests
   {
   let client = create_integration_client();
 
-  let mut engine = DocumentSearchEngine::new( client, Models::all_minilm_l6_v2().to_string() );
+  let mut engine = DocumentSearchEngine::new( client, Models::bge_large_en_v1_5().to_string() );
   let docs = create_sample_documents();
 
-  // Test that batch processing method exists and has correct signature
-  let result = engine.add_documents_batch( docs ).await;
-  
-  // The result should be either success or an API error - both are valid
-  // since we're testing the interface structure, not necessarily API functionality
-  match result
-  {
-      Ok( ids ) =>
-      {
-  println!( "Successfully added {} documents", ids.len() );
-  assert!( !ids.is_empty() );
-      },
-      Err( e ) =>
-      {
-  println!( "API call failed (expected in test environment): {e}" );
-  // This is expected if API keys aren't available or API is unreachable
-      },
-  }
+  // Test that batch processing succeeds with valid credentials
+  let ids = engine.add_documents_batch( docs ).await
+      .expect( "add_documents_batch should succeed with valid credentials" );
+  assert!( !ids.is_empty(), "Batch processing should return non-empty ID list" );
   }
 }

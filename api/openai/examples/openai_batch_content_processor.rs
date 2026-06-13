@@ -390,7 +390,7 @@ fn display_cross_content_analysis(results : &[ProcessingResult])
   }
 
   let mut sorted_topics : Vec< _ > = topic_counts.into_iter().collect();
-  sorted_topics.sort_by(|a, b| b.1.cmp(&a.1));
+  sorted_topics.sort_by_key(|b| std::cmp::Reverse(b.1));
 
   println!("  🏷️  Most Common Topics:");
   for (topic, count) in sorted_topics.iter().take(5)

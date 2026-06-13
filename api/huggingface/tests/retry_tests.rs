@@ -214,15 +214,13 @@ mod retry_tests
   }
 
   #[ cfg( feature = "integration" ) ]
-  mod integration_tests
-  {
-  use super::*;
   use api_huggingface::
   {
       environment::HuggingFaceEnvironmentImpl,
       secret::Secret,
   };
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn integration_explicit_retry_with_real_api_failures()
   {
@@ -265,6 +263,7 @@ mod retry_tests
       assert_eq!( retry_config.max_retries, 2 );
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn integration_retry_with_rate_limiting()
   {
@@ -325,6 +324,7 @@ mod retry_tests
       }
   }
 
+  #[ cfg( feature = "integration" ) ]
   #[ tokio::test ]
   async fn integration_retry_disabled_vs_enabled()
   {
@@ -377,12 +377,11 @@ mod retry_tests
       {
   ( Ok( _ ), Ok( _ ) ) | ( Err( _ ), Err( _ ) ) => {}, // Both same outcome
   ( Ok( _ ), Err( _ ) ) => panic!( "Retry client should not fail when no-retry succeeds" ),
-  ( Err( e1 ), Ok( _ ) ) => 
+  ( Err( e1 ), Ok( _ ) ) =>
   {
           // This is expected - retry client might succeed where no-retry fails
           println!( "No-retry failed : {e1}, retry client succeeded - this is expected behavior" );
   }
       }
-  }
   }
 }

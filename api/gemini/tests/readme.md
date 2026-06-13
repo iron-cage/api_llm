@@ -323,7 +323,7 @@ let client = match create_test_client()
 
 ### Current Test Coverage
 
-- **Total Tests**: ~324 test functions across 35 test files
+- **Total Tests**: ~265 test functions across 35 test files
 - **Integration Tests**: real API endpoint tests (require `GEMINI_API_KEY`)
 - **Unit Tests**: pure unit tests (no API key required)
 - **Success Rate**: 100% (when API key is available)
@@ -332,7 +332,7 @@ let client = match create_test_client()
 
 | Category | File(s) | Count | Type | API Required |
 |----------|---------|-------|------|--------------|
-| Core Integration | `integration_tests.rs` | 13 | Real API | Yes |
+| Core Integration | `integration_tests.rs` | 19 | Real API + Validation | Mix |
 | Comprehensive Integration | `comprehensive_integration_tests.rs` | 16 | Real API | Yes |
 | Count Tokens | `count_tokens_tests.rs` | 8 | Real API | Yes |
 | Sync API | `sync_api_tests.rs` | 8 | Real API | Yes |

@@ -91,19 +91,14 @@ async fn client_api_accessors()
 }
 
 #[ cfg( feature = "integration" ) ]
-mod integration_tests
+#[ tokio::test ]
+async fn integration_environment_from_env()
 {
-  use super::*;
-
-  #[ tokio::test ]
-  async fn integration_environment_from_env()
-  {
   // Setup - Get API key (will panic if missing)
   let api_key_string = crate::inc::get_api_key_for_integration();
-  
+
   // Create environment using workspace-loaded API key
   let api_key = Secret::new( api_key_string );
   let env_result = HuggingFaceEnvironmentImpl::build( api_key, None );
   assert!( env_result.is_ok(), "Should successfully create environment with workspace-loaded API key" );
-  }
 }

@@ -1,4 +1,5 @@
 //! Example of creating a response using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_conversation_item_create`
@@ -61,7 +62,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
@@ -146,7 +147,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       // An error occurred while reading from the WebSocket or deserializing
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }

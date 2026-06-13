@@ -208,8 +208,8 @@ Get your API key from [huggingface.co/settings/tokens](https://huggingface.co/se
 
 ## Documentation
 
-- **[Features Overview](docs/features.md)** - Feature list and cargo features
-- **[API Reference](docs/api_reference.md)** - Comprehensive API documentation
+- **[Features Overview](docs/collection/001_features.md)** - Feature flag catalog
+- **[API Reference](docs/api/001_reference.md)** - Comprehensive API documentation
 - **[Examples](https://github.com/Wandalen/api_llm/tree/master/api/huggingface/examples)** - Working code examples
 
 ## Dependencies
@@ -251,6 +251,7 @@ This section documents all files and directories in the crate root, ensuring Com
 | `readme.md` | Crate overview, quick start, API documentation, and this Responsibility Table |
 | `license` | MIT license text |
 | `.config` | Configuration directory |
+| `task/` | Work-item tracking and decision registry |
 
 ## Links
 

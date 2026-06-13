@@ -1,4 +1,5 @@
 //! Example of retrieving a response using the OpenAI Responses API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Demonstrates creating a response, retrieving it by ID, then deleting it.
 //!

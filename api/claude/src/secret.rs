@@ -288,6 +288,8 @@ mod private
         let value = parts[ 1 ].trim();
         let value = value.strip_prefix( '"' ).unwrap_or( value );
         let value = value.strip_suffix( '"' ).unwrap_or( value );
+        let value = value.strip_prefix( '\'' ).unwrap_or( value );
+        let value = value.strip_suffix( '\'' ).unwrap_or( value );
         Some( value.to_string() )
       }
       else
@@ -305,6 +307,49 @@ mod private
     pub fn from_workspace() -> Result< Self >
     {
       Self::load_from_workspace( "ANTHROPIC_API_KEY", "-secrets.sh" )
+    }
+
+    /// Load secret from an explicit shell-format file path
+    ///
+    /// Unlike `load_from_workspace`, this method does not search for a `secret/` directory —
+    /// it reads the named key directly from the file at `path`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file cannot be read, the key is not found, or the key is invalid
+    pub fn load_from_shell_file( path : &Path, key_name : &str ) -> Result< Self >
+    {
+      let content = std::fs::read_to_string( path )
+        .map_err( | e | error_tools::Error::msg(
+          format!(
+            "Failed to read secrets file : {}\nError : {e}",
+            path.display()
+          )
+        ) )?;
+
+      let api_key = content
+        .lines()
+        .find_map( | line | {
+          let line = line.trim();
+          if line.starts_with( "export " )
+          {
+            let line = line.strip_prefix( "export " )?.trim();
+            Self::parse_key_value( line, key_name )
+          }
+          else
+          {
+            Self::parse_key_value( line, key_name )
+          }
+        })
+        .ok_or_else( || error_tools::Error::msg(
+          format!(
+            "Key '{key_name}' not found in file '{}'.\n\
+             Hint : Add a line : export {key_name}=\"your-api-key\"",
+            path.display()
+          )
+        ) )?;
+
+      Self::new( api_key )
     }
   }
 }

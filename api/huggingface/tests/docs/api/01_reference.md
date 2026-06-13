@@ -10,7 +10,7 @@ Spec scenarios for `docs/api/001_reference.md`. Verifies that the documented pub
 
 ### AP-02: Embeddings create returns float vector
 
-- **Given:** a valid API key and an embedding model (`sentence-transformers/all-MiniLM-L6-v2`)
+- **Given:** a valid API key and an embedding model (`BAAI/bge-large-en-v1.5`)
 - **When:** `client.embeddings().create("hello world", model)` is awaited
 - **Then:** `EmbeddingResponse` is returned with `embeddings[0]` as a `Vec<f32>` of length ≥ 1
 
@@ -22,9 +22,9 @@ Spec scenarios for `docs/api/001_reference.md`. Verifies that the documented pub
 
 ### AP-04: Streaming create returns sequential chunks
 
-- **Given:** a valid API key and a generation model
-- **When:** `client.inference().create_stream(prompt, model)` is polled via `stream.next().await` until exhausted
-- **Then:** at least one `StreamingChunk` with a non-`None` `token` field is received before the stream yields `None`
+- **Given:** a valid API key and a Router API generation model (`meta-llama/Llama-3.3-70B-Instruct`)
+- **When:** `client.inference().create_stream(prompt, model, params)` is awaited and the returned `Receiver<Result<String>>` is polled via `rx.recv().await`
+- **Then:** at least one non-empty `String` chunk is received before the channel yields `None`; each `Ok(text)` variant is a non-empty string fragment from the streamed response
 
 ### AP-05: Invalid API key returns error without panic
 
@@ -37,3 +37,9 @@ Spec scenarios for `docs/api/001_reference.md`. Verifies that the documented pub
 - **Given:** a valid API key and a known model identifier
 - **When:** `client.models().get(model)` is awaited
 - **Then:** either model metadata is returned successfully, or `HuggingFaceError::ModelUnavailable` is returned; no panic occurs
+
+### AP-07: Chat completion returns assistant reply
+
+- **Given:** a valid API key and a Router API chat model (`meta-llama/Llama-3.3-70B-Instruct`)
+- **When:** `client.providers().chat(messages, model)` is awaited with a single user message `"What is 2+2?"`
+- **Then:** a `ChatCompletionResponse` is returned with `choices[0].message.content` containing a non-empty `String`; no panic occurs

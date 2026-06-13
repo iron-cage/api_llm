@@ -221,19 +221,70 @@ where
   /// Returns error if the request fails
   #[ cfg( feature = "inference-streaming" ) ]
   #[ inline ]
-  pub async fn create_stream( 
-  &self, 
-  inputs : impl Into< String >, 
+  pub async fn create_stream(
+  &self,
+  inputs : impl Into< String >,
   model : impl AsRef< str >,
   parameters : InferenceParameters
   ) -> Result< tokio::sync::mpsc::Receiver< Result< String > > >
   {
-  let stream_params = parameters.with_streaming( true );
-  let request = InferenceRequest::new( inputs ).with_parameters( stream_params );
-  let endpoint = format!( "models/{}", model.as_ref() );
-  let url = self.client.environment.endpoint_url( &endpoint )?;
-  
-  self.client.post_stream( url.as_str(), &request ).await
+  let input_text = inputs.into();
+  let model_id = model.as_ref();
+
+  validate_input_text( &input_text )?;
+  validate_model_identifier( model_id )?;
+
+  // Use chat/completions with stream=true (Router API, OpenAI-compatible SSE)
+  let chat_request = ChatCompletionRequest
+  {
+      messages : vec![ ChatMessage { role : "user".to_string(), content : input_text, tool_calls : None, tool_call_id : None } ],
+      model : model_id.to_string(),
+      temperature : parameters.temperature,
+      max_tokens : parameters.max_new_tokens,
+      top_p : parameters.top_p,
+      stream : Some( true ),
+      tools : None,
+      tool_choice : None,
+  };
+
+  let endpoint = "chat/completions";
+  let url = self.client.environment.endpoint_url( endpoint )?;
+
+  // Raw SSE stream: each event.data is an OpenAI streaming chunk JSON
+  let mut raw_rx = self.client.post_stream( url.as_str(), &chat_request ).await?;
+
+  // Extract text from choices[0].delta.content and forward as plain strings
+  let ( tx, rx ) = tokio::sync::mpsc::channel( 100 );
+  tokio::spawn( async move
+  {
+      while let Some( result ) = raw_rx.recv().await
+      {
+          match result
+          {
+      Ok( data ) if data == "[DONE]" => break,
+      Ok( data ) =>
+      {
+              let content = serde_json::from_str::< serde_json::Value >( &data )
+                  .ok()
+                  .and_then( | v | v[ "choices" ][ 0 ][ "delta" ][ "content" ].as_str().map( str::to_string ) );
+              if let Some( text ) = content
+              {
+                  if !text.is_empty() && tx.send( Ok( text ) ).await.is_err()
+                  {
+                      break;
+                  }
+              }
+      },
+      Err( e ) =>
+      {
+              let _ = tx.send( Err( e ) ).await;
+              break;
+      }
+          }
+      }
+  } );
+
+  Ok( rx )
   }
 
   /// Create a controlled stream with pause/resume/cancel support

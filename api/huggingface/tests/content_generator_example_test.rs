@@ -168,9 +168,9 @@ impl ContentGenerationPlatform
   default_models.insert( ContentType::BlogPost, Models::llama_3_3_70b_instruct().to_string() );
   default_models.insert( ContentType::Marketing, Models::llama_3_3_70b_instruct().to_string() );
   default_models.insert( ContentType::Creative, Models::llama_3_3_70b_instruct().to_string() );
-  default_models.insert( ContentType::SocialMedia, Models::mistral_7b_instruct().to_string() );
-  default_models.insert( ContentType::Technical, Models::code_llama_7b_instruct().to_string() );
-  default_models.insert( ContentType::Email, Models::mistral_7b_instruct().to_string() );
+  default_models.insert( ContentType::SocialMedia, Models::llama_3_3_70b_instruct().to_string() );
+  default_models.insert( ContentType::Technical, Models::llama_3_3_70b_instruct().to_string() );
+  default_models.insert( ContentType::Email, Models::llama_3_3_70b_instruct().to_string() );
 
   Self
   {
@@ -940,27 +940,15 @@ mod tests
   };
 
   // Test batch generation method exists and has correct signature
-  let result = platform.generate_variations( request, 3 ).await;
+  let variations = platform.generate_variations( request, 3 ).await
+      .expect( "generate_variations should succeed with valid credentials" );
 
-  match result
+  assert!( !variations.is_empty() );
+  for variation in &variations
   {
-      Ok( variations ) =>
-      {
-  println!( "Successfully generated {} content variations", variations.len() );
-  // Verify variations structure if generation succeeds
-  for ( i, variation ) in variations.iter().enumerate()
-  {
-          assert_eq!( variation.content_type, ContentType::SocialMedia );
-          assert_eq!( variation.tone, ContentTone::Enthusiastic );
-          assert_eq!( variation.topic, "productivity tips" );
-          println!( "Variation {}: {} words", i + 1, variation.word_count );
-  }
-      },
-      Err( e ) =>
-      {
-  println!( "Batch generation failed (expected in test environment): {e}" );
-  // This is expected if API keys aren't available or API is unreachable
-      },
+      assert_eq!( variation.content_type, ContentType::SocialMedia );
+      assert_eq!( variation.tone, ContentTone::Enthusiastic );
+      assert_eq!( variation.topic, "productivity tips" );
   }
   }
 }

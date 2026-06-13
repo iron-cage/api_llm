@@ -11,11 +11,13 @@ use core::time::Duration;
 const HF_BASE_URL : &str = "https://huggingface.co";
 #[ cfg( feature = "integration" ) ]
 const HF_MISSING_URL : &str = "https://huggingface.co/nonexistent-path-xyz-99999";
-// The providers router returns 401 (client error) for unauthenticated POST requests.
-// FullEndpoint accepts any 4xx response as "endpoint responding" — 401 qualifies.
-// The old api-inference.huggingface.co endpoint no longer returns 4xx reliably.
+// FullEndpoint sends {"inputs":"test"} with POST. We need a URL that reliably returns
+// 4xx (client error) so FullEndpoint accepts it as healthy. Using the main HF website
+// with a nonexistent path: returns 404 (client error) reliably with no redirects.
+// Do NOT use router.huggingface.co/v1/chat/completions: body format mismatch causes 5xx.
+// Do NOT use api-inference.huggingface.co: may redirect entire domain to Router API.
 #[ cfg( feature = "integration" ) ]
-const HF_INFERENCE_URL : &str = "https://router.huggingface.co/v1/chat/completions";
+const HF_INFERENCE_URL : &str = "https://huggingface.co/nonexistent-path-for-full-endpoint-test-xyz";
 #[ cfg( feature = "integration" ) ]
 const NON_ROUTABLE_URL : &str = "https://10.255.255.1";
 
@@ -151,7 +153,7 @@ async fn test_full_endpoint_strategy_healthy()
   let checker = HealthChecker::new( config );
   let result = checker.check_health().await;
 
-  assert!( result.is_ok(), "Full endpoint check should succeed (4xx counts as healthy)" );
+  assert!( result.is_ok(), "Full endpoint check should succeed (4xx counts as healthy): {result:?}" );
 
   let status = result.unwrap();
   assert!( status.healthy, "Status should be healthy" );
@@ -175,7 +177,7 @@ async fn test_full_endpoint_strategy_accepts_client_errors()
   let checker = HealthChecker::new( config );
   let result = checker.check_health().await;
 
-  assert!( result.is_ok(), "Full endpoint should accept client errors as healthy" );
+  assert!( result.is_ok(), "Full endpoint should accept client errors as healthy: {result:?}" );
 }
 
 // ============================================================================
@@ -274,8 +276,8 @@ async fn test_background_monitoring_performs_checks()
 
   let handle = checker.start_monitoring().await;
 
-  // Wait for a few check cycles
-  tokio::time::sleep( Duration::from_millis( 600 ) ).await;
+  // Wait for enough check cycles (generous budget for loaded CI environments)
+  tokio::time::sleep( Duration::from_millis( 1500 ) ).await;
 
   checker.stop_monitoring().await;
   handle.stop().await;

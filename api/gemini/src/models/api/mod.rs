@@ -62,6 +62,27 @@ pub struct ModelApi< 'a >
   pub( crate ) model_id : String,
 }
 
+impl ModelApi< '_ >
+{
+  /// Guard used by all API methods: returns InvalidArgument when model_id is empty or whitespace.
+  ///
+  /// Root cause of previous bug: `by_name("")` accepted empty strings, producing a malformed
+  /// URL (`/v1beta/models/:generateContent`) whose HTTP 404 error lacked actionable context.
+  /// Pitfall: always validate model_id before URL construction — the URL builder does not
+  /// reject empty path segments on its own.
+  pub( crate ) fn validate_model_id( &self ) -> Result< (), crate::error::Error >
+  {
+    if self.model_id.trim().is_empty()
+    {
+      return Err( crate::error::Error::InvalidArgument(
+        "Model ID cannot be empty. Pass a valid model name such as \"gemini-2.5-flash\" \
+         or \"models/gemini-embedding-001\" to by_name().".to_string()
+      ) );
+    }
+    Ok( () )
+  }
+}
+
 // Submodule declarations
 mod models;
 mod content_generation;

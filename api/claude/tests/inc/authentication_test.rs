@@ -258,6 +258,136 @@ fn test_workspace_secret_fallback_to_environment()
   }
 }
 
+/// BUG-5 reproducer : single-quoted values in shell files must be parsed correctly
+///
+/// # Root Cause
+///
+/// `parse_key_value` only stripped double quotes, leaving single-quoted values like
+/// `'sk-ant-key'` intact — causing `Secret::new()` to fail the `sk-ant-` prefix check.
+///
+/// # Fix Applied
+///
+/// Added single-quote stripping after double-quote stripping in `parse_key_value`.
+#[ test ]
+fn test_secret_single_quote_parsing_via_shell_file()
+{
+  use std::io::Write;
+
+  let mut tmp = tempfile::NamedTempFile::new().expect( "Failed to create temp file" );
+  writeln!( tmp, "export ANTHROPIC_API_KEY='sk-ant-api03-single-quoted-value'" )
+    .expect( "Failed to write temp file" );
+
+  let result = the_module::Secret::load_from_shell_file(
+    tmp.path(),
+    "ANTHROPIC_API_KEY",
+  );
+  assert!( result.is_ok(), "Single-quoted value must parse correctly, got : {result:?}" );
+  assert_eq!(
+    result.unwrap().ANTHROPIC_API_KEY,
+    "sk-ant-api03-single-quoted-value",
+    "Single quotes must be stripped from parsed value"
+  );
+}
+
+/// Single-quoted value without `export` prefix must also parse correctly
+#[ test ]
+fn test_secret_single_quote_bare_assignment()
+{
+  use std::io::Write;
+
+  let mut tmp = tempfile::NamedTempFile::new().expect( "Failed to create temp file" );
+  writeln!( tmp, "ANTHROPIC_API_KEY='sk-ant-api03-bare-single-quoted'" )
+    .expect( "Failed to write temp file" );
+
+  let result = the_module::Secret::load_from_shell_file(
+    tmp.path(),
+    "ANTHROPIC_API_KEY",
+  );
+  assert!( result.is_ok(), "Bare single-quoted assignment must parse correctly" );
+  assert_eq!(
+    result.unwrap().ANTHROPIC_API_KEY,
+    "sk-ant-api03-bare-single-quoted",
+  );
+}
+
+/// `load_from_shell_file` returns error when key is absent from file
+#[ test ]
+fn test_secret_load_from_shell_file_missing_key()
+{
+  use std::io::Write;
+
+  let mut tmp = tempfile::NamedTempFile::new().expect( "Failed to create temp file" );
+  writeln!( tmp, "export OTHER_KEY=\"sk-ant-api03-some-value\"" )
+    .expect( "Failed to write temp file" );
+
+  let result = the_module::Secret::load_from_shell_file(
+    tmp.path(),
+    "ANTHROPIC_API_KEY",
+  );
+  assert!( result.is_err(), "Missing key must return an error" );
+}
+
+/// `load_from_file` reads a plain-text API key file and succeeds
+#[ test ]
+fn test_secret_load_from_file_success()
+{
+  use std::io::Write;
+
+  let mut tmp = tempfile::NamedTempFile::new().expect( "Failed to create temp file" );
+  write!( tmp, "sk-ant-api03-plain-file-key" ).expect( "Failed to write temp file" );
+
+  let result = the_module::Secret::load_from_file( tmp.path() );
+  assert!( result.is_ok(), "Plain-text key file must load successfully, got : {result:?}" );
+  assert_eq!(
+    result.unwrap().ANTHROPIC_API_KEY,
+    "sk-ant-api03-plain-file-key",
+  );
+}
+
+/// `load_from_file` trims surrounding whitespace and newlines from the key
+#[ test ]
+fn test_secret_load_from_file_whitespace_trimming()
+{
+  use std::io::Write;
+
+  let mut tmp = tempfile::NamedTempFile::new().expect( "Failed to create temp file" );
+  writeln!( tmp, "  sk-ant-api03-whitespace-key  " ).expect( "Failed to write temp file" );
+
+  let result = the_module::Secret::load_from_file( tmp.path() );
+  assert!( result.is_ok(), "Whitespace around key must be trimmed, got : {result:?}" );
+  assert_eq!(
+    result.unwrap().ANTHROPIC_API_KEY,
+    "sk-ant-api03-whitespace-key",
+    "Key must be trimmed of surrounding whitespace"
+  );
+}
+
+/// `load_from_file` returns an error for a nonexistent path
+#[ test ]
+fn test_secret_load_from_file_nonexistent()
+{
+  let nonexistent = std::path::Path::new( "/tmp/does-not-exist-api-claude-test.txt" );
+  let result = the_module::Secret::load_from_file( nonexistent );
+  assert!( result.is_err(), "Nonexistent file must return an error" );
+}
+
+/// `Secret`'s `Debug` impl must redact the API key value
+#[ test ]
+fn test_secret_debug_redaction()
+{
+  let secret = the_module::Secret::new_unchecked( "sk-ant-api03-super-secret-do-not-reveal".to_string() );
+  let debug_output = format!( "{secret:?}" );
+
+  assert!(
+    debug_output.contains( "REDACTED" ),
+    "Debug output must contain REDACTED placeholder, got : {debug_output}"
+  );
+  assert!(
+    !debug_output.contains( "sk-ant-api03-super-secret-do-not-reveal" ),
+    "Debug output must NOT reveal the actual API key, got : {debug_output}"
+  );
+}
+
 #[ cfg( feature = "integration" ) ]
 #[ tokio::test ]
 async fn test_real_api_call_must_work_no_graceful_fallbacks()

@@ -17,6 +17,10 @@ use crate::
 #[ cfg( feature = "env-config" ) ]
 use crate::environment::{ HuggingFaceEnvironment, EnvironmentInterface };
 
+/// `HuggingFace` Inference provider base URL for embedding/feature-extraction endpoints.
+/// Uses the `hf-inference` provider via the Router (not the `/v1/chat/completions` path).
+const HF_SERVERLESS_API_BASE : &str = "https://router.huggingface.co/hf-inference";
+
 /// API group for `HuggingFace` embedding operations
 #[ derive( Debug ) ]
 pub struct Embeddings< E >
@@ -64,11 +68,11 @@ where
   validate_input_text( &input_text )?;
   validate_model_identifier( model_id )?;
   
-  let request = EmbeddingRequest::new( input_text );
-  let endpoint = format!( "models/{model_id}" );
-  let url = self.client.environment.endpoint_url( &endpoint )?;
+  // Wrap single text in array so response is [[f1,...]] matching EmbeddingResponse::Single
+  let request = EmbeddingRequest::new_batch( vec![ input_text ] );
+  let url = format!( "{HF_SERVERLESS_API_BASE}/models/{model_id}" );
 
-  self.client.post( url.as_str(), &request ).await
+  self.client.post( &url, &request ).await
   }
 
   /// Create embeddings for multiple texts
@@ -93,10 +97,9 @@ where
   validate_model_identifier( model_id )?;
   
   let request = EmbeddingRequest::new_batch( inputs );
-  let endpoint = format!( "models/{model_id}" );
-  let url = self.client.environment.endpoint_url( &endpoint )?;
+  let url = format!( "{HF_SERVERLESS_API_BASE}/models/{model_id}" );
 
-  self.client.post( url.as_str(), &request ).await
+  self.client.post( &url, &request ).await
   }
 
   /// Create an embedding with custom options
@@ -123,11 +126,10 @@ where
   validate_input_text( &input_text )?;
   validate_model_identifier( model_id )?;
   
-  let request = EmbeddingRequest::new( input_text ).with_options( options );
-  let endpoint = format!( "models/{model_id}" );
-  let url = self.client.environment.endpoint_url( &endpoint )?;
+  let request = EmbeddingRequest::new_batch( vec![ input_text ] ).with_options( options );
+  let url = format!( "{HF_SERVERLESS_API_BASE}/models/{model_id}" );
 
-  self.client.post( url.as_str(), &request ).await
+  self.client.post( &url, &request ).await
   }
 
   /// Create embeddings using the feature extraction pipeline
@@ -159,12 +161,11 @@ where
       }
   });
 
-  let endpoint = format!( "models/{model_id}" );
-  let url = self.client.environment.endpoint_url( &endpoint )?;
-  
-  self.client.post( url.as_str(), &request ).await
+  let url = format!( "{HF_SERVERLESS_API_BASE}/models/{model_id}" );
+
+  self.client.post( &url, &request ).await
   }
-  
+
   /// Get similarity between two texts using embeddings
   ///
   /// # Arguments
@@ -252,7 +253,9 @@ fn cosine_similarity( a : &[ f32 ], b : &[ f32 ] ) -> Result< f32 >
   ) );
   }
   
-  Ok( dot_product / ( magnitude_a * magnitude_b ) )
+  // Clamp to [-1.0, 1.0]: floating-point rounding can yield values slightly outside
+  // this range for nearly-identical vectors, violating the cosine similarity invariant.
+  Ok( ( dot_product / ( magnitude_a * magnitude_b ) ).clamp( -1.0, 1.0 ) )
 }
 
 } // end mod private

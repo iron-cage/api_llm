@@ -145,10 +145,10 @@ use super::Client;
     #[ inline ]
     pub fn build( &self ) -> Result< Client, Error >
     {
-      // Validate API key
-      if self.api_key.is_empty()
+      // Validate API key — reject empty and whitespace-only strings.
+      if self.api_key.trim().is_empty()
       {
-        return Err( Error::AuthenticationError( "API key cannot be empty".to_string() ) );
+        return Err( Error::AuthenticationError( "API key cannot be empty or blank".to_string() ) );
       }
 
       // Validate retry configuration

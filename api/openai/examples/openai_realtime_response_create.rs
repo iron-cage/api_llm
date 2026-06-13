@@ -1,4 +1,5 @@
 //! Example of explicitly creating a response using the OpenAI API.
+#![ allow( clippy::doc_markdown ) ]
 //!
 //! Run with:
 //! `cargo run --example realtime_response_create`
@@ -68,7 +69,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
   let session = client.realtime().create_session( request ).await?;
 
   tracing ::info!( "Creating Realtime WebSocket Session Client..." );
-  let _token = session.client_secret.value;
+  let _ = session.client_secret.value;
   // 4. Establish the WebSocket connection using the session token.
   let session_client = client.realtime().connect_ws( &session.id ).await?;
 
@@ -129,7 +130,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             println!( "\n--- Response Created Confirmation Received ---" );
             println!( "{created_event:?}" );
             let response_id = created_event.response.id.clone();
-            println!( "Successfully received response.created confirmation. Response ID: {}", response_id );
+            println!( "Successfully received response.created confirmation. Response ID: {response_id}" );
             *created_response_id.lock().unwrap() = Some( response_id );
             confirmation_received = true;
             // Don't break yet, let's also wait for ResponseDone for completeness
@@ -144,14 +145,11 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
             {
               if done_event.response.id == expected
               {
-                println!( "Received response.done for the created response (ID: {}). Status : {}", expected, done_event.response.status );
+                println!( "Received response.done for the created response (ID: {expected}). Status : {}", done_event.response.status );
                 // Now we can break, as the response is complete.
                 break;
               }
-              else
-              {
-                println!("Received response.done for a different response ID: {}", done_event.response.id);
-              }
+              println!( "Received response.done for a different response ID: {}", done_event.response.id );
             }
             else
             {
@@ -176,7 +174,7 @@ async fn main() -> Result< (), Box< dyn core::error::Error > >
       }
       Err( e ) =>
       {
-        eprintln!( "\nError reading from WebSocket : {:?}", e );
+        eprintln!( "\nError reading from WebSocket : {e:?}" );
         return Err( e.into() ); // Propagate the error
       }
     }
@@ -190,10 +188,7 @@ if created_response_id.lock().unwrap().is_none()
 {
       return Err( OpenAIError::WsInvalidMessage( "Did not receive expected response.created confirmation".to_string() ).into() );
     }
-    else
-    {
-      println!( "Warning : Response.created confirmation flag not set, but response ID was likely captured before loop exit." );
-    }
+    println!( "Warning : Response.created confirmation flag not set, but response ID was likely captured before loop exit." );
   }
 
   Ok( () )

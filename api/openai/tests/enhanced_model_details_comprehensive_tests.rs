@@ -4,29 +4,33 @@
 //! following TDD principles. Tests cover detailed metadata retrieval, pricing
 //! information, capabilities, limitations, context windows, and lifecycle management.
 
+use api_openai::components ::models::
+{
+  EnhancedModel,
+  EnhancedListModelsResponse,
+  ModelPricing,
+  ModelCapabilities,
+  ModelLimitations,
+  ModelLifecycle,
+  ModelStatus,
+  ResponseMetadata,
+  ModelComparison,
+};
+
+#[ cfg( feature = "integration" ) ]
 use api_openai::ClientApiAccessors;
+#[ cfg( feature = "integration" ) ]
 use api_openai::
 {
   Client,
   environment ::OpenaiEnvironmentImpl,
   secret ::Secret,
-  components ::models::
-  {
-    EnhancedModel,
-    EnhancedListModelsResponse,
-    ModelPricing,
-    ModelCapabilities,
-    ModelLimitations,
-    ModelLifecycle,
-    ModelStatus,
-    ResponseMetadata,
-    ModelComparison,
-  },
 };
 
+#[ cfg( feature = "integration" ) ]
 use core::time::Duration;
 
-/// Helper function to create test client
+#[ cfg( feature = "integration" ) ]
 fn create_test_client() -> Result< Client< OpenaiEnvironmentImpl >, Box< dyn std::error::Error > >
 {
   let secret = Secret::load_from_env( "OPENAI_API_KEY" )?;
@@ -34,7 +38,7 @@ fn create_test_client() -> Result< Client< OpenaiEnvironmentImpl >, Box< dyn std
   Ok( Client::build( env )? )
 }
 
-/// Helper function to check if we should run integration tests
+#[ cfg( feature = "integration" ) ]
 fn should_run_integration_tests() -> bool
 {
   std ::env::var( "OPENAI_API_KEY" ).is_ok()

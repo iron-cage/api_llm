@@ -6,7 +6,7 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** 🎯 (Verified)
+- **State:** ✅ (Completed)
 - **Closes:** null
 - **Blocked Reason:** null
 - **Dir:** tests/
@@ -244,6 +244,9 @@ Execute in order. Do not skip or reorder steps.
 
 - **2026-06-13** `CREATED` — Task filed after doc normalization session added/updated 6 doc instances and 5 tests/docs/ spec files across feature/, api/, operation/, invariant/, and pattern/ entities; 28 GWT scenarios confirmed unimplemented by grep across tests/.
 - **2026-06-13** `REVISED` — First MAAV (4 agents) returned 2 FAILs: (1) IN-05 category conflict (C vs D), unspecified constructors for FE-02/FE-03, M3 count inconsistency (9→7), OP-04 mislabeled as Category D; (2) IN-06/IN-07 ordering dependency on tasks 004/007 not disclosed. Applied fixes: reclassified IN-05 → Category B (static analysis of tests/inc/mod.rs); reclassified OP-04 → Category B (compile-presence); moved OP-05 from Category D to Category C; specified exact constructors (Secret::new, HuggingFaceEnvironmentImpl::build, Client::build, RateLimiter::new); fixed M3 to 7; added prerequisite dependency note for IN-06/IN-07 with todo! bodies.
+
+- **2026-06-13** `VERIFIED` — MAAV gate passed (4 independent subagents, second run after REVISED fixes). State → 🎯 (Verified).
+- **2026-06-13** `COMPLETED` — tests/doc_spec_tests.rs created with 28 named functions (FE-01..04, AP-01..06, OP-01..06, IN-01..08, PT-01..04); tests/readme.md row added. 31/31 structural tests pass. State → ✅ (Completed).
 
 ## Verification Record
 
