@@ -142,15 +142,18 @@ async fn test_vision_with_non_vision_model()
       model, // Using regular model instead of vision-specific one
       messages : vec![message],
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      // Root cause: non-vision model may generate unbounded text ignoring image.
+      // Pitfall: always set num_predict in integration tests to bound inference time.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : None,
       #[ cfg( feature = "tool_calling" ) ]
       tool_messages : None,
     };
-    
+
     let result = client.chat(request).await;
-    
+
     match result
     {
       Ok(response) =>

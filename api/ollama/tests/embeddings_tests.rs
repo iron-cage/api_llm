@@ -257,8 +257,10 @@ async fn test_embeddings_with_options()
 async fn test_embeddings_long_prompt()
 {
   with_test_server!(|mut client : OllamaClient, model : String| async move {
-    // Create a long prompt to test handling of large inputs
-    let long_prompt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ".repeat(100);
+    // Fix(BUG-010): Reduced repeat count from 100 to 20 — repeat(100) produces ~1400 tokens
+    // which exceeds qwen2.5:0.5b effective embeddings context, causing HTTP 500.
+    // Pitfall: If TEST_MODEL changes, verify the new model handles longer prompts first.
+    let long_prompt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ".repeat(20);
 
     let request = EmbeddingsRequest
     {

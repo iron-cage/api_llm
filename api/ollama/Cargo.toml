@@ -137,6 +137,7 @@ tokio = { workspace = true, features = [ "macros", "rt-multi-thread" ] }
 tokio-stream = { workspace = true }
 futures-util = { workspace = true }
 tempfile = { workspace = true }
+serde_json = { workspace = true }
 
 [[bench]]
 name = "diagnostics_performance"

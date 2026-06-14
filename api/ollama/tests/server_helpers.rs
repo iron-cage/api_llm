@@ -183,16 +183,19 @@ static TEST_SERVER: OnceLock< Arc< Mutex< Option< TestServer > > > > = OnceLock:
 /// Test server configuration
 const BASE_PORT: u16 = 11435; // Base port for test servers
 const PORT_RANGE: u16 = 100; // Allow 100 different test binaries (11435-11534)
-// Optimization(phase3-model-switch): Changed from tinyllama to smollm2:360m for 23% speed improvement
-// Root cause: Tinyllama (1.1B params) had extreme variability (350s-780s) and slow chat responses (avg 2220ms)
-// Solution: Benchmark tested 4 models - smollm2:360m fastest (2024ms overall, 1730ms chat avg = 1.23x speedup)
-// Benchmark results: smollm2:360m (2024ms), qwen2.5:0.5b (2267ms), tinyllama (2485ms), gemma3:1b (2672ms)
-// Pitfall: Smaller model (360M vs 1.1B) may have different behavior - verify all tests still pass
-const TEST_MODEL: &str = "smollm2:360m"; // Fastest model from benchmark (23% faster than tinyllama)
+// Fix(issue-oom-model-switch-005): Switched from smollm2:360m (F16) to qwen2.5:0.5b (Q4) to prevent OOM kills.
+// Root cause: smollm2:360m uses F16 precision (690MB anonymous memory) + KV cache (160MB) + compute (137MB) = 987MB.
+//   With swap exhausted by concurrent processes, 987MB anonymous allocation triggers OOM killer.
+//   Ollama 0.11+ uses mmap=false, so model weights are loaded into anonymous memory (not page cache) — unavoidable.
+// Fix Applied: qwen2.5:0.5b uses Q4 quantization: 374MB model + 48MB KV + 300MB compute = 722MB.
+//   265MB less anonymous memory than smollm2. With OLLAMA_CONTEXT_LENGTH=2048, KV drops to 24MB → 698MB total.
+// Tradeoff: qwen2.5 is ~12% slower than smollm2 but reliably fits in constrained memory environments.
+// Pitfall: Never switch back to smollm2:360m or any F16 model — they OOM-kill tests on swap-exhausted systems.
+const TEST_MODEL: &str = "qwen2.5:0.5b"; // Q4 quantized: 374MB model weights vs smollm2 F16 690MB
 const SERVER_STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 const MODEL_PULL_TIMEOUT: Duration = Duration::from_secs(300); // 5 minutes for model download
 // Fix(issue-model-loading-timeout-001): Increased from 60s -> 180s to handle slow model loading
-// Root cause: First inference request after server start takes 60+ seconds for model loading (smollm2:360m)
+// Root cause: First inference request after server start takes 60+ seconds for model loading
 // Ollama loads models into RAM on first request, not during server startup - this is unavoidable overhead
 // Pitfall: Timeout must exceed worst-case model load time (60-120s observed) plus inference time (10-30s)
 const QUICK_RESPONSE_TIMEOUT: Duration = Duration::from_secs(180); // 3 minutes for model loading + inference
@@ -270,6 +273,12 @@ impl TestServer
     // - OLLAMA_NUM_PARALLEL=1: Only process 1 request at a time
     // - OLLAMA_MAX_LOADED_MODELS=1: Only keep 1 model in memory
     // - OLLAMA_KEEP_ALIVE=0: Unload models immediately when idle
+    // Fix(issue-ollama-context-env-006): Do NOT set OLLAMA_CONTEXT_LENGTH env var.
+    //   Root cause: Ollama 0.11 returns HTTP 500 for any chat/generate request that includes an
+    //   `options` JSON field when OLLAMA_CONTEXT_LENGTH is set in the server environment.
+    //   This combination of env + options is broken in Ollama 0.11.8.
+    //   Pitfall: NEVER add OLLAMA_CONTEXT_LENGTH to the server env — it silently breaks all
+    //   requests that pass options. Use per-request num_ctx in options if context reduction is needed.
     let mut process = Command::new("ollama")
       .args(["serve"])
       .env("OLLAMA_HOST", format!( "127.0.0.1:{test_port}" ))
@@ -338,77 +347,77 @@ impl TestServer
   async fn ensure_test_model_available(&mut self) -> Result< (), String >
   {
     println!( "🔍 Checking if test model '{TEST_MODEL}' is available..." );
-    
+
     // Check if model is already available
-    match self.client.list_models().await
+    let model_found = match self.client.list_models().await
     {
-      Ok(models) => 
-      {
-        if models.models.iter().any(|m| m.name.starts_with(TEST_MODEL))
-        {
-          println!( "✅ Test model '{TEST_MODEL}' already available" );
-          return Ok(());
-        }
-      }
-      Err(_) =>
+      Ok( models ) => models.models.iter().any( |m| m.name.starts_with( TEST_MODEL ) ),
+      Err( _ ) =>
       {
         return Err( format!(
           "Failed to communicate with test server\n\nResolution steps:\n1. Verify Ollama server is running\n2. Check network connectivity\n3. Ensure port {} is accessible",
           self.port
         ) );
       }
-    }
+    };
 
-    println!( "⬇️ Pulling test model '{TEST_MODEL}' (this may take several minutes)..." );
-
-    // Pull the minimal test model
-    let pull_start = Instant::now();
-    let pull_result = Command::new("ollama")
-      .args(["pull", TEST_MODEL])
-      .env("OLLAMA_HOST", format!( "127.0.0.1:{}", self.port ))
-      .output();
-      
-    match pull_result
+    if model_found
     {
-      Ok(output) if output.status.success() => 
+      println!( "✅ Test model '{TEST_MODEL}' already available" );
+    }
+    else
+    {
+      println!( "⬇️ Pulling test model '{TEST_MODEL}' (this may take several minutes)..." );
+
+      let pull_start = Instant::now();
+      let pull_result = Command::new("ollama")
+        .args(["pull", TEST_MODEL])
+        .env("OLLAMA_HOST", format!( "127.0.0.1:{}", self.port ))
+        .output();
+
+      match pull_result
       {
-        println!( "✅ Test model '{TEST_MODEL}' pulled successfully in {:.1}s", pull_start.elapsed().as_secs_f64() );
+        Ok( output ) if output.status.success() =>
+        {
+          println!( "✅ Test model '{TEST_MODEL}' pulled successfully in {:.1}s", pull_start.elapsed().as_secs_f64() );
+        }
+        Ok( output ) =>
+        {
+          let stderr = String::from_utf8_lossy( &output.stderr );
+          return Err( format!(
+            "Failed to pull test model '{TEST_MODEL}': {stderr}\n\nResolution steps:\n1. Check internet connectivity\n2. Verify Ollama registry access\n3. Ensure sufficient disk space\n4. Try manual pull : ollama pull {TEST_MODEL}"
+          ) );
+        }
+        Err( e ) =>
+        {
+          return Err( format!(
+            "Failed to execute model pull : {e}\n\nResolution steps:\n1. Verify Ollama CLI is available\n2. Check PATH configuration\n3. Try manual pull : ollama pull {TEST_MODEL}"
+          ) );
+        }
       }
-      Ok(output) =>
+
+      if pull_start.elapsed() > MODEL_PULL_TIMEOUT
       {
-        let stderr = String::from_utf8_lossy(&output.stderr);
         return Err( format!(
-          "Failed to pull test model '{TEST_MODEL}': {stderr}\n\nResolution steps:\n1. Check internet connectivity\n2. Verify Ollama registry access\n3. Ensure sufficient disk space\n4. Try manual pull : ollama pull {TEST_MODEL}"
+          "Model pull timed out after {timeout} seconds\n\nResolution steps:\n1. Check internet speed\n2. Retry with better connection\n3. Consider using cached model",
+          timeout = MODEL_PULL_TIMEOUT.as_secs()
         ) );
       }
-      Err(e) =>
+
+      // Verify model is now available
+      match self.client.list_models().await
       {
-        return Err( format!(
-          "Failed to execute model pull : {e}\n\nResolution steps:\n1. Verify Ollama CLI is available\n2. Check PATH configuration\n3. Try manual pull : ollama pull {TEST_MODEL}"
-        ) );
+        Ok( models ) if models.models.iter().any( |m| m.name.starts_with( TEST_MODEL ) ) =>
+        {
+          println!( "✅ Test model '{TEST_MODEL}' verified and ready for testing" );
+        }
+        _ => return Err( format!(
+          "Test model '{TEST_MODEL}' not found after pull\n\nResolution steps:\n1. Check Ollama model registry\n2. Verify model pull completed\n3. Try : ollama list"
+        ) )
       }
     }
-    
-    if pull_start.elapsed() > MODEL_PULL_TIMEOUT
-    {
-      return Err( format!(
-        "Model pull timed out after {timeout} seconds\n\nResolution steps:\n1. Check internet speed\n2. Retry with better connection\n3. Consider using cached model",
-        timeout = MODEL_PULL_TIMEOUT.as_secs()
-      ) );
-    }
-    
-    // Verify model is now available
-    match self.client.list_models().await
-    {
-      Ok(models) if models.models.iter().any(|m| m.name.starts_with(TEST_MODEL)) => 
-      {
-        println!( "✅ Test model '{TEST_MODEL}' verified and ready for testing" );
-        Ok(())
-      }
-      _ => Err( format!(
-        "Test model '{TEST_MODEL}' not found after pull\n\nResolution steps:\n1. Check Ollama model registry\n2. Verify model pull completed\n3. Try : ollama list"
-      ) )
-    }
+
+    Ok(())
   }
   
   /// Test if server can respond quickly to a simple request
@@ -512,11 +521,13 @@ impl Drop for TestServer
     // Method 1: Try graceful kill via process handle
     let _ = self.process.kill();
 
-    // Fix(issue-resource-exhaustion-002): Increased wait from 100ms -> 500ms for graceful shutdown
-    // Root cause: Ollama needs time to flush model from RAM and release network sockets
-    // Insufficient wait causes resource leaks when next test starts immediately
-    // Pitfall: Too short delay leaves zombie processes and open ports
-    std::thread::sleep(Duration::from_millis(500));
+    // Fix(issue-resource-exhaustion-002): Increased wait from 100ms -> 500ms -> 2s for graceful shutdown.
+    // Root cause: Ollama runner exits ~1-2s after serve is killed (model unload with KEEP_ALIVE=10s
+    //   timer cancelled on serve death). 500ms was too short — runner was still alive when Methods 2-3
+    //   force-killed it, evicting model data from page cache.
+    // Fix Applied: 2s delay lets runner exit gracefully in most cases, preserving page cache.
+    // Pitfall: Too short delay forces Method 2-3 to kill the runner, destroying warm page cache.
+    std::thread::sleep(Duration::from_secs(2));
 
     // Method 2: Kill by port using lsof (finds processes listening on the port)
     let _ = Command::new("sh")
@@ -529,17 +540,16 @@ impl Drop for TestServer
       .args(["-9", "-f", &format!( "OLLAMA_HOST=.*:{port}" )])
       .output();
 
-    // Method 4: Kill any user-owned ollama runner processes
-    // (Ollama spawns runner subprocesses that may outlive the serve process)
-    let username = std::env::var("USER").unwrap_or_else(|_| "user1".to_string());
-    let _ = Command::new("sh")
-      .arg("-c")
-      .arg( format!(
-        "ps aux | grep '[o]llama' | grep '^{username}' | awk '{{print $2}}' | xargs -r kill -9 2>/dev/null || true"
-      ) )
-      .output();
+    // Fix(issue-page-cache-eviction-010): Removed Method 4 (kill ALL user-owned ollama).
+    // Root cause: Method 4 killed every ollama process system-wide, evicting model file data from
+    //   OS page cache. The next test's cold model load (~25s, 722MB anonymous) hit peak swap pressure
+    //   and triggered OOM kills. Methods 1-3 already kill the specific serve + port listeners.
+    // Fix Applied: Rely on cleanup_orphaned_servers() (runs at next test startup) to kill any
+    //   orphaned runners. Between tests, at most one runner remains (~722MB) — acceptable with
+    //   test-threads=1. Preserving page cache makes subsequent model loads warm (~3-5s vs ~25s).
+    // Pitfall: Do NOT re-add a blanket kill-all — it destroys page cache and reintroduces OOM.
 
-    // Wait for processes to fully terminate and release resources
+    // Wait for serve + runner to terminate and release port
     std::thread::sleep(Duration::from_secs(1));
 
     // Final verification - wait for process handle
@@ -569,12 +579,18 @@ fn cleanup_orphaned_servers()
   // Safe: test-threads=1 (serial) guarantees no other binary is actively running its server at startup.
   //       System serve on port 11434 is NOT in range 11435-11534, so it is preserved.
   // Pitfall: Do NOT expand range to include 11434 — that kills the system ollama service.
+  //
+  // Fix(issue-cleanup-perf-009): Replaced 100x lsof loop with single ss+awk command.
+  // Root cause: `for port in $(seq 11435 11534); do lsof ...` ran 100 lsof invocations per test
+  //   (~20ms each = ~2s per test x 404 tests = ~13 minutes total just for cleanup loops).
+  // Fix Applied: Single `ss -tlnp` call + awk port filter. O(1) instead of O(100).
+  // Pitfall: `ss` port range filter syntax (`sport >= :N`) is broken on some kernels — use awk.
   println!( "🧹 Cleaning up ALL orphaned Ollama test servers (ports 11435-11534)..." );
 
   let _ = Command::new("sh")
     .arg("-c")
     .arg(
-      "for port in $(seq 11435 11534); do lsof -ti tcp:$port 2>/dev/null | xargs -r kill -9 2>/dev/null; done || true"
+      "ss -tlnp | awk 'NR>1 { split($4,a,\":\"); if(a[2]>=11435 && a[2]<=11534) print }' | grep -oP 'pid=\\K\\d+' | sort -u | xargs -r kill -9 2>/dev/null || true"
     )
     .output();
 

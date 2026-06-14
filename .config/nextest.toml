@@ -49,3 +49,16 @@ priority = 100
 filter = 'package(api_ollama) and (binary(embeddings_tests) or binary(api_comprehensive_tests) or binary(streaming_tests) or binary(tool_calling_tests) or binary(builder_patterns_tests) or binary(vision_support_tests) or binary(example_model_validation_test) or binary(sync_api_tests) or binary(health_checks_tests))'
 slow-timeout = { period = "600s" }  # 10 minutes for integration tests (removed: terminate-after = 2)
 threads-required = "num-test-threads"  # Exclusive slot: only one Ollama-server binary runs at a time
+# Fix(issue-transient-sigkill-005): 2 retries for SIGKILL + follow-on HTTP 500 under memory pressure.
+# Root cause: Other Claude sessions fill swap; model loading coincides with peak memory usage,
+#   causing kernel to SIGKILL the ollama runner mid-load (TRY 1). The subsequent retry (TRY 2)
+#   starts a fresh server but ollama returns HTTP 500 because the runner is re-loaded into a system
+#   still under pressure — the runner exits immediately, ollama returns 500 to the caller.
+#   A third attempt (TRY 3) succeeds because memory pressure has subsided and model data is warm
+#   in the OS page cache (loaded during TRY 1/TRY 2), making the cold-start spike much smaller.
+# Fix Applied: retries=2 (NOT terminate-after — that causes double-spawn issue-003).
+#   Sequence: TRY 1 = SIGKILL (cold load OOM) → TRY 2 = HTTP 500 (runner exits under pressure)
+#   → TRY 3 = PASS (warm page cache, pressure subsided).
+# Pitfall: retries=2 masks persistent OOM failures. If tests fail on ALL 3 tries, drain swap
+#   (sudo swapoff /swapfile && sudo swapon /swapfile) and rerun — do not increase retries further.
+retries = 2

@@ -66,7 +66,11 @@ mod private
   pub struct ChatResponse
   {
     /// Generated message from the model
+    // Fix(BUG-013): Added #[serde(default)] to allow streaming "done" chunks with no message field.
+    // Root cause: Ollama's final streaming chunk omits `message`; without default, serde fails.
+    // Pitfall: ChatMessage derives Default (role=User, content=""), so absent field → empty message.
     #[ cfg( feature = "vision_support" ) ]
+    #[ serde( default ) ]
     pub message : ChatMessage,
     #[ serde( default ) ]
     /// Generated message from the model (non-vision)

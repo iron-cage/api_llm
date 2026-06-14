@@ -27,6 +27,19 @@ use api_ollama::{
 };
 use core::time::Duration;
 use futures_util::StreamExt;
+/// Root Cause: Ollama's streaming final "done" chunk omits the `message` field entirely.
+///   `ChatResponse.message` under `vision_support` was `ChatMessage` (required, no default),
+///   so serde errored with "missing field `message`" on every streaming completion.
+/// Why Not Caught: Non-streaming tests always receive `message`. Streaming was only tested
+///   without `vision_support` feature (where `message : Option<Message>` already has `#[serde(default)]`).
+///   With `--all-features`, `vision_support` is enabled and the bug became observable.
+/// Fix Applied: Added `#[serde(default)]` to `ChatResponse.message` under `vision_support` in `chat.rs`.
+///   `ChatMessage` derives `Default` (empty content, User role), so missing field → default value.
+///   The done-chunk with no message now deserializes successfully and `content.is_empty()` skips it.
+/// Prevention: All streaming response structs must use `#[serde(default)]` on every field,
+///   because the final "done" chunk omits most fields (model stats only, no message content).
+/// Pitfall: When adding new response fields, always include `#[serde(default)]` — streaming
+///   done chunks have a completely different shape from mid-stream content chunks.
 #[ tokio::test ]
 async fn test_streaming_chat_basic()
 {

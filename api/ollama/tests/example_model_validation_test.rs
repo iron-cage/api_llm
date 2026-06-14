@@ -221,9 +221,8 @@ mod private
         ],
         stream : Some( false ),
         // Fix(issue-unconstrained-generation-001): limit to 10 tokens to avoid 750s timeout.
-        // Root cause: unconstrained generation on smollm2 exceeds the 750s client timeout
-        // under normal system load (observed: 751s for "Say 'test passed'" with no limit).
-        // Pitfall: always set num_predict in integration tests to bound inference time.
+        // Root cause: unconstrained generation on small models can exceed the 750s client timeout
+        // under normal system load. Pitfall: always set num_predict in integration tests.
         options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
         #[ cfg( feature = "tool_calling" ) ]
         tools : None,

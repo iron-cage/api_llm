@@ -12,7 +12,7 @@
 //! - **End-to-End Validation**: Tests exercise complete request/response cycles with real data
 //! 
 //! These tests automatically start and manage their own Ollama server instance
-//! with the minimal tinyllama model for efficient testing. If server startup fails,
+//! with the qwen2.5:0.5b model (Q4 quantized, ~700MB RAM). If server startup fails,
 //! dependency installation fails, or network connectivity issues occur, tests WILL fail.
 //! This is intentional and mandatory per specification NFR-9.1 through NFR-9.8.
 

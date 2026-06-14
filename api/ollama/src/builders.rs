@@ -197,12 +197,18 @@ mod private
       self
     }
 
-    /// Set `max_tokens` parameter
+    /// Set `num_predict` (max tokens to generate) parameter.
+    ///
+    /// Fix(issue-ollama-max-tokens-007): Uses `num_predict` (the valid Ollama API field) not
+    /// `max_tokens` (an OpenAI concept Ollama does not recognize as an option).
+    /// Root cause: `max_tokens` in Ollama options is silently ignored — the model generates
+    ///   until EOS with no token limit, causing multi-minute inference in integration tests.
+    /// Pitfall: Never use `"max_tokens"` in Ollama options; always use `"num_predict"`.
     #[ inline ]
     #[ must_use ]
     pub fn max_tokens( mut self, max_tokens : u32 ) -> Self
     {
-      self.set_option( "max_tokens", serde_json::Value::from( max_tokens ) );
+      self.set_option( "num_predict", serde_json::Value::from( max_tokens ) );
       self
     }
 
@@ -333,12 +339,13 @@ mod private
       self
     }
 
-    /// Set `max_tokens` parameter
+    /// Set `num_predict` (max tokens to generate) parameter.
+    /// Fix(issue-ollama-max-tokens-007): Uses `num_predict` not `max_tokens` (see ChatRequestBuilder).
     #[ inline ]
     #[ must_use ]
     pub fn max_tokens( mut self, max_tokens : u32 ) -> Self
     {
-      self.set_option( "max_tokens", serde_json::Value::from( max_tokens ) );
+      self.set_option( "num_predict", serde_json::Value::from( max_tokens ) );
       self
     }
 

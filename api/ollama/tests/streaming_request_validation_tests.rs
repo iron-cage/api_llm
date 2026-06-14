@@ -63,6 +63,33 @@ mod tests
     assert!( conversation_history.len() <= 21 );
   }
 
+  /// Root Cause: Ollama's streaming "done" chunk omits `message` entirely.
+  ///   Under `vision_support` feature, `ChatResponse.message` was `ChatMessage`
+  ///   (required, no `#[serde(default)]`), so serde failed with "missing field `message`".
+  /// Why Not Caught: Non-streaming tests always receive `message`. Streaming was tested
+  ///   without `vision_support` (where `message: Option<Message>` already has `#[serde(default)]`).
+  ///   With `--all-features`, `vision_support` is enabled and the bug becomes observable.
+  /// Fix Applied: Added `#[serde(default)]` to `ChatResponse.message` under `vision_support`.
+  ///   `ChatMessage` derives `Default` (role=User, content=""), so missing field → default value.
+  /// Prevention: All streaming response structs must use `#[serde(default)]` on every field.
+  ///   The "done" chunk omits most fields — only `model`, `done`, and timing stats remain.
+  /// Pitfall: Adding new response fields without `#[serde(default)]` reintroduces this bug.
+  ///   Streaming "done" chunks have a completely different shape from mid-stream content chunks.
+  #[ cfg( feature = "vision_support" ) ]
+  #[ test ]
+  fn test_bug_013_done_chunk_deserializes_without_message()
+  {
+    // Ollama's final streaming "done" chunk omits `message` entirely (only stats remain).
+    // Before fix: serde_json::from_str fails with "missing field `message`" at `ChatResponse`.
+    // After fix: deserializes successfully; message defaults to ChatMessage { content: "", role: User }.
+    let done_chunk = r#"{"model":"qwen2.5:0.5b","created_at":"2024-01-01T00:00:00Z","done":true,"done_reason":"stop","total_duration":1000000,"prompt_eval_count":5,"eval_count":3}"#;
+    let response : api_ollama::ChatResponse = serde_json::from_str( done_chunk )
+      .expect( "Done chunk without `message` field must deserialize successfully (BUG-013 regression guard)" );
+    assert!( response.done, "Done chunk must have done=true" );
+    assert!( response.message.content.is_empty(), "Default ChatMessage must have empty content" );
+    assert_eq!( response.done_reason.as_deref(), Some( "stop" ) );
+  }
+
   #[ tokio::test ]
   async fn test_demo_scenarios_structure()
   {
