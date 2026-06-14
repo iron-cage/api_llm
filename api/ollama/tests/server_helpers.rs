@@ -561,37 +561,41 @@ impl Drop for TestServer
 /// Pitfall: Always kill BOTH serve and runner processes - runners are the actual resource hogs
 fn cleanup_orphaned_servers()
 {
-  // Fix(issue-parallel-cleanup-001): Only clean up THIS test binary's port to avoid killing other parallel test servers
-  // Root cause: cleanup_orphaned_servers() killed ALL test ports (11435-11534), including servers from other running test binaries
-  // When test-threads=8, multiple test binaries run in parallel, each with unique port from hash(binary_name)
-  // Binary A's cleanup at startup would kill Binary B's running server, causing "error sending request" failures
-  // Pitfall: Over-aggressive cleanup in parallel environments creates race conditions between test binaries
-  let test_port = get_test_port();
-  println!( "🧹 Cleaning up orphaned Ollama server on port {test_port}..." );
+  // Fix(issue-serve-accumulation-004): Kill ALL test-range ollama serves (ports 11435-11534).
+  // Root cause: cleanup_orphaned_servers() previously only killed the serve on THIS binary's port.
+  // When a binary is OOM-killed (Drop doesn't run), its serve stays alive on its port.
+  // The next binary's startup only cleaned up its own port, leaving all other orphaned serves alive.
+  // Accumulation across binaries exhausts file descriptors and consumes ~400MB RAM per orphaned serve.
+  // Safe: test-threads=1 (serial) guarantees no other binary is actively running its server at startup.
+  //       System serve on port 11434 is NOT in range 11435-11534, so it is preserved.
+  // Pitfall: Do NOT expand range to include 11434 — that kills the system ollama service.
+  println!( "🧹 Cleaning up ALL orphaned Ollama test servers (ports 11435-11534)..." );
 
-  // Kill any process listening on THIS test binary's port only
-  // This preserves servers from other test binaries running in parallel
-  let port_cleanup = Command::new("sh")
+  let _ = Command::new("sh")
     .arg("-c")
-    .arg( format!( "lsof -ti tcp:{test_port} 2>/dev/null | xargs -r kill -9 2>/dev/null || true" ) )
+    .arg(
+      "for port in $(seq 11435 11534); do lsof -ti tcp:$port 2>/dev/null | xargs -r kill -9 2>/dev/null; done || true"
+    )
     .output();
 
-  // Report cleanup status
-  match port_cleanup
-  {
-    Ok(output) if output.status.success() =>
-    {
-      println!( "✅ Cleaned up orphaned server on port {test_port}" );
-    }
-    _ =>
-    {
-      // Cleanup failure is non-fatal - server may not exist (expected on first run)
-      println!( "✅ No orphaned server found on port {test_port}" );
-    }
-  }
+  println!( "✅ Cleaned up orphaned serves in test port range" );
 
-  // Wait for port to be fully released before starting new server
-  std::thread::sleep(Duration::from_millis(500));
+  // Fix(issue-orphaned-runner-002): Kill all user-owned ollama runner processes at startup.
+  // Root cause: cleanup_orphaned_servers() killed the serve process on this port but left
+  // 'ollama runner' subprocesses from all previously-completed test binaries alive.
+  // Each runner consumes ~924MB RAM; they accumulate across binaries and trigger OOM kills.
+  // Safe because nextest.toml sets test-threads=1 (serial): by the time this binary starts,
+  // ALL prior binaries have finished and their runners are orphaned with no active clients.
+  // Pitfall: With test-threads>1, this would kill runners from concurrently-running binaries.
+  let _ = Command::new("sh")
+    .arg("-c")
+    .arg(
+      "ps aux | grep '[o]llama runner' | grep -v grep | awk '{print $2}' | xargs -r kill -9 2>/dev/null || true"
+    )
+    .output();
+
+  // Wait for ports and runners to be fully released before starting new server
+  std::thread::sleep(Duration::from_secs(1));
 }
 
 /// Get or create the global test server instance

@@ -173,6 +173,18 @@ async fn test_chat_request_builder_with_options()
   });
 }
 
+/// Root Cause: Streaming request had no token limit. "Count from 1 to 3" triggers
+///   unbounded generation — the model counts well past 3 and produces hundreds of
+///   tokens, exhausting swap memory on resource-constrained systems.
+/// Why Not Caught: Streaming tests are gated by `feature = "streaming"` and were
+///   not run routinely. Memory exhaustion only manifests after many prior inference
+///   calls have consumed available swap.
+/// Fix Applied: Added `.max_tokens(10)` to cap streaming output at 10 tokens.
+///   Adequate to verify the streaming API path works; doesn't test model quality.
+/// Prevention: All ollama integration tests that trigger LLM inference must set
+///   `max_tokens` (builder) or `num_predict` (raw options) to bound memory use.
+/// Pitfall: Streaming tests consume memory gradually per token — uncapped streaming
+///   with a "counting" prompt is especially risky as models rarely stop voluntarily.
 #[ tokio::test ]
 async fn test_chat_request_builder_streaming()
 {
@@ -183,6 +195,7 @@ async fn test_chat_request_builder_streaming()
         .model(&model)
         .user_message("Count from 1 to 3")
         .streaming(true)
+        .max_tokens(10)
         .build()
         .expect("Failed to build streaming chat request");
       
@@ -204,10 +217,16 @@ async fn test_chat_request_builder_streaming()
 #[ tokio::test ]
 async fn test_generate_request_builder_basic()
 {
+  // Fix(issue-unconstrained-generation-002): added max_tokens(10) to prevent timeout.
+  // Root cause: "Write a haiku about coding" without max_tokens generates unconstrained output
+  // which takes 750s+ on resource-constrained systems. A haiku is ~17 syllables but the model
+  // may continue beyond that without a token limit.
+  // Pitfall: always set max_tokens in integration tests to bound inference time.
   with_test_server!(|mut client : OllamaClient, model : String| async move {
     let request = GenerateRequestBuilder::new()
       .model(&model)
       .prompt("Write a haiku about coding")
+      .max_tokens(10)
       .build()
       .expect("Failed to build generate request");
 
@@ -442,7 +461,7 @@ async fn test_builder_complex_conversation()
       .user_message("Say yes")
       .assistant_message("Yes")
       .temperature(0.3)
-      .max_tokens(50)
+      .max_tokens(10)
       .build()
       .expect("Complex conversation builder should work");
 

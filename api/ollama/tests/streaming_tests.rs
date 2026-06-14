@@ -45,7 +45,10 @@ async fn test_streaming_chat_basic()
         }
       ],
       stream : None, // This will be set to true by the streaming method
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      // Root cause: unconstrained streaming exhausts swap (57s observed); parse error on final chunk.
+      // Pitfall: always set num_predict in streaming tests to bound memory and time.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : None,
       #[ cfg( feature = "tool_calling" ) ]

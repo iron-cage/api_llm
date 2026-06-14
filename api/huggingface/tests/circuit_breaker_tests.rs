@@ -627,3 +627,41 @@ async fn test_reset_clears_state()
   assert_eq!( cb.failure_count().await, 0 );
   assert_eq!( cb.success_count().await, 0 );
 }
+
+/// Circuit stays closed until the failure count reaches exactly `failure_threshold`.
+///
+/// Root Cause: N/A — coverage gap.  The condition is `failure_count >= failure_threshold`.
+///   Existing tests only verify that `threshold` failures open the circuit.  The other
+///   half — that `threshold - 1` failures keep it closed — was never asserted in unit tests.
+/// Why Not Caught: All pure-logic unit tests inject exactly `threshold` failures and then
+///   check the open state; the "stays closed at threshold - 1" invariant was not tested.
+/// Fix Applied: N/A — test added to lock both halves of the boundary invariant.
+/// Prevention: For every `>=` threshold guard, test both `N - 1` (stays closed) and `N`
+///   (opens) to catch off-by-one changes in a single refactor.
+/// Pitfall: Changing `>=` to `>` would shift opening by one failure.  `test_failures_open_circuit`
+///   catches that, but this test makes the closed-below-threshold contract explicit.
+#[ tokio::test ]
+async fn test_circuit_stays_closed_below_threshold()
+{
+  let config = CircuitBreakerConfig
+  {
+    failure_threshold : 5,
+    success_threshold : 2,
+    timeout : Duration::from_secs( 60 ),
+  };
+  let cb = CircuitBreaker::new( config );
+
+  // threshold - 1 = 4 failures must NOT open the circuit
+  for _ in 0..4
+  {
+    let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  }
+
+  assert!( cb.is_closed().await, "Circuit must stay closed with threshold - 1 failures" );
+  assert_eq!( cb.failure_count().await, 4, "Must track all 4 failures" );
+
+  // The 5th failure (exactly at threshold) must open it
+  let _ = cb.execute( async { Err::< String, _ >( "error" ) } ).await;
+  assert!( cb.is_open().await, "Circuit must open at exactly the threshold" );
+  assert_eq!( cb.failure_count().await, 5 );
+}

@@ -76,6 +76,17 @@ async fn test_integration_model_info()
     }
   });
 }
+/// Root Cause: Unconstrained generation exhausts system memory via growing KV cache
+///   when the model has no token limit. Even a short prompt can result in 1000+ tokens
+///   generated, consuming gigabytes of memory beyond swap capacity.
+/// Why Not Caught: Tests passed in initial development when the system had ample memory.
+///   Under repeated test-suite runs swap is exhausted; the 29s SIGKILL confirmed OOM.
+/// Fix Applied: Added `num_predict: 10` in options to cap generation at 10 tokens.
+///   Adequate to verify the API works; doesn't test model quality.
+/// Prevention: All ollama integration tests that trigger LLM inference must set
+///   `num_predict` (generate) or `num_predict` via options (chat) to bound memory.
+/// Pitfall: Re-setting `options: None` allows unbounded inference, causes OOM SIGKILL
+///   on resource-constrained systems after ~10 previous inference calls exhaust swap.
 #[ tokio::test ]
 async fn test_integration_simple_generation()
 {
@@ -85,7 +96,8 @@ async fn test_integration_simple_generation()
       model,
       prompt : "Say hello in one word.".to_string(),
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
     };
     
     let result = client.generate(request).await;
@@ -116,7 +128,8 @@ async fn test_integration_simple_chat()
         }
       ],
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : None,
       #[ cfg( feature = "tool_calling" ) ]

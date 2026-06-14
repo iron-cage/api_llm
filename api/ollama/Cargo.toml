@@ -112,7 +112,7 @@ curl_diagnostics = []
 
 [dependencies]
 # All dependencies are optional
-reqwest = { workspace = true, features = [ "json", "stream" ], optional = true }
+reqwest = { workspace = true, features = [ "json", "stream", "rustls" ], default-features = false, optional = true }
 serde = { workspace = true, features = [ "derive" ], optional = true }
 serde_json = { workspace = true, optional = true }
 tokio = { workspace = true, features = [ "time", "macros" ], optional = true }

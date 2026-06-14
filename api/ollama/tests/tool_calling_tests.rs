@@ -167,7 +167,8 @@ async fn test_tool_calling_multiple_tools()
       model,
       messages : vec![message],
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : Some(vec![weather_tool, time_tool]),
       #[ cfg( feature = "tool_calling" ) ]
@@ -255,7 +256,8 @@ async fn test_tool_calling_with_response()
       model,
       messages : vec![user_message, assistant_message],
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : Some(vec![calculator_tool]),
       #[ cfg( feature = "tool_calling" ) ]
@@ -315,7 +317,8 @@ async fn test_tool_calling_invalid_schema()
       model,
       messages : vec![message],
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : Some(vec![invalid_tool]),
       #[ cfg( feature = "tool_calling" ) ]
@@ -378,7 +381,8 @@ async fn test_tool_calling_streaming()
       model,
       messages : vec![message],
       stream : Some(true), // Enable streaming with tools
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : Some(vec![simple_tool]),
       #[ cfg( feature = "tool_calling" ) ]
@@ -427,7 +431,8 @@ async fn test_tool_calling_no_tools_available()
       model,
       messages : vec![message],
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : None, // No tools provided
       #[ cfg( feature = "tool_calling" ) ]
@@ -506,7 +511,8 @@ async fn test_tool_calling_complex_parameters()
       model,
       messages : vec![message],
       stream : Some(false),
-      options : None,
+      // Fix(issue-unconstrained-generation-003): limit to 10 tokens to prevent OOM.
+      options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
       #[ cfg( feature = "tool_calling" ) ]
       tools : Some(vec![complex_tool]),
       #[ cfg( feature = "tool_calling" ) ]

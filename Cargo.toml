@@ -118,7 +118,7 @@ default-features = false
 version = "^0.64"
 
 [workspace.dependencies.former]
-version = "^2.45"
+version = "^2.48"
 
 [workspace.dependencies.derive_tools]
 version = "^0.68"
@@ -131,7 +131,7 @@ features = [ "error_typed" ]
 version = "^0.1"
 
 [workspace.dependencies.workspace_tools]
-version = "^0.13"
+version = "^0.14"
 
 ## External
 
@@ -159,7 +159,7 @@ version = "^2.5"
 version = "^1.0"
 
 [workspace.dependencies.serde_with]
-version = "^3.15"
+version = "^3.21"
 
 [workspace.dependencies.serde_json]
 version = "^1.0"
@@ -216,7 +216,7 @@ version = "^0.3"
 version = "^0.4"
 
 [workspace.dependencies.tokio]
-version = "^1.48"
+version = "^1.52"
 
 [workspace.dependencies.tokio-stream]
 version = "^0.1"
@@ -258,13 +258,13 @@ version = "^0.4"
 version = "^1.0"
 
 [workspace.dependencies.tempfile]
-version = "^3.23"
+version = "^3.27"
 
 [workspace.dependencies.notify]
 version = "^8.2"
 
 [workspace.dependencies.uuid]
-version = "^1.18"
+version = "^1.23"
 
 ## XAI-specific dependencies
 
@@ -282,5 +282,3 @@ version = "^0.14"
 [workspace.dependencies.criterion]
 version = "^0.8"
 
-[workspace.dependencies.wiremock]
-version = "^0.6"

@@ -117,4 +117,5 @@ These are equal only for ASCII text (U+0000–U+007F).
 
 ## Refs: tests/
 
-- `tests/validation_tests.rs` — `test_validate_input_text_multibyte_character_boundary`: MRE reproducer (bug_reproducer BUG-010)
+- `tests/validation_tests.rs` — `test_validate_input_text_multibyte_character_boundary`: MRE reproducer for `validate_input_text` (bug_reproducer BUG-010)
+- `tests/validation_tests.rs` — `test_validate_message_content_multibyte_character_boundary`: MRE reproducer for `validate_message_content` (bug_reproducer BUG-010)

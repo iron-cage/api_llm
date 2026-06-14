@@ -973,3 +973,155 @@ async fn test_record_on_unknown_endpoint_is_noop()
   assert!( selected.is_ok( ), "should still select the healthy endpoint" );
   assert_eq!( selected.unwrap( ), "https://known.endpoint" );
 }
+
+/// `RoundRobin` with a single healthy endpoint returns that endpoint on every call.
+///
+/// Root Cause: N/A — coverage gap.  `test_single_endpoint_failover` tests the Priority
+///   strategy only.  The RoundRobin loop contains an infinite-loop guard that compares
+///   `round_robin_index == start_index`; with a single endpoint the index wraps back to
+///   the start immediately after the first slot is checked, so the guard must not fire
+///   before the healthy endpoint is returned.
+/// Why Not Caught: All RoundRobin tests use 2+ endpoints and require the integration
+///   feature; the single-endpoint path was never exercised in pure unit tests.
+/// Fix Applied: N/A — test added to verify the loop guard does not false-trigger on a
+///   single healthy endpoint.
+/// Prevention: Test each strategy with the minimum (1) and typical (2+) endpoint counts.
+/// Pitfall: Moving the infinite-loop guard before the `endpoint_healthy` check would
+///   cause the single-endpoint case to return `AllEndpointsUnhealthy` immediately.
+#[ cfg( feature = "failover" ) ]
+#[ tokio::test ]
+async fn test_round_robin_single_endpoint_selects_correctly()
+{
+  use api_huggingface::reliability::{ FailoverManager, FailoverConfig, FailoverStrategy };
+  use core::time::Duration;
+
+  let config = FailoverConfig
+  {
+  endpoints : vec![ "https://api.example.com".to_string( ) ],
+  strategy : FailoverStrategy::RoundRobin,
+  max_retries : 3,
+  failure_window : Duration::from_secs( 60 ),
+  failure_threshold : 5,
+  };
+  let failover = FailoverManager::new( config ).expect( "Failover creation should succeed" );
+
+  // Multiple calls must all return the single endpoint without panicking or erroring
+  for _ in 0..3
+  {
+    let result = failover.select_endpoint( ).await;
+    assert!( result.is_ok( ), "Single healthy endpoint must always be selected" );
+    assert_eq!( result.unwrap( ), "https://api.example.com" );
+  }
+}
+
+/// When all endpoints are unhealthy, each strategy behaves as documented:
+/// - `RoundRobin`, `Random`, `Sticky` → `AllEndpointsUnhealthy`
+/// - `Priority` → falls back to first endpoint (by design, no error)
+///
+/// Root Cause: N/A — coverage gap.  No unit test exercises `select_endpoint` when every
+///   endpoint is marked unhealthy.  The three `AllEndpointsUnhealthy` return sites inside
+///   `select_endpoint` were reachable only via full integration tests.
+/// Why Not Caught: Integration tests drive endpoints unhealthy via real HTTP failures;
+///   no test drove endpoints unhealthy directly via `record_failure` in unit mode.
+/// Fix Applied: N/A — tests added for all four strategies with pre-marked-unhealthy endpoints.
+/// Prevention: For every branch that returns `Err(AllEndpointsUnhealthy)`, add a unit
+///   test that reaches it without a network call.
+/// Pitfall: Priority intentionally falls back to the first endpoint even when unhealthy —
+///   it NEVER returns `AllEndpointsUnhealthy`.  Confusing it with the other strategies
+///   leads to incorrect error-handling expectations in callers.
+#[ cfg( feature = "failover" ) ]
+#[ tokio::test ]
+async fn test_all_endpoints_unhealthy_returns_correct_result_per_strategy()
+{
+  use api_huggingface::reliability::{
+    FailoverManager, FailoverConfig, FailoverStrategy, FailoverError,
+  };
+  use core::time::Duration;
+
+  // failure_threshold = 1: one record_failure call marks the endpoint unhealthy immediately
+  let endpoints = vec![
+    "https://ep1.example.com".to_string( ),
+    "https://ep2.example.com".to_string( ),
+  ];
+
+  // RoundRobin: all unhealthy → AllEndpointsUnhealthy
+  {
+    let config = FailoverConfig
+    {
+    endpoints : endpoints.clone( ),
+    strategy : FailoverStrategy::RoundRobin,
+    max_retries : 3,
+    failure_window : Duration::from_secs( 60 ),
+    failure_threshold : 1,
+    };
+    let failover = FailoverManager::new( config ).expect( "Creation must succeed" );
+    failover.record_failure( "https://ep1.example.com" ).await;
+    failover.record_failure( "https://ep2.example.com" ).await;
+    let result = failover.select_endpoint( ).await;
+    assert!(
+      matches!( result, Err( FailoverError::AllEndpointsUnhealthy ) ),
+      "RoundRobin must return AllEndpointsUnhealthy when all endpoints are down"
+    );
+  }
+
+  // Random: all unhealthy → AllEndpointsUnhealthy
+  {
+    let config = FailoverConfig
+    {
+    endpoints : endpoints.clone( ),
+    strategy : FailoverStrategy::Random,
+    max_retries : 3,
+    failure_window : Duration::from_secs( 60 ),
+    failure_threshold : 1,
+    };
+    let failover = FailoverManager::new( config ).expect( "Creation must succeed" );
+    failover.record_failure( "https://ep1.example.com" ).await;
+    failover.record_failure( "https://ep2.example.com" ).await;
+    let result = failover.select_endpoint( ).await;
+    assert!(
+      matches!( result, Err( FailoverError::AllEndpointsUnhealthy ) ),
+      "Random must return AllEndpointsUnhealthy when all endpoints are down"
+    );
+  }
+
+  // Sticky: all unhealthy → AllEndpointsUnhealthy
+  {
+    let config = FailoverConfig
+    {
+    endpoints : endpoints.clone( ),
+    strategy : FailoverStrategy::Sticky,
+    max_retries : 3,
+    failure_window : Duration::from_secs( 60 ),
+    failure_threshold : 1,
+    };
+    let failover = FailoverManager::new( config ).expect( "Creation must succeed" );
+    failover.record_failure( "https://ep1.example.com" ).await;
+    failover.record_failure( "https://ep2.example.com" ).await;
+    let result = failover.select_endpoint( ).await;
+    assert!(
+      matches!( result, Err( FailoverError::AllEndpointsUnhealthy ) ),
+      "Sticky must return AllEndpointsUnhealthy when all endpoints are down"
+    );
+  }
+
+  // Priority: falls back to first endpoint even when all are unhealthy (by design)
+  {
+    let config = FailoverConfig
+    {
+    endpoints : endpoints.clone( ),
+    strategy : FailoverStrategy::Priority,
+    max_retries : 3,
+    failure_window : Duration::from_secs( 60 ),
+    failure_threshold : 1,
+    };
+    let failover = FailoverManager::new( config ).expect( "Creation must succeed" );
+    failover.record_failure( "https://ep1.example.com" ).await;
+    failover.record_failure( "https://ep2.example.com" ).await;
+    let result = failover.select_endpoint( ).await;
+    assert!(
+      result.is_ok( ),
+      "Priority must fall back to first endpoint even when all are unhealthy"
+    );
+    assert_eq!( result.unwrap( ), "https://ep1.example.com" );
+  }
+}

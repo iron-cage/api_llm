@@ -27,11 +27,25 @@ slow-timeout = { period = "180s" }  # Removed: terminate-after = 2
 # Running too many in parallel causes timeouts due to resource contention
 test-threads = 1  # Fully serial execution to prevent resource exhaustion
 
+# Fix(issue-ollama-oom-004): Run api_ollama tests first in workspace sequential run.
+# Root cause: api_ollama inference tests need ~360MB RAM for smollm2 model loading.
+#   After 1490+ other API-calling tests exhaust virtual memory (swap fully used),
+#   insufficient contiguous RAM remains and OOM killer fires mid-test.
+# Fix Applied: priority=100 ensures api_ollama runs first — immediately after compilation
+#   — when memory is freshest. Other crates (claude, gemini, huggingface, openai, xai)
+#   use only HTTP connections, no large model weights; they run fine with less RAM.
+# Prevention: api_ollama MUST have higher priority than all other packages in workspace tests.
+# Pitfall: Removing this priority or adding any package named before "api_ollama" alphabetically
+#   with integration tests that consume significant RAM will reintroduce OOM failures.
+[[ profile.default.overrides ]]
+filter = 'package(api_ollama)'
+priority = 100
+
 # Integration tests need extended timeouts for model pulling and server startup
 # Each test binary gets unique Ollama server port via binary name hash
 # Fix(issue-double-spawn-003): Removed terminate-after from integration test overrides
 # Same root cause as default profile - retry mechanism incompatible with workspace/crate directory mismatch
 [[ profile.default.overrides ]]
-filter = 'package(api_ollama) and (binary(embeddings_tests) or binary(api_comprehensive_tests) or binary(streaming_tests) or binary(tool_calling_tests) or binary(builder_patterns_tests) or binary(vision_support_tests))'
+filter = 'package(api_ollama) and (binary(embeddings_tests) or binary(api_comprehensive_tests) or binary(streaming_tests) or binary(tool_calling_tests) or binary(builder_patterns_tests) or binary(vision_support_tests) or binary(example_model_validation_test) or binary(sync_api_tests) or binary(health_checks_tests))'
 slow-timeout = { period = "600s" }  # 10 minutes for integration tests (removed: terminate-after = 2)
-threads-required = "num-test-threads"  # Tests within binary run serially (share same Ollama server)
+threads-required = "num-test-threads"  # Exclusive slot: only one Ollama-server binary runs at a time

@@ -194,6 +194,12 @@ mod private
   /// **Fix(issue-missing-test-server-001)**: Converted to use isolated test server.
   /// **Root cause**: Test connected to system Ollama (localhost:11434) causing fragile external dependency.
   /// **Pitfall**: Integration tests must use `with_test_server!` for isolation and reliability.
+  ///
+  /// **Fix(issue-unconstrained-generation-001)**: Added `num_predict: 10` to options.
+  /// **Root cause**: Without `num_predict`, the model generates until its natural stop, which can
+  ///   exceed 750s on resource-constrained systems (observed: 751s timeout for "Say 'test passed'").
+  /// **Pitfall**: Always set `num_predict` in integration tests; unconstrained generation is
+  ///   unpredictable and will cause timeout failures under system load.
   #[ tokio::test ]
   async fn test_chat_with_valid_model()
   {
@@ -214,7 +220,11 @@ mod private
           }
         ],
         stream : Some( false ),
-        options : None,
+        // Fix(issue-unconstrained-generation-001): limit to 10 tokens to avoid 750s timeout.
+        // Root cause: unconstrained generation on smollm2 exceeds the 750s client timeout
+        // under normal system load (observed: 751s for "Say 'test passed'" with no limit).
+        // Pitfall: always set num_predict in integration tests to bound inference time.
+        options : Some( serde_json::json!( { "num_predict" : 10 } ) ),
         #[ cfg( feature = "tool_calling" ) ]
         tools : None,
         #[ cfg( feature = "tool_calling" ) ]
