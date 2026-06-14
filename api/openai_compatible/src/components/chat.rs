@@ -17,8 +17,13 @@ mod private
   ///
   /// Serialises to lowercase strings as required by the `OpenAI` wire protocol
   /// (e.g. `Role::User` → `"user"`).
+  ///
+  /// Unknown roles from the wire (e.g. provider-specific extensions) deserialise
+  /// to [`Role::Other`] instead of causing a hard failure, ensuring forward
+  /// compatibility as providers evolve their APIs.
   #[ derive( Debug, Serialize, Deserialize, Clone, PartialEq, Eq ) ]
   #[ serde( rename_all = "lowercase" ) ]
+  #[ non_exhaustive ]
   pub enum Role
   {
     /// System-level instructions provided before the conversation begins.
@@ -32,6 +37,14 @@ mod private
 
     /// Result message from a tool/function call execution.
     Tool,
+
+    /// Catch-all for unknown or future role values from the wire.
+    ///
+    /// Serialises to `"other"`. The original wire string is not preserved;
+    /// use this variant only for forward-compatible deserialisation, not for
+    /// constructing outbound messages with non-standard roles.
+    #[ serde( other ) ]
+    Other,
   }
 
   // ------------------------------------------------------------------ //

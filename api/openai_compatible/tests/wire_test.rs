@@ -20,6 +20,8 @@
 //! | response_tolerates_extra_unknown_json_fields | Response | deny_unknown_fields absent |
 //! | response_with_multiple_choices_deserializes | Response | n > 1 choices |
 //! | role_round_trips_through_serde | Role | all 4 variants |
+//! | role_unknown_variant_deserialises_to_other | Role | unknown wire values → Role::Other |
+//! | response_with_unknown_role_in_choice_deserialises | Response | unknown role in choice doesn't break response |
 //! | streaming_chunk_deserializes_from_fixture | Streaming | ChatCompletionChunk fixture |
 //! | streaming_delta_none_fields_omitted_from_json | Streaming | Delta{} → "{}" |
 //! | streaming_delta_selective_serialization_omits_only_none_fields | Streaming | Delta with Some content omits None fields |
@@ -540,6 +542,74 @@ fn role_round_trips_through_serde()
       "Role::{role:?} must survive a serde round-trip",
     );
   }
+}
+
+/// Unknown role strings from the wire must deserialise to `Role::Other` instead
+/// of causing a hard failure.
+///
+/// Providers evolve their APIs over time — e.g. `OpenAI` introduced the `"developer"`
+/// role in 2024. A shared wire-protocol layer must not break when it encounters a
+/// role it does not (yet) explicitly model. `Role::Other` is the forward-compatible
+/// catch-all that absorbs unknown wire values.
+///
+/// Fix(issue-002)
+/// Root cause: `Role` enum had no catch-all variant; `serde(rename_all)`
+/// deserialization fails for strings that don't match a known variant.
+/// Pitfall: Enum wire types in protocol layers must always include a
+/// `#[serde(other)]` catch-all to tolerate provider-side API evolution.
+#[ test ]
+fn role_unknown_variant_deserialises_to_other()
+{
+  let unknown_roles = [ "developer", "function", "moderator", "custom_role" ];
+  for wire_value in unknown_roles
+  {
+    let json = format!( "\"{wire_value}\"" );
+    let role : Role = serde_json::from_str( &json )
+      .unwrap_or_else( | e | panic!( "unknown role \"{wire_value}\" must deserialise, not fail: {e}" ) );
+    assert_eq!(
+      role,
+      Role::Other,
+      "unknown role \"{wire_value}\" must map to Role::Other",
+    );
+  }
+}
+
+// ------------------------------------------------------------------ //
+
+/// A full `ChatCompletionResponse` containing an unknown role in a choice
+/// message must deserialise successfully instead of failing entirely.
+///
+/// Without forward-compatible `Role`, a single unknown role in one choice
+/// causes the entire response to fail deserialisation — losing all valid data.
+#[ test ]
+fn response_with_unknown_role_in_choice_deserialises()
+{
+  let fixture = r#"{
+    "id": "chatcmpl-unknown-role",
+    "object": "chat.completion",
+    "created": 1717000000,
+    "model": "gpt-4o",
+    "choices": [{
+      "index": 0,
+      "message": { "role": "developer", "content": "hi" },
+      "finish_reason": "stop"
+    }],
+    "usage": { "prompt_tokens": 5, "completion_tokens": 1, "total_tokens": 6 }
+  }"#;
+
+  let response : ChatCompletionResponse = serde_json::from_str( fixture )
+    .expect( "response with unknown role must deserialise" );
+
+  assert_eq!(
+    response.choices[ 0 ].message.role,
+    Role::Other,
+    "unknown role in response must map to Role::Other",
+  );
+  assert_eq!(
+    response.choices[ 0 ].message.content.as_deref(),
+    Some( "hi" ),
+    "content must still be accessible despite unknown role",
+  );
 }
 
 // ------------------------------------------------------------------ //

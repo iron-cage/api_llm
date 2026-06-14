@@ -47,6 +47,7 @@ former        = { workspace = true, optional = true }
 tokio         = { workspace = true, features = [ "rt", "rt-multi-thread" ], optional = true }
 
 [dev-dependencies]
-serde_json = { workspace = true }
-reqwest    = { workspace = true, features = [ "json", "rustls" ], default-features = false }
-tokio      = { workspace = true, features = [ "macros", "rt-multi-thread" ] }
+serde_json      = { workspace = true }
+reqwest         = { workspace = true, features = [ "json", "rustls" ], default-features = false }
+tokio           = { workspace = true, features = [ "macros", "rt-multi-thread" ] }
+workspace_tools = { workspace = true, features = [ "secrets" ] }

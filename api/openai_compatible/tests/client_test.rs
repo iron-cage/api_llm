@@ -84,8 +84,10 @@ async fn client_get_models_succeeds_with_real_key()
 {
   use api_openai_compatible::{ Client, OpenAiCompatEnvironmentImpl };
 
-  let api_key = std::env::var( "OPENAI_API_KEY" )
-    .expect( "OPENAI_API_KEY must be set for integration tests" );
+  let ws = workspace_tools::workspace()
+    .expect( "workspace root must be resolvable" );
+  let api_key = ws.load_secret_key( "OPENAI_API_KEY", "-secrets.sh" )
+    .expect( "OPENAI_API_KEY must be set in secret/-secrets.sh" );
 
   let env = OpenAiCompatEnvironmentImpl::new( &api_key )
     .expect( "environment construction must succeed" );
