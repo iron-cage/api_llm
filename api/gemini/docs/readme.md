@@ -2,7 +2,7 @@
 
 ### Purpose
 
-This directory contains detailed API documentation, operational guides, and technical references for the api_gemini crate, organized into design collections following documentation.rulebook.md standards.
+This directory contains detailed API documentation, operational guides, and technical references for the api_gemini crate, organized into design collections following doc.rulebook.md standards.
 
 Documentation is structured by design dimensions (pattern/, api/, operation/, protocol/) with each collection containing:
 - Master file (`readme.md`) with collection scope and Overview Table
@@ -15,7 +15,6 @@ This table documents all entities in the docs/ directory, ensuring Complete Enti
 | Path | Purpose |
 |------|---------|
 | `readme.md` | Master documentation file with navigation and Complete Entity Coverage |
-| `entities.md` | Module index — all entity directories and their instances |
 | `invariant/` | Invariant constraint collection — non-negotiable behavioral constraints |
 | `feature/` | Feature specification collection — optional feature behavior specs |
 | `api/` | API doc entity — comprehensive API coverage, endpoints, test statistics |

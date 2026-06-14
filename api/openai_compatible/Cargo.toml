@@ -31,7 +31,6 @@ enabled     = [
   "dep:serde",
   "dep:serde_json",
   "dep:reqwest",
-  "dep:url",
   "dep:former",
 ]
 streaming   = []
@@ -44,10 +43,10 @@ mod_interface = { workspace = true, optional = true }
 serde         = { workspace = true, features = [ "derive" ], optional = true }
 serde_json    = { workspace = true, optional = true }
 reqwest       = { workspace = true, features = [ "json" ], default-features = false, optional = true }
-url           = { workspace = true, optional = true }
 former        = { workspace = true, optional = true }
 tokio         = { workspace = true, features = [ "rt", "rt-multi-thread" ], optional = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }
-reqwest    = { workspace = true, features = [ "json" ], default-features = false }
+reqwest    = { workspace = true, features = [ "json", "rustls" ], default-features = false }
+tokio      = { workspace = true, features = [ "macros", "rt-multi-thread" ] }

@@ -14,6 +14,8 @@
 //! | with_base_url_overrides | Builder replaces base URL |
 //! | with_timeout_overrides | Builder replaces timeout |
 //! | headers_returns_bearer_and_content_type | Authorization + Content-Type headers |
+//! | new_fails_with_whitespace_only_key | Whitespace-only key rejected as invalid |
+//! | new_succeeds_with_key_containing_printable_special_chars | Non-alphanumeric printable key accepted |
 
 #![ cfg( feature = "enabled" ) ]
 

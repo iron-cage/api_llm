@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Document the core Gemini API endpoints exposed by the thin client — content generation, embeddings, model management, streaming, multimodal support, and function calling.
-- **Responsibility**: All contributors; each method must map directly to exactly one Gemini API endpoint with no client-side transformation or implicit behavior.
+- **Responsibility**: Documents the Core API feature — endpoint table, streaming protocol, content capabilities, and error handling contract.
 - **In Scope**: All methods under `src/models/api/` — content generation, embeddings, models; streaming in `src/models/api/content_generation/`.
 - **Out of Scope**: Enterprise reliability features (see feature/002); experimental stub APIs awaiting Gemini endpoint availability.
 
@@ -76,3 +76,9 @@ The `Error` enum covers all failure categories:
 | `tests/count_tokens_tests.rs` | Count tokens endpoint tests |
 | `tests/code_execution_tests.rs` | Code execution capability tests |
 | `tests/system_instructions_tests.rs` | System instructions configuration tests |
+
+### Protocols
+
+| File | Relationship |
+|------|-------------|
+| `protocol/001_streaming_format.md` | JSON array streaming protocol used by stream_generate_content |

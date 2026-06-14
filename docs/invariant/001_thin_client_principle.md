@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Enforce that every `api_llm` crate is a stateless HTTP transport with no automatic or implicit behaviors — every client action is explicit, transparent, and direct.
-- **Responsibility**: All contributors and code reviewers across all crates; any automatic or implicit behavior is a blocking violation.
+- **Responsibility**: Documents the Thin Client Principle invariant — statement, enforcement mechanism, and violation consequences.
 - **In Scope**: All client methods in all crates, enterprise feature modules, streaming, error handling.
 - **Out of Scope**: Workspace-level configuration infrastructure, secret file loading mechanics, test helper utilities.
 

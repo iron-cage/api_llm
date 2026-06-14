@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Mandate real-API-only integration tests and loud failures — eliminate all silent passes, mocks, and graceful fallbacks from the test suite.
-- **Responsibility**: CI gate enforces these standards; any mock usage or silent pass in integration tests is a blocking violation requiring immediate remediation.
+- **Responsibility**: Documents the Testing Standards invariant — no-mock mandate, loud-failure requirement, and violation consequences.
 - **In Scope**: All test files under `tests/` — integration tests, unit tests, example validation tests.
 - **Out of Scope**: Example files in `examples/` (may use simplified patterns); benchmark harnesses in `benches/`.
 

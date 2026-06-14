@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Enforce zero-tolerance no-mock policy and loud-failure requirements for all integration tests across the `api_llm` workspace.
-- **Responsibility**: All contributors across all crates; any mock usage in integration tests is a critical policy violation.
+- **Responsibility**: Documents the Testing Standards invariant — no-mock mandate, loud-failure requirement, and violation consequences.
 - **In Scope**: All files under `api/*/tests/` — integration tests, unit tests, manual test plans.
 - **Out of Scope**: Example files in `api/*/examples/`, benchmark harnesses in `api/*/benches/`.
 

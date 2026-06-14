@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Document the enterprise reliability modules, their configuration contracts, and the explicit-configuration requirement governing all enterprise feature activation.
-- **Responsibility**: Crate maintainers; each enterprise feature must require explicit builder construction with zero automatic behavior without configuration.
+- **Responsibility**: Documents the Enterprise Reliability feature — design specification, feature table, and activation policy.
 - **In Scope**: All enterprise feature modules behind Cargo feature flags: retry, circuit-breaker, rate-limiting, failover, health-checks, caching, dynamic-configuration, compression, quota management, model comparison, request templates, buffered streaming, streaming control, WebSocket streaming.
 - **Out of Scope**: Core client HTTP transport (always available via `enabled` feature); experimental stub APIs awaiting Gemini endpoint availability.
 
@@ -32,7 +32,7 @@ Enterprise HTTP dispatch proceeds through: `execute_with_optional_retries()` →
 | `streaming_control` | `src/models/streaming_control/` | Pause, resume, and cancel operations for HTTP and WebSocket streams |
 | `websocket_streaming` | `src/models/websocket_streaming_optimized.rs` | Bidirectional real-time communication |
 
-### Configuration Contract
+### Activation Policy
 
 All enterprise features follow the explicit-configuration pattern. The `ClientBuilder` (via `Client::builder()`) provides `with_*` methods for each enterprise feature. Calling `Client::new()` without builder configuration produces a baseline client with zero enterprise features active.
 

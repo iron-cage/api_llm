@@ -22,6 +22,20 @@
 //! | role_round_trips_through_serde | Role | all 4 variants |
 //! | streaming_chunk_deserializes_from_fixture | Streaming | ChatCompletionChunk fixture |
 //! | streaming_delta_none_fields_omitted_from_json | Streaming | Delta{} → "{}" |
+//! | streaming_delta_selective_serialization_omits_only_none_fields | Streaming | Delta with Some content omits None fields |
+//! | message_round_trips_through_serde | Message | Serialise then deserialise round-trip |
+//! | message_user_empty_content_serializes_correctly | Message | Some("") content serialises |
+//! | function_call_empty_arguments_round_trips | FunctionCall | Empty arguments string preserved |
+//! | function_call_complex_arguments_preserved_as_string | FunctionCall | JSON-in-arguments kept as raw string |
+//! | chat_completion_request_stream_true_appears_in_json | Request | Some(true) stream field serialises |
+//! | chat_completion_request_temperature_appears_when_set | Request | temperature field present when set |
+//! | chat_completion_request_max_tokens_appears_when_set | Request | max_tokens field present when set |
+//! | chat_completion_request_tools_array_serializes_with_type_key | Request | tools array uses "type" key |
+//! | response_finish_reason_tool_calls_deserializes | Response | finish_reason = "tool_calls" deserialises |
+//! | response_assistant_message_with_tool_calls_deserializes | Response | Assistant tool_calls in response body |
+//! | streaming_chunk_first_with_role_deserializes | Streaming | First chunk includes role in delta |
+//! | streaming_chunk_last_with_finish_reason_deserializes | Streaming | Last chunk carries finish_reason |
+//! | streaming_chunk_round_trips_through_serde | Streaming | Chunk round-trip consistency |
 
 #![ cfg( feature = "enabled" ) ]
 
@@ -595,6 +609,54 @@ fn streaming_delta_none_fields_omitted_from_json()
     json,
     "{}",
     "Delta with all None fields must serialise to an empty object; got: {json}",
+  );
+}
+
+// ------------------------------------------------------------------ //
+
+/// `Delta` with `content` set but `role` and `tool_calls` `None` must only
+/// include the `content` key in serialised JSON.
+///
+/// Intermediate streaming chunks carry partial text in `content` while `role`
+/// is absent (only sent in the first chunk) and `tool_calls` are absent (only
+/// sent during function calling). The `skip_serializing_if` annotation must
+/// selectively omit only the `None` fields, not strip `content` along with them.
+/// A blanket "omit all" strategy would lose the actual delta payload.
+#[ cfg( feature = "streaming" ) ]
+#[ test ]
+fn streaming_delta_selective_serialization_omits_only_none_fields()
+{
+  use api_openai_compatible::Delta;
+
+  let delta = Delta
+  {
+    role       : None,
+    content    : Some( "world".to_string() ),
+    tool_calls : None,
+  };
+
+  let json = serde_json::to_string( &delta ).expect( "Delta must be serializable" );
+
+  assert!(
+    json.contains( "\"content\"" ),
+    "content key must be present in JSON when set to Some; got: {json}",
+  );
+
+  let parsed : serde_json::Value =
+    serde_json::from_str( &json ).expect( "serialised output must be valid JSON" );
+
+  assert_eq!(
+    parsed[ "content" ],
+    "world",
+    "content must serialise to the string \"world\"; got: {json}",
+  );
+  assert!(
+    !json.contains( "\"role\"" ),
+    "role must be omitted from JSON when None; got: {json}",
+  );
+  assert!(
+    !json.contains( "\"tool_calls\"" ),
+    "tool_calls must be omitted from JSON when None; got: {json}",
   );
 }
 

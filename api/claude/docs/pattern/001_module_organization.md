@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the `mod_interface` module structure pattern that all `api_claude` source modules must follow.
-- **Responsibility**: All contributors; deviations require explicit code-review justification before merging.
+- **Responsibility**: Documents the Module Organization pattern — problem context, solution structure, applicability conditions, and consequences.
 - **In Scope**: Every `.rs` file and directory under `src/` — module declarations, public re-exports, submodule structure.
 - **Out of Scope**: Test files in `tests/`, example files in `examples/`, benchmark harnesses in `benches/`.
 

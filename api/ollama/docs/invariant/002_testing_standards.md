@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Enforce zero-tolerance no-mock policy and loud-failure requirements for all `api_ollama` integration tests.
-- **Responsibility**: All contributors; any mock usage in integration tests is a critical policy violation.
+- **Responsibility**: Documents the Testing Standards invariant — no-mock mandate, loud-failure requirement, and violation consequences.
 - **In Scope**: All files under `tests/` — integration tests, unit tests, manual test plans.
 - **Out of Scope**: Example files in `examples/`, benchmark harnesses in `benches/`.
 

@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the structural pattern for generation calls where all failure modes must degrade to a human-readable fallback string rather than propagating an error.
-- **Responsibility**: Applied wherever the caller cannot handle `Result` — typically UI rendering or display code expecting a `String`.
+- **Responsibility**: Documents the Error-Resilient pattern — problem context, solution structure, applicability conditions, and consequences.
 - **In Scope**: Generation calls inside UI-layer code, background formatting jobs, or any context where error propagation reaches an end user.
 - **Out of Scope**: Library-internal code where error transparency is required; batch workloads where distinct failure accounting is needed.
 
@@ -44,3 +44,9 @@ Avoid when:
 | File | Relationship |
 |------|-------------|
 | `tests/inc/messages_api_test.rs` | Tests exercising the Error-Resilient path |
+
+### Operations
+
+| File | Relationship |
+|------|-------------|
+| `operation/002_usage_examples.md` | Underlying request construction procedure for this pattern |

@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the `mod_interface` module structure pattern that all `api_xai` source modules must follow.
-- **Responsibility**: All contributors; deviations require explicit code-review justification before merging.
+- **Responsibility**: Documents the Module Organization pattern — problem context, solution structure, applicability conditions, and consequences.
 - **In Scope**: Every `.rs` file and directory under `src/` — module declarations, public re-exports, submodule structure.
 - **Out of Scope**: Test files in `tests/`, example files in `examples/`.
 
@@ -37,4 +37,6 @@ Apply to every `.rs` file and directory under `src/`. This includes always-on mo
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Verifies the public API surface exposed by `mod_interface` re-exports compiles correctly under all feature combinations |
+| `tests/components_tests.rs` | Verifies component types are re-exported correctly by mod_interface |
+| `tests/environment_tests.rs` | Verifies environment struct construction via mod_interface re-exports |
+| `tests/error_tests.rs` | Verifies error type re-export via mod_interface |

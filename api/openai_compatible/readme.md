@@ -43,7 +43,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-api_openai_compatible = { version = "0.1.0", features = ["full"] }
+api_openai_compatible = { version = "0.3.1", features = ["full"] }
 ```
 
 ## Feature Flags
@@ -52,7 +52,7 @@ api_openai_compatible = { version = "0.1.0", features = ["full"] }
 - `streaming` — Server-Sent Events streaming support
 - `sync_api` — blocking wrappers around the async client
 - `integration` — real-API integration tests (requires live credentials)
-- `full` — enables `enabled`, `streaming`, and `sync_api` (default)
+- `full` — enables `enabled`, `streaming`, `sync_api`, and `integration` (default)
 
 ## Dependencies
 

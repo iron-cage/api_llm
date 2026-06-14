@@ -16,7 +16,6 @@ This directory contains technical documentation for the `api_huggingface` crate,
 | `pattern/` | Design pattern specifications — module organization (mod_interface) |
 | `feature/` | Feature specification collection — capability groups, enterprise feature contracts |
 | `pitfall/` | Confirmed design pitfalls — root cause, avoidance, and detection |
-| `entities/` | Module index of all active doc entities and instances |
 
 ### Collections
 
@@ -93,6 +92,5 @@ Confirmed design pitfalls discovered through task investigations and code review
 - Feature selection procedure: see `operation/001_features.md`
 - Design patterns: see `pattern/`
 - Confirmed design pitfalls: see `pitfall/`
-- Doc entity index: see `entities/`
 - Project overview: see `../readme.md`
 - Usage examples: see `../examples/`

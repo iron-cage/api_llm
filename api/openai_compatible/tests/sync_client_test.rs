@@ -3,12 +3,14 @@
 //! Unit tests verify that `SyncClient::new()` succeeds when a tokio runtime
 //! can be created — the only hard requirement before any request is made.
 //!
-//! ## Test Matrix
+//! # Test Matrix
 //!
 //! | Test | Scenario | Status |
 //! |------|----------|--------|
 //! | `sync_client_new_succeeds` | Runtime creation with valid env | ✅ |
 //! | `sync_client_new_with_custom_base_url_succeeds` | Custom base URL accepted | ✅ |
+//! | `sync_client_post_unreachable_url_returns_error` | Unreachable URL propagates network error | ✅ |
+//! | `sync_client_post_chat_completions_succeeds` | Blocking POST round-trip with real API | ✅ |
 
 #![ cfg( feature = "enabled" ) ]
 
@@ -57,4 +59,92 @@ fn sync_client_new_with_custom_base_url_succeeds()
 
   let _sync_client = SyncClient::new( client )
     .expect( "SyncClient::new() must succeed with custom base URL client" );
+}
+
+/// `SyncClient::post()` with a base URL pointing to nothing must return `Err`.
+///
+/// When the base URL is an unreachable address (port 1 on loopback with nothing
+/// listening), the `reqwest` client encounters a connection-refused or timeout
+/// error. The `SyncClient` must propagate this as an `Err` — proving that URL
+/// routing is respected (the custom base URL is actually used) and that network
+/// failures are not silently swallowed.
+#[ cfg( feature = "sync_api" ) ]
+#[ test ]
+fn sync_client_post_unreachable_url_returns_error()
+{
+  use api_openai_compatible::{ Client, SyncClient, OpenAiCompatEnvironmentImpl };
+  use core::time::Duration;
+
+  let env = OpenAiCompatEnvironmentImpl::new( "sk-test-key" )
+    .expect( "environment construction must succeed" )
+    .with_base_url( "http://127.0.0.1:1/" )
+    .with_timeout( Duration::from_secs( 2 ) );
+
+  let client = Client::build( env )
+    .expect( "Client::build() must succeed" );
+
+  let sync_client = SyncClient::new( client )
+    .expect( "SyncClient::new() must succeed" );
+
+  let body = serde_json::json!({ "model": "test" });
+  let result : Result< serde_json::Value, _ > = sync_client.post( "models", &body );
+
+  assert!(
+    result.is_err(),
+    "SyncClient::post() to unreachable URL must return Err, not Ok",
+  );
+}
+
+// ------------------------------------------------------------------ //
+//  Integration tests
+// ------------------------------------------------------------------ //
+
+/// `SyncClient::post()` with a valid API key must return `Ok(ChatCompletionResponse)`.
+///
+/// Sends a minimal chat completion request to the real `OpenAI` API using the
+/// blocking `SyncClient::post()` method. The calling thread blocks until the
+/// response arrives. A successful result proves the async-to-sync bridge works
+/// end-to-end and the response body deserialises correctly.
+#[ cfg( all( feature = "sync_api", feature = "integration" ) ) ]
+#[ test ]
+fn sync_client_post_chat_completions_succeeds()
+{
+  use api_openai_compatible::
+  {
+    Client, SyncClient, OpenAiCompatEnvironmentImpl,
+    ChatCompletionRequest, ChatCompletionResponse, Message,
+  };
+
+  let api_key = std::env::var( "OPENAI_API_KEY" )
+    .expect( "OPENAI_API_KEY must be set for integration tests" );
+
+  let env = OpenAiCompatEnvironmentImpl::new( &api_key )
+    .expect( "environment construction must succeed" );
+
+  let client = Client::build( env )
+    .expect( "Client::build() must succeed" );
+
+  let sync_client = SyncClient::new( client )
+    .expect( "SyncClient::new() must succeed" );
+
+  let request = ChatCompletionRequest::former()
+    .model( "gpt-4o-mini".to_string() )
+    .messages( vec![ Message::user( "Say hello in one word." ) ] )
+    .max_tokens( 5_u32 )
+    .form();
+
+  let result : Result< ChatCompletionResponse, _ > =
+    sync_client.post( "chat/completions", &request );
+
+  assert!(
+    result.is_ok(),
+    "SyncClient::post() with a valid key must return Ok; got: {:?}",
+    result.err(),
+  );
+
+  let response = result.unwrap();
+  assert!(
+    !response.choices.is_empty(),
+    "response must contain at least one choice",
+  );
 }

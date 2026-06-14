@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define required Anthropic API endpoint coverage and the feature-gating policy for all optional capabilities in `api_claude`.
-- **Responsibility**: Crate maintainers; every listed core endpoint must be implemented — a missing endpoint is a missing feature.
+- **Responsibility**: Documents the Claude API endpoint coverage — required endpoints, feature-gate policy, and error handling contract.
 - **In Scope**: All client methods in `src/client/implementation.rs` and optional feature modules that wrap API endpoints.
 - **Out of Scope**: Workspace-level and ecosystem-level APIs outside Anthropic's published offering; internal helper utilities that do not map to API calls.
 

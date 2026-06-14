@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define required X.AI Grok API endpoint coverage and the feature-gating policy for all optional capabilities in `api_xai`.
-- **Responsibility**: Crate maintainers; every listed core endpoint must be implemented — a missing endpoint is a missing feature.
+- **Responsibility**: Documents the X.AI Grok API endpoint coverage — required endpoints, feature-gate policy, and error handling contract.
 - **In Scope**: All client methods in `src/client.rs` and optional feature modules wrapping API endpoints.
 - **Out of Scope**: OpenAI endpoints not supported by X.AI (vision, audio, embeddings, fine-tuning, assistants, files, image generation).
 
@@ -43,4 +43,7 @@ X.AI Grok API is OpenAI-compatible; request/response formats follow OpenAI chat 
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Integration tests covering chat completions and model listing against real X.AI API |
+| `tests/integration_chat.rs` | Chat completion endpoint integration tests |
+| `tests/integration_models.rs` | Model listing and retrieval endpoint tests |
+| `tests/integration_streaming.rs` | Streaming chat endpoint integration tests |
+| `tests/integration_tool_calling.rs` | Tool calling chat completion tests |

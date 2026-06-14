@@ -20,16 +20,12 @@ The `docs/` directory serves as the central location for:
 | `api/` | Ollama API endpoint coverage | Endpoint table, feature-gating policy |
 | `feature/` | Optional feature behaviors | Enterprise reliability feature table |
 | `pattern/` | Recurring design patterns | Module organization, client_ext_*.rs pattern |
-| `operation/` | Operational procedures collection | Feature roadmaps, implementation strategies, workspace integration - see operation/readme.md |
+| `operation/` | Operational procedures collection | Secret loading procedure — see operation/readme.md |
 
 ## Documentation Collections
 
 ### operation/
-Operational procedures and workflows for api_ollama development:
-- Feature planning and roadmaps
-- Implementation strategies and guidelines
-- Workspace integration patterns
-- Development best practices
+Operational procedures for api_ollama.
 
 See `operation/readme.md` for complete collection details.
 

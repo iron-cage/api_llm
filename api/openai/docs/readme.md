@@ -21,9 +21,6 @@ This documentation directory contains:
 | `feature/` | Optional enterprise reliability features and feature-gate policy |
 | `pattern/` | Design pattern collection (async patterns, builder patterns, etc.) |
 | `operation/` | Operational procedure collection (versioning, release management, etc.) |
-| `feature_flags.md` | Feature flag configuration and usage documentation |
-| `changelog.md` | Version history, release notes, and change documentation |
-| `clippy_configuration.md` | Clippy linter configuration and rule documentation |
 
 ## Design Collections Overview
 
@@ -47,12 +44,6 @@ This documentation directory contains:
 |----|---------------|----------|-----------|
 | 001 | Semantic Versioning | Release Management | Per Release |
 
-## General Documentation
-
-### Feature Flag Configuration
-**File**: `feature_flags.md`
-**Purpose**: Documents all cargo features, their purposes, and usage patterns
-
 ## Navigation Guide
 
 ### By Collection Type
@@ -62,11 +53,10 @@ This documentation directory contains:
 ### By Topic
 - **Async Programming**: [pattern/001_async_patterns.md](pattern/001_async_patterns.md)
 - **Versioning Strategy**: [operation/001_semantic_versioning.md](operation/001_semantic_versioning.md)
-- **Feature Flags**: [feature_flags.md](feature_flags.md)
 
 ## Collection Guidelines
 
-All design collections follow the documentation.rulebook.md standards:
+All design collections follow the doc.rulebook.md standards:
 1. **Abstract-First**: No language-specific code in collection docs
 2. **Instance-Level Granularity**: Each instance has unique NNN identifier
 3. **Master Files**: Each collection has readme.md with Scope, Responsibility, Overview

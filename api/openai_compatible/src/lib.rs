@@ -10,7 +10,7 @@
 //! - `streaming` — Server-Sent Events streaming support
 //! - `sync_api` — blocking wrappers around the async client
 //! - `integration` — real-API integration tests (requires live credentials)
-//! - `full` — enables `enabled`, `streaming`, and `sync_api`
+//! - `full` — enables `enabled`, `streaming`, `sync_api`, and `integration`
 //!
 //! # Architecture
 //!

@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the enterprise reliability modules available in `api_xai`, their Cargo feature gates, and the explicit opt-in requirement governing all enterprise behaviors.
-- **Responsibility**: Crate maintainers; each enterprise feature must compile cleanly when its flag is disabled and produce zero overhead at runtime.
+- **Responsibility**: Documents the Enterprise Reliability feature — design specification, feature table, and activation policy.
 - **In Scope**: All optional enterprise modules: `retry`, `circuit_breaker`, `rate_limiting`, `failover`, `health_checks`, `count_tokens`, `caching`, `input_validation`, `curl_diagnostics`, `batch_operations`, `performance_metrics`, `enhanced_tools`, `structured_logging`, `sync_api`.
 - **Out of Scope**: Core client HTTP transport (always available via `enabled` feature); workspace-level configuration infrastructure.
 
@@ -30,7 +30,7 @@ The enterprise reliability layer is an opt-in overlay on the `api_xai` HTTP tran
 | `curl_diagnostics` | `src/curl_diagnostics.rs` | CURL command generation for debugging — uses $XAI_API_KEY env var by default |
 | `sync_api` | `src/sync_api.rs` | Blocking wrapper around async client (NOT RECOMMENDED for new code) |
 
-### Configuration Contract
+### Activation Policy
 
 All enterprise features follow the explicit opt-in pattern. Features are activated by Cargo feature flags only — no environment variable, implicit default, or runtime auto-detection activates an enterprise feature. The core `Client::build(env)?` constructor activates zero enterprise features regardless of which feature flags are compiled in.
 
@@ -53,4 +53,6 @@ All enterprise features follow the explicit opt-in pattern. Features are activat
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Feature-gated integration tests for each enterprise module; `#[cfg(feature = "integration")]` guards |
+| `tests/circuit_breaker_tests.rs` | Circuit breaker state machine tests |
+| `tests/failover_tests.rs` | Multi-endpoint failover tests |
+| `tests/enhanced_tools_tests.rs` | Parallel tool execution tests |

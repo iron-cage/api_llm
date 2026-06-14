@@ -1,4 +1,4 @@
-# Collection Spec: Features
+# Catalog Spec: Features
 
 Spec scenarios for `docs/catalog/001_features.md`. Verifies that the Cargo feature flag catalog is complete, correctly classified, and consistent with `Cargo.toml`.
 

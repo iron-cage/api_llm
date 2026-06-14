@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the nine enterprise reliability modules, their configuration contracts, and the explicit-builder requirement that governs all enterprise feature activation.
-- **Responsibility**: Crate maintainers; each enterprise feature must require explicit builder construction with zero automatic behavior without configuration.
+- **Responsibility**: Documents the Enterprise Reliability feature — design specification, feature table, and activation policy.
 - **In Scope**: All enterprise feature modules: `retry_logic`, `circuit_breaker`, `rate_limiting`, `failover`, `health_checks`, `enterprise_config`, `enterprise_quota`, `dynamic_config`, `request_caching`, `compression`.
 - **Out of Scope**: Core client HTTP transport (always available via `enabled` feature); workspace-level configuration infrastructure.
 
@@ -33,7 +33,7 @@ The third is configuration-object composition. Every enterprise feature is activ
 | `request-caching` | `src/request_caching.rs` | TTL-based request/response caching |
 | `compression` | `src/compression.rs` | HTTP request/response compression (gzip, brotli) |
 
-### Configuration Contract
+### Activation Policy
 
 All enterprise features follow the explicit-builder pattern. Correct usage: construct an `EnterpriseConfigBuilder`, attach feature-specific config objects (`RetryConfig`, `CircuitBreakerConfig`, etc.) using the appropriate `with_*` builder methods, then call `.build()`. The resulting config is passed explicitly to the client at construction time.
 

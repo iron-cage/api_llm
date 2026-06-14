@@ -2,29 +2,19 @@
 
 ## Collection Scope
 
-This collection documents operational procedures for the api_ollama crate, including:
-- Feature planning and implementation roadmaps
-- Technical implementation strategies and guidelines
-- Workspace integration and tooling procedures
-- Development workflows and best practices
+This collection documents operational procedures for the api_ollama crate.
 
 ## Responsibility
 
-This table documents all instances in this collection, ensuring Complete Entity Coverage.
-
 | Instance | Purpose |
 |----------|---------|
-| `001_feature_roadmap.md` | Feature planning and implementation roadmap - status tracking, priorities, effort estimates for all features |
-| `002_implementation_roadmap.md` | Technical implementation roadmap - strategies, priorities, guidelines for feature development and rollout |
-| `003_workspace_integration.md` | workspace_tools integration guide - complete reference for secret loading functionality and workspace patterns |
+| `001_secret_loading.md` | Secret directory layout, host URL configuration, and workspace_tools loading procedure |
 
 ## Overview
 
-| ID | Operation Name | Category | Complexity | Status |
-|----|----------------|----------|------------|--------|
-| 001 | Feature Roadmap | Planning | Medium | Active |
-| 002 | Implementation Roadmap | Planning | Medium | Active |
-| 003 | Workspace Integration | Integration | Low | Active |
+| ID | Operation Name | Category | Complexity |
+|----|----------------|----------|------------|
+| 001 | Secret Loading | Configuration | Low |
 
 ## Collection Principles
 
@@ -35,9 +25,7 @@ This table documents all instances in this collection, ensuring Complete Entity 
 
 ## Navigation
 
-- For feature planning and status tracking: see `001_feature_roadmap.md`
-- For implementation strategies and guidelines: see `002_implementation_roadmap.md`
-- For workspace integration patterns: see `003_workspace_integration.md`
+- For host URL configuration and workspace_tools loading: see `001_secret_loading.md`
 
 ## Related Collections
 

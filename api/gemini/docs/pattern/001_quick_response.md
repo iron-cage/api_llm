@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the structural pattern for single-call text generation that delegates all error handling to the caller.
-- **Responsibility**: Applied wherever the call site can handle `Result` directly and needs minimal client-side boilerplate.
+- **Responsibility**: Documents the Quick Response pattern — problem context, solution structure, applicability conditions, and consequences.
 - **In Scope**: Single-turn, non-conversational generate_content calls where upstream error handling is acceptable.
 - **Out of Scope**: Multi-turn conversations, calls requiring transparent error absorption, rate-limited batch workloads (see `002_error_resilient.md` and `003_batch_processing.md`).
 
@@ -41,3 +41,9 @@ Avoid when network failures or rate limits must be absorbed transparently at the
 | File | Relationship |
 |------|-------------|
 | `tests/inc/messages_api_test.rs` | Tests exercising the Quick Response path |
+
+### Operations
+
+| File | Relationship |
+|------|-------------|
+| `operation/002_usage_examples.md` | Step-by-step request construction procedure for this pattern |

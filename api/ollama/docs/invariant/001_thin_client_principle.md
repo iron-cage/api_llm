@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Enforce that `api_ollama` is a stateless HTTP transport with no automatic or implicit behaviors — every client action is explicit, transparent, and direct.
-- **Responsibility**: All contributors and code reviewers; any automatic or implicit behavior in client code is a blocking violation requiring immediate remediation.
+- **Responsibility**: Documents the Thin Client Principle invariant — statement, enforcement mechanism, and violation consequences.
 - **In Scope**: All client methods, enterprise feature modules, streaming, error handling — every source file under `src/`.
 - **Out of Scope**: Workspace-level configuration infrastructure, secret file loading mechanics, test helper utilities in `tests/`.
 

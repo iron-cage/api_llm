@@ -14,10 +14,6 @@ This directory contains technical documentation for the `api_xai` crate, organiz
 | `feature/` | Optional feature behavior specifications — enterprise reliability modules |
 | `operation/` | Operational procedures — secret loading, credential management |
 | `pattern/` | Design pattern specifications — module organization (mod_interface) |
-| `api_reference.md` | API reference documentation (endpoint descriptions, parameters, responses) |
-| `openapi_endpoints_summary.md` | OpenAPI endpoint quick reference |
-| `openapi.json` | Machine-readable OpenAPI 3.0 specification |
-| `research_summary.md` | Research notes and API exploration findings |
 
 ### Collections
 
@@ -74,7 +70,5 @@ Design pattern specifications.
 - Feature behavior specifications: see `feature/`
 - Operational procedures (authentication, secret loading): see `operation/`
 - Design patterns: see `pattern/`
-- API reference (human-readable): see `api_reference.md`
-- OpenAPI spec (tooling): see `openapi.json`
 - Project overview: see `../readme.md`
 - Usage examples: see `../examples/`

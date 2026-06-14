@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define the structural pattern for processing many independent prompts within per-minute API rate limits by pacing requests sequentially with an inter-request delay.
-- **Responsibility**: Applied wherever throughput is bounded by API rate limits rather than compute capacity.
+- **Responsibility**: Documents the Batch Processing pattern — problem context, solution structure, applicability conditions, and consequences.
 - **In Scope**: Bulk prompt evaluation, dataset annotation, report generation — any workload with many independent, order-independent prompts.
 - **Out of Scope**: Workloads requiring all-or-nothing semantics; workloads with high quota allocation that can run fully concurrent.
 
@@ -43,3 +43,9 @@ Avoid when:
 | File | Relationship |
 |------|-------------|
 | `examples/` | Runnable examples demonstrating the Batch Processing pattern |
+
+### Operations
+
+| File | Relationship |
+|------|-------------|
+| `operation/002_usage_examples.md` | Underlying per-request construction procedure for this pattern |

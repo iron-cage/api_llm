@@ -48,4 +48,4 @@ If loading fails: (1) verify key format starts with `xai-`, (2) check `secret/-s
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Integration tests use `Secret::load_with_fallbacks("XAI_API_KEY")` — panic loudly on missing key |
+| `tests/secret_tests.rs` | Tests Secret loading paths — workspace file, env var, and format validation |

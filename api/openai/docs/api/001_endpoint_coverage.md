@@ -3,7 +3,7 @@
 ### Scope
 
 - **Purpose**: Define required OpenAI API endpoint coverage and the feature-gating policy for all optional capabilities in `api_openai`.
-- **Responsibility**: Crate maintainers; every listed core endpoint must be implemented — a missing endpoint is a missing feature.
+- **Responsibility**: Documents the OpenAI API endpoint coverage — required endpoints, feature-gate policy, and error handling contract.
 - **In Scope**: All client methods and optional feature modules wrapping API endpoints.
 - **Out of Scope**: Provider-specific extensions not in OpenAI's published API surface.
 
@@ -34,6 +34,10 @@ Feature-gating policy: `enabled` is the master switch. `full` activates all feat
 
 All API methods return `Result<T, error_tools::Error>`. Error variants cover authentication failures (401), rate limits (429), server errors (5xx), network timeouts, and serialization failures. The `error_tools` crate is the exclusive error infrastructure.
 
+### Compatibility Guarantees
+
+The endpoint surface matches the OpenAI REST API at the version tested and documented in this instance. Additions to the OpenAI API surface are added as MINOR crate releases. Removals or breaking changes to the public crate interface require a MAJOR crate release.
+
 ### Sources
 
 | File | Relationship |
@@ -46,4 +50,5 @@ All API methods return `Result<T, error_tools::Error>`. Error variants cover aut
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Integration tests covering all major endpoint groups against real OpenAI API |
+| `tests/integration.rs` | Core endpoint integration tests — chat completions, models, assistants |
+| `tests/integration_reorganized.rs` | Extended endpoint group integration tests |

@@ -77,7 +77,6 @@ mod private
   /// let kie_env = env.with_base_url( "https://api.kie.ai/my-model/v1/" );
   /// # }
   /// ```
-  #[ allow( dead_code ) ]
   #[ derive( Debug, Clone ) ]
   pub struct OpenAiCompatEnvironmentImpl
   {

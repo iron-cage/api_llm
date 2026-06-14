@@ -2,32 +2,29 @@
 
 ### Scope
 
-- **Purpose**: Document the module structure and extension patterns used in `api_ollama`.
-- **Responsibility**: Crate maintainers; all new modules must follow these structural patterns.
+- **Purpose**: Documents the Module Organization pattern — source layout and module declaration conventions for api_ollama.
+- **Responsibility**: Specifies the mod_interface layer structure and client_ext_*.rs extension file pattern for all api_ollama modules.
 - **In Scope**: Source layout, mod_interface usage, client extension pattern, feature module placement.
 - **Out of Scope**: Test organization (see invariant/002), API contract structure (see api/).
 
-### Abstract
+### Problem
 
-`api_ollama` uses the `mod_interface` pattern for module declaration and a `client_ext_*.rs` extension file pattern for feature-specific client methods. Both patterns enforce separation of concerns and enable granular feature gating.
+`api_ollama` supports 47 feature flags. Placing all feature-specific client methods in a single `client.rs` and declaring all modules in one flat `lib.rs` block makes feature additions invasive — every new flag requires edits to the core files, which grow without bound. A flat module pile collapses all capability dimensions into one unstructured list.
 
-### mod_interface Layer Structure
+### Solution
 
-All modules are declared in `src/lib.rs` via `mod_interface!` macro with feature-gated `layer` declarations. Each logical capability lives in its own module file, and feature flags activate the corresponding layer:
+Two complementary patterns divide responsibility:
 
-```
-src/lib.rs          — mod_interface! root
-src/client.rs       — core Client struct (always-on)
-src/client_ext_*.rs — feature-specific client extensions (13 files)
-src/components/     — shared request/response types
-src/streaming.rs    — streaming response handling (feature: streaming)
-src/retry_logic.rs  — retry with exponential backoff (feature: retry)
-src/circuit_breaker.rs — circuit breaker pattern (feature: circuit_breaker)
-```
+- **mod_interface layer declarations** — all modules are declared in `src/lib.rs` via `mod_interface!` with feature-gated `layer` entries. Each logical capability lives in its own module file. The root file is a pure declarative index.
+- **client_ext_*.rs extension files** — feature-specific client methods are split into dedicated extension files (one per feature domain, 13 files total). Each extension file adds methods to the `Client` struct for one capability area only. The core `client.rs` remains small and feature-independent.
 
-### client_ext_*.rs Extension Pattern
+### Applicability
 
-Feature-specific client methods are organized into `client_ext_*.rs` files rather than one large client file. Each extension file adds methods to the `Client` struct for one feature domain (e.g., `client_ext_streaming.rs`, `client_ext_retry.rs`). This keeps the core client small and makes feature additions non-invasive.
+Apply when adding any new enterprise reliability feature or endpoint group to api_ollama. Each addition requires: a new `layer` entry in `src/lib.rs`, a new `client_ext_<feature>.rs` for client methods, and a corresponding module file in `src/<feature>.rs` or `src/<feature>/`.
+
+### Consequences
+
+Feature additions require no changes to the core client. The root module file stays declarative and readable. The cost is a higher file count (core + 13 extension files + matching module files) and the need to navigate multiple files to understand the full client surface.
 
 ### Sources
 
@@ -41,4 +38,5 @@ Feature-specific client methods are organized into `client_ext_*.rs` files rathe
 
 | File | Relationship |
 |------|--------------|
-| `tests/` | Integration tests organized by feature domain, mirroring src/ structure |
+| `tests/core_client_api_tests.rs` | Verifies client API surface is correctly exposed via mod_interface |
+| `tests/builder_construction_tests.rs` | Verifies builder patterns work across feature-gated extensions |
