@@ -83,7 +83,7 @@ path = "api/gemini"
 default-features = false
 
 [workspace.dependencies.api_huggingface]
-version = "=0.3.0"
+version = "=0.4.1"
 path = "api/huggingface"
 default-features = false
 
