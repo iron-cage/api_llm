@@ -78,7 +78,7 @@ missing_docs_in_private_items = "allow"
 ## api — workspace members (WD-4: all members must be declared here)
 
 [workspace.dependencies.api_gemini]
-version = "=0.6.1"
+version = "=0.7.1"
 path = "api/gemini"
 default-features = false
 
