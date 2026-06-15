@@ -6,8 +6,8 @@
 
 | ID | Name | Category | Status |
 |----|------|----------|--------|
-| IN-01 | Integration test loads real credentials | real-credentials | ⏳ |
-| IN-02 | Missing API key causes panic with diagnostic message | loud-failure | ⏳ |
+| IN-01 | Integration test loads real credentials | real-credentials | ✅ |
+| IN-02 | Missing API key causes panic with diagnostic message | loud-failure | ✅ |
 
 ---
 

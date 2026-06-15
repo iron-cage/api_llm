@@ -11,4 +11,4 @@
 
 | ID | Name | Purpose | Status |
 |----|------|---------|--------|
-| 01 | [`01_semantic_versioning.md`](01_semantic_versioning.md) | Verify semver format, compilation, and documentation gates -- OP-01..OP-04 (4 scenarios) | ⏳ |
+| 01 | [`01_semantic_versioning.md`](01_semantic_versioning.md) | Verify semver format, compilation, and documentation gates -- OP-01..OP-04 (4 scenarios) | ✅ |

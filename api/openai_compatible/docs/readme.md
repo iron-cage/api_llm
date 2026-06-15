@@ -16,3 +16,4 @@
 | `feature/` | Optional feature behavior specifications |
 | `api/` | API contracts and endpoint coverage |
 | `pattern/` | Design pattern specifications |
+| `entities.md` | Module index — all doc entity types and instances |

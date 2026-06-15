@@ -6,4 +6,4 @@ Test specifications for feature doc entity instances.
 
 | File | Source | Status |
 |------|--------|--------|
-| `01_enterprise_reliability.md` | `docs/feature/001_enterprise_reliability.md` | ⏳ |
+| `01_enterprise_reliability.md` | `docs/feature/001_enterprise_reliability.md` | ✅ |

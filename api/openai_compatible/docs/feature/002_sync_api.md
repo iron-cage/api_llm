@@ -7,9 +7,9 @@
 - **In Scope**: `SyncClient<E>` struct, `SyncClient::new()`, `SyncClient::post()`, owned tokio runtime lifecycle.
 - **Out of Scope**: The underlying async `Client<E>` (always-on via `enabled`), streaming sync wrappers, environment configuration.
 
-### Feature Statement
+### Design
 
-When the `sync_api` Cargo feature is enabled, callers in synchronous contexts may wrap an async `Client<E>` in a `SyncClient<E>`. Each `SyncClient` instance owns a dedicated `tokio::runtime::Runtime` and blocks the calling thread until the async operation completes. Creating many `SyncClient` instances is expensive; callers should prefer the async `Client<E>` when possible.
+When the `sync_api` Cargo feature is enabled, callers in synchronous contexts may wrap an async client in a blocking wrapper. Each blocking wrapper owns a dedicated runtime and blocks the calling thread until the async operation completes. Creating many blocking wrapper instances is expensive; callers should prefer the async client when possible.
 
 ### Activation
 
@@ -19,20 +19,20 @@ When the `sync_api` Cargo feature is enabled, callers in synchronous contexts ma
 | Constructor | `SyncClient::new(client: Client<E>) -> Result<Self>` |
 | Default | `full` feature enables `sync_api` |
 
-### API Contract
+### Operations
 
-| Method | Signature | Behavior |
-|--------|-----------|----------|
-| `SyncClient::new` | `(client: Client<E>) -> Result<Self>` | Creates owned tokio runtime; fails if runtime cannot be created |
-| `SyncClient::post` | `(&self, path: &str, body: &I) -> Result<O>` | Blocks calling thread; delegates to `Client::post` on owned runtime |
+| Operation | Behavior |
+|-----------|----------|
+| `SyncClient::new` | Creates owned runtime; fails if runtime cannot be created |
+| `SyncClient::post` | Blocks calling thread; delegates to async client on owned runtime |
 
 ### Behavioral Constraints
 
-- Each `SyncClient` instance owns exactly one `tokio::runtime::Runtime` wrapped in `Arc`.
-- `SyncClient::new` returns `Err(OpenAiCompatError::Environment)` if the tokio runtime cannot be created.
-- `SyncClient::post` is a direct blocking delegation to `Client::post` — no additional retry, timeout, or buffering.
-- Do not nest `SyncClient` inside an existing tokio runtime context (causes `block_on` panic).
-- `SyncClient` does not implement `Clone`; callers must construct one instance and share it via their own synchronization if needed.
+- Each blocking wrapper owns exactly one dedicated runtime.
+- `SyncClient::new` returns an environment error if the runtime cannot be created.
+- `SyncClient::post` is a direct blocking delegation — no additional retry, timeout, or buffering.
+- Do not use the blocking wrapper inside an existing async runtime context — it panics.
+- The blocking wrapper does not support cloning; callers must construct one instance and share it via their own synchronization if needed.
 
 ### Sources
 

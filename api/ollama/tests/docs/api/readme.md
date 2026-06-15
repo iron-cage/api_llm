@@ -6,4 +6,4 @@ Test specifications for api doc entity instances.
 
 | File | Source | Status |
 |------|--------|--------|
-| `01_endpoint_coverage.md` | `docs/api/001_endpoint_coverage.md` | ⏳ |
+| `01_endpoint_coverage.md` | `docs/api/001_endpoint_coverage.md` | ✅ |

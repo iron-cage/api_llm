@@ -15,6 +15,7 @@ This table documents all entities in the docs/ directory, ensuring Complete Enti
 | Path | Purpose |
 |------|---------|
 | `readme.md` | Master documentation file with navigation and Complete Entity Coverage |
+| `entities.md` | Module index — all doc entity types and instances |
 | `invariant/` | Invariant constraint collection — non-negotiable behavioral constraints |
 | `feature/` | Feature specification collection — optional feature behavior specs |
 | `api/` | API doc entity — comprehensive API coverage, endpoints, test statistics |

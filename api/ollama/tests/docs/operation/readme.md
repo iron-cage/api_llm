@@ -6,4 +6,4 @@ Test specifications for operation doc entity instances.
 
 | File | Source | Status |
 |------|--------|--------|
-| `01_secret_loading.md` | `docs/operation/001_secret_loading.md` | ⏳ |
+| `01_secret_loading.md` | `docs/operation/001_secret_loading.md` | ✅ |

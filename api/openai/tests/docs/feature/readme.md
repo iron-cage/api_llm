@@ -11,4 +11,4 @@
 
 | ID | Name | Purpose | Status |
 |----|------|---------|--------|
-| 01 | [`01_enterprise_reliability.md`](01_enterprise_reliability.md) | Verify enterprise feature isolation, activation, and no-auto-behavior policy -- FT-01..FT-04 (4 scenarios) | ⏳ |
+| 01 | [`01_enterprise_reliability.md`](01_enterprise_reliability.md) | Verify enterprise feature isolation, activation, and no-auto-behavior policy -- FT-01..FT-04 (4 scenarios) | ✅ |

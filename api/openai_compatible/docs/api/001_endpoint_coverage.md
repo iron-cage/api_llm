@@ -13,13 +13,13 @@ The `api_openai_compatible` crate provides a provider-neutral HTTP layer impleme
 
 ### Operations
 
-| Method | Signature | Purpose |
-|--------|-----------|---------|
-| `Client::build` | `fn build(env: E) -> Result<Self>` | Construct HTTP client from environment; configures timeout and connection pooling |
-| `Client::post` | `async fn post<I,O>(&self, path, body) -> Result<O>` | POST JSON body to `base_url + path`, deserialize response |
-| `Client::get` | `async fn get<O>(&self, path) -> Result<O>` | GET from `base_url + path`, deserialize response |
-| `SyncClient::new` | `fn new(client: Client<E>) -> Result<Self>` | Wrap async client in a dedicated tokio runtime (feature `sync_api`) |
-| `SyncClient::post` | `fn post<I,O>(&self, path, body) -> Result<O>` | Blocking POST via the owned runtime |
+| Operation | Purpose | Feature Gate |
+|-----------|---------|--------------|
+| `Client::build` | Construct HTTP client from environment; configures timeout and connection pooling | `enabled` |
+| `Client::post` | POST JSON body to `base_url + path`, deserialize response | `enabled` |
+| `Client::get` | GET from `base_url + path`, deserialize response | `enabled` |
+| `SyncClient::new` | Wrap async client in a dedicated owned runtime | `sync_api` |
+| `SyncClient::post` | Blocking POST via the owned runtime | `sync_api` |
 
 ### Wire Type Inventory
 
@@ -31,7 +31,7 @@ The `api_openai_compatible` crate provides a provider-neutral HTTP layer impleme
 | `Message` | `components/chat` | Conversation turn: `role`, `content`, `tool_calls`, `tool_call_id` |
 | `Role` | `components/chat` | Enum: `System`, `User`, `Assistant`, `Tool` |
 | `Tool` | `components/chat` | Function tool definition wrapping a `Function` struct |
-| `Function` | `components/chat` | Tool function: `name`, `description`, `parameters` (as `serde_json::Value`) |
+| `Function` | `components/chat` | Tool function: `name`, `description`, `parameters` (arbitrary JSON object) |
 | `ToolCall` | `components/chat` | Response-side tool invocation: `id`, `tool_type`, `function: FunctionCall` |
 | `FunctionCall` | `components/chat` | Invocation payload: `name`, `arguments` (raw JSON string) |
 | `Usage` | `components/chat` | Token counts: `prompt_tokens`, `completion_tokens`, `total_tokens` |
@@ -41,11 +41,11 @@ The `api_openai_compatible` crate provides a provider-neutral HTTP layer impleme
 
 ### Environment Trait
 
-The `OpenAiCompatEnvironment` trait defines the configuration contract. Implementors supply `api_key()`, `base_url()`, and `timeout()`; `headers()` has a default implementation producing `Authorization: Bearer <key>` and `Content-Type: application/json`. The trait requires `Send + Sync + 'static` for use across async task boundaries. `OpenAiCompatEnvironmentImpl` is the built-in implementor with `with_base_url()` and `with_timeout()` builder methods.
+The `OpenAiCompatEnvironment` trait defines the configuration contract. Implementors supply `api_key()`, `base_url()`, and `timeout()`; `headers()` has a default implementation producing `Authorization: Bearer <key>` and `Content-Type: application/json`. The trait requires implementations to be thread-safe and sendable across async task boundaries. `OpenAiCompatEnvironmentImpl` is the built-in implementor with `with_base_url()` and `with_timeout()` builder methods.
 
 ### Error Handling
 
-All methods return `Result<T>` where the error is `error_tools::untyped::Error`. The typed error enum `OpenAiCompatError` has seven variants: `Api` (non-2xx response body), `Http` (transport failure), `Network` (DNS/TCP), `Timeout` (exceeded configured duration), `Deserialise` (response parsing), `InvalidApiKey` (empty, whitespace-only, or non-ASCII key), `Environment` (misconfiguration). Automatic `From` conversions exist for `reqwest::Error`, `serde_json::Error`, and `reqwest::header::InvalidHeaderValue`.
+All methods return a `Result` type. The error type `OpenAiCompatError` has seven variants: `Api` (non-2xx response body), `Http` (transport failure), `Network` (DNS/TCP), `Timeout` (exceeded configured duration), `Deserialise` (response parsing), `InvalidApiKey` (empty, whitespace-only, or non-ASCII key), `Environment` (misconfiguration). Automatic error conversions exist for HTTP transport errors, JSON serialization errors, and invalid header values.
 
 ### Compatibility Guarantees
 

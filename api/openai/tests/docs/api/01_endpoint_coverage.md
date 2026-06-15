@@ -6,10 +6,10 @@
 
 | ID | Name | Category | Status |
 |----|------|----------|--------|
-| AP-01 | Chat completion accepts typed request and returns typed response | chat-method-signature | ⏳ |
-| AP-02 | Model listing returns typed response with non-empty models array | models-endpoint | ⏳ |
-| AP-03 | Feature-gated endpoint not accessible when feature disabled | feature-gate-enforcement | ⏳ |
-| AP-04 | All API methods return error_tools::Error on authentication failure | error-contract | ⏳ |
+| AP-01 | Chat completion accepts typed request and returns typed response | chat-method-signature | ✅ |
+| AP-02 | Model listing returns typed response with non-empty models array | models-endpoint | ✅ |
+| AP-03 | Feature-gated endpoint not accessible when feature disabled | feature-gate-enforcement | ✅ |
+| AP-04 | All API methods return error_tools::Error on authentication failure | error-contract | ✅ |
 
 ---
 

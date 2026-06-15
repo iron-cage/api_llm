@@ -6,10 +6,10 @@
 
 | ID | Name | Category | Status |
 |----|------|----------|--------|
-| OP-01 | Cargo.toml version field parses as valid semver triple | version-format | ⏳ |
-| OP-02 | Version string has exactly three numeric components | version-components | ⏳ |
-| OP-03 | Crate compiles with zero warnings at RUSTFLAGS="-D warnings" | clean-compilation | ⏳ |
-| OP-04 | All public types have documentation | doc-coverage | ⏳ |
+| OP-01 | Cargo.toml version field parses as valid semver triple | version-format | ✅ |
+| OP-02 | Version string has exactly three numeric components | version-components | ✅ |
+| OP-03 | Crate compiles with zero warnings at RUSTFLAGS="-D warnings" | clean-compilation | ✅ |
+| OP-04 | All public types have documentation | doc-coverage | ✅ |
 
 ---
 

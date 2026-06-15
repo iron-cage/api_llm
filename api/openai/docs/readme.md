@@ -16,6 +16,7 @@ This documentation directory contains:
 | Path | Purpose |
 |------|---------|
 | `readme.md` | Master documentation file with collection inventory and navigation |
+| `entities.md` | Module index — all doc entity types and instances |
 | `invariant/` | Non-negotiable behavioral constraints governing all implementation decisions |
 | `api/` | OpenAI API endpoint coverage and feature-gating policy |
 | `feature/` | Optional enterprise reliability features and feature-gate policy |

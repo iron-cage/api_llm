@@ -11,4 +11,4 @@
 
 | ID | Name | Purpose | Status |
 |----|------|---------|--------|
-| 01 | [`01_endpoint_coverage.md`](01_endpoint_coverage.md) | Verify endpoint method signatures, feature gating, and error contract -- AP-01..AP-04 (4 scenarios) | ⏳ |
+| 01 | [`01_endpoint_coverage.md`](01_endpoint_coverage.md) | Verify endpoint method signatures, feature gating, and error contract -- AP-01..AP-04 (4 scenarios) | ✅ |

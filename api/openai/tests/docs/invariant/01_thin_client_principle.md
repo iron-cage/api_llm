@@ -6,9 +6,9 @@
 
 | ID | Name | Category | Status |
 |----|------|----------|--------|
-| IN-01 | Optional fields absent from serialized JSON when None | no-implicit-defaults | ⏳ |
-| IN-02 | Enterprise feature module not compiled without its feature flag | feature-gate-isolation | ⏳ |
-| IN-03 | No automatic request headers beyond what environment provides | no-implicit-mutation | ⏳ |
+| IN-01 | Optional fields absent from serialized JSON when None | no-implicit-defaults | ✅ |
+| IN-02 | Enterprise feature module not compiled without its feature flag | feature-gate-isolation | ✅ |
+| IN-03 | No automatic request headers beyond what environment provides | no-implicit-mutation | ✅ |
 
 ---
 

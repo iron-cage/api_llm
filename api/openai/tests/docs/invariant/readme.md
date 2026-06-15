@@ -11,5 +11,5 @@
 
 | ID | Name | Purpose | Status |
 |----|------|---------|--------|
-| 01 | [`01_thin_client_principle.md`](01_thin_client_principle.md) | Verify no automatic or implicit client behaviors exist -- IN-01..IN-03 (3 scenarios) | ⏳ |
-| 02 | [`02_testing_standards.md`](02_testing_standards.md) | Verify no-mock mandate and loud-failure requirement -- IN-01..IN-02 (2 scenarios) | ⏳ |
+| 01 | [`01_thin_client_principle.md`](01_thin_client_principle.md) | Verify no automatic or implicit client behaviors exist -- IN-01..IN-03 (3 scenarios) | ✅ |
+| 02 | [`02_testing_standards.md`](02_testing_standards.md) | Verify no-mock mandate and loud-failure requirement -- IN-01..IN-02 (2 scenarios) | ✅ |

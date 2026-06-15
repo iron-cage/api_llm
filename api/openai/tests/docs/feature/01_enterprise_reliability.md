@@ -6,10 +6,10 @@
 
 | ID | Name | Category | Status |
 |----|------|----------|--------|
-| FT-01 | Client with full features compiles without error | full-compilation | ⏳ |
-| FT-02 | Single enterprise feature does not activate others | feature-isolation | ⏳ |
-| FT-03 | Enterprise module absent from binary when flag disabled | compile-gate | ⏳ |
-| FT-04 | Baseline behavior identical with and without enterprise features | no-auto-activation | ⏳ |
+| FT-01 | Client with full features compiles without error | full-compilation | ✅ |
+| FT-02 | Single enterprise feature does not activate others | feature-isolation | ✅ |
+| FT-03 | Enterprise module absent from binary when flag disabled | compile-gate | ✅ |
+| FT-04 | Baseline behavior identical with and without enterprise features | no-auto-activation | ✅ |
 
 ---
 

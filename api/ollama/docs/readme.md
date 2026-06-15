@@ -16,6 +16,7 @@ The `docs/` directory serves as the central location for:
 | Entity | Responsibility | Reason |
 |--------|---------------|--------|
 | `readme.md` | Document docs/ organization | Directory structure, collection overview, navigation |
+| `entities.md` | Module index — all doc entity types and instances | |
 | `invariant/` | Non-negotiable behavioral constraints | Thin client principle, testing standards |
 | `api/` | Ollama API endpoint coverage | Endpoint table, feature-gating policy |
 | `feature/` | Optional feature behaviors | Enterprise reliability feature table |

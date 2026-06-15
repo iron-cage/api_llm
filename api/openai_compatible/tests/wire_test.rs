@@ -19,9 +19,11 @@
 //! | chat_completion_response_deserializes_from_fixture | Response | canonical fixture |
 //! | response_tolerates_extra_unknown_json_fields | Response | deny_unknown_fields absent |
 //! | response_with_multiple_choices_deserializes | Response | n > 1 choices |
-//! | role_round_trips_through_serde | Role | all 4 variants |
+//! | role_round_trips_through_serde | Role | standard 4 variants serialise/deserialise correctly |
+//! | role_other_serialises_to_lowercase_other_string | Role | Role::Other → "other"; round-trip back to Role::Other |
 //! | role_unknown_variant_deserialises_to_other | Role | unknown wire values → Role::Other |
 //! | response_with_unknown_role_in_choice_deserialises | Response | unknown role in choice doesn't break response |
+//! | streaming_delta_unknown_role_deserialises_to_other | Streaming | unknown role in Delta → Role::Other (streaming forward compat) |
 //! | streaming_chunk_deserializes_from_fixture | Streaming | ChatCompletionChunk fixture |
 //! | streaming_delta_none_fields_omitted_from_json | Streaming | Delta{} → "{}" |
 //! | streaming_delta_selective_serialization_omits_only_none_fields | Streaming | Delta with Some content omits None fields |
@@ -543,6 +545,38 @@ fn role_round_trips_through_serde()
     );
   }
 }
+
+/// `Role::Other` must serialise to the literal string `"other"` and round-trip back.
+///
+/// `#[serde(other)]` governs deserialization catch-all behaviour only; serialization
+/// follows the normal `#[serde(rename_all = "lowercase")]` rule, producing `"other"`.
+/// This test pins that contract so callers have a defined, tested wire value if they
+/// ever construct or log a `Role::Other` value (even though the doc discourages it
+/// for outbound API requests).
+#[ test ]
+fn role_other_serialises_to_lowercase_other_string()
+{
+  let serialised = serde_json::to_string( &Role::Other )
+    .expect( "Role::Other must be serialisable" );
+
+  assert_eq!(
+    serialised,
+    "\"other\"",
+    "Role::Other must serialise to the JSON string \"other\"",
+  );
+
+  // Round-trip: "other" → deserialises back to Role::Other (not a parse error).
+  let rt : Role = serde_json::from_str( &serialised )
+    .expect( "\"other\" must deserialise back to Role::Other" );
+
+  assert_eq!(
+    rt,
+    Role::Other,
+    "\"other\" must round-trip to Role::Other",
+  );
+}
+
+// ------------------------------------------------------------------ //
 
 /// Unknown role strings from the wire must deserialise to `Role::Other` instead
 /// of causing a hard failure.
@@ -1267,4 +1301,47 @@ fn streaming_chunk_round_trips_through_serde()
     .expect( "ChatCompletionChunk must be deserializable from its own JSON" );
 
   assert_eq!( restored, original, "ChatCompletionChunk must survive serde round-trip unchanged" );
+}
+
+// ------------------------------------------------------------------ //
+
+/// An unknown role in a streaming `Delta` must deserialise to `Role::Other`
+/// rather than causing the entire chunk to fail.
+///
+/// `Delta.role` is `Option<Role>` and is present only in the first chunk of
+/// a streaming response. If a provider includes a non-standard role string
+/// in that first chunk (e.g. `"developer"`), the forward-compatible catch-all
+/// must absorb it instead of producing a hard deserialisation error that
+/// silently drops the entire streamed response.
+#[ cfg( feature = "streaming" ) ]
+#[ test ]
+fn streaming_delta_unknown_role_deserialises_to_other()
+{
+  use api_openai_compatible::ChatCompletionChunk;
+
+  let fixture = r#"{
+    "id": "chatcmpl-stream-unknown-role",
+    "object": "chat.completion.chunk",
+    "created": 1717000001,
+    "model": "gpt-4o",
+    "choices": [{
+      "index": 0,
+      "delta": { "role": "developer", "content": "Hi" },
+      "finish_reason": null
+    }]
+  }"#;
+
+  let chunk : ChatCompletionChunk = serde_json::from_str( fixture )
+    .expect( "streaming chunk with unknown role must deserialise" );
+
+  assert_eq!(
+    chunk.choices[ 0 ].delta.role,
+    Some( Role::Other ),
+    "unknown role in Delta must map to Role::Other, not cause parse failure",
+  );
+  assert_eq!(
+    chunk.choices[ 0 ].delta.content.as_deref(),
+    Some( "Hi" ),
+    "content must remain accessible when role is unknown",
+  );
 }

@@ -7,39 +7,43 @@
 - **In Scope**: Request serialization, response deserialization, optional field omission rules, tool-calling message shapes.
 - **Out of Scope**: SSE streaming response format (see `docs/feature/001_streaming.md`), provider-specific extensions, enterprise retry logic.
 
-### Endpoint
+### Abstract
+
+The chat completions endpoint accepts a serialized request body — specifying the model, conversation history, and optional generation parameters — and returns a completion containing the generated message, token usage, and finish reason. Tool calling is supported: callers supply function definitions in the request and the response may include tool invocation payloads to execute.
+
+### Operations
 
 | Field | Value |
 |-------|-------|
-| Method | `POST` |
+| Method | POST |
 | Path | `chat/completions` (appended to `base_url` from environment) |
 | Content-Type | `application/json` |
-| Authorization | `Bearer <api_key>` |
+| Authorization | Bearer token from environment |
 
 ### Request Wire Type: `ChatCompletionRequest`
 
-All `Option<_>` fields are omitted from the serialized JSON when `None` (`#[serde(skip_serializing_if = "Option::is_none")]`).
+Optional fields are omitted from the serialized JSON when absent.
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
-| `model` | `String` | Yes | Provider model identifier, e.g. `"gpt-4o"`, `"grok-2-1212"` |
-| `messages` | `Vec<Message>` | Yes | Ordered conversation history |
-| `temperature` | `Option<f32>` | No | Sampling temperature `[0.0, 2.0]` |
-| `max_tokens` | `Option<u32>` | No | Maximum tokens to generate |
-| `top_p` | `Option<f32>` | No | Nucleus sampling threshold `[0.0, 1.0]` |
-| `frequency_penalty` | `Option<f32>` | No | Frequency penalty `[0.0, 2.0]` |
-| `presence_penalty` | `Option<f32>` | No | Presence penalty `[0.0, 2.0]` |
-| `stream` | `Option<bool>` | No | `true` activates SSE streaming (requires `streaming` feature) |
-| `tools` | `Option<Vec<Tool>>` | No | Function tool definitions for tool calling |
+| `model` | string | Yes | Provider model identifier, e.g. `"gpt-4o"`, `"grok-2-1212"` |
+| `messages` | message list | Yes | Ordered conversation history |
+| `temperature` | float, optional | No | Sampling temperature `[0.0, 2.0]` |
+| `max_tokens` | integer, optional | No | Maximum tokens to generate |
+| `top_p` | float, optional | No | Nucleus sampling threshold `[0.0, 1.0]` |
+| `frequency_penalty` | float, optional | No | Frequency penalty `[0.0, 2.0]` |
+| `presence_penalty` | float, optional | No | Presence penalty `[0.0, 2.0]` |
+| `stream` | boolean, optional | No | `true` activates SSE streaming (requires `streaming` feature) |
+| `tools` | tool list, optional | No | Function tool definitions for tool calling |
 
 ### Message Wire Type: `Message`
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
-| `role` | `Role` | Yes | `system`, `user`, `assistant`, or `tool` |
-| `content` | `Option<String>` | No | Text content; omitted when `None` |
-| `tool_calls` | `Option<Vec<ToolCall>>` | No | Assistant role only; omitted when `None` |
-| `tool_call_id` | `Option<String>` | No | Tool role only; correlates to `ToolCall::id` |
+| `role` | role enum | Yes | `system`, `user`, `assistant`, or `tool` |
+| `content` | string, optional | No | Text content; absent when not set |
+| `tool_calls` | tool call list, optional | No | Assistant role only; absent when not set |
+| `tool_call_id` | string, optional | No | Tool role only; correlates to the originating tool call |
 
 ### Role Serialization
 
@@ -54,31 +58,37 @@ All `Option<_>` fields are omitted from the serialized JSON when `None` (`#[serd
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `id` | `String` | Opaque completion identifier, e.g. `"chatcmpl-abc123"` |
-| `object` | `String` | Always `"chat.completion"` |
-| `created` | `u64` | Unix timestamp |
-| `model` | `String` | Model that generated the completion |
-| `choices` | `Vec<Choice>` | One per `n` (default: 1) |
-| `usage` | `Usage` | Token usage: `prompt_tokens`, `completion_tokens`, `total_tokens` |
+| `id` | string | Opaque completion identifier, e.g. `"chatcmpl-abc123"` |
+| `object` | string | Always `"chat.completion"` |
+| `created` | integer | Unix timestamp |
+| `model` | string | Model that generated the completion |
+| `choices` | choice list | One per `n` (default: 1) |
+| `usage` | usage object | Token usage: `prompt_tokens`, `completion_tokens`, `total_tokens` |
 
 ### Choice Wire Type: `Choice`
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `index` | `u32` | Zero-based |
-| `message` | `Message` | The generated message |
-| `finish_reason` | `Option<String>` | `"stop"`, `"length"`, `"tool_calls"`, or `None` |
+| `index` | integer | Zero-based |
+| `message` | message object | The generated message |
+| `finish_reason` | string, optional | `"stop"`, `"length"`, `"tool_calls"`, or absent when incomplete |
 
 ### Tool Calling
 
-Tool definitions use `Tool::function(name, description, parameters)` convenience constructor. The `function` field carries `Function { name, description, parameters: serde_json::Value }`. Tool invocations in responses appear as `ToolCall { id, tool_type: "function", function: FunctionCall { name, arguments: String } }` where `arguments` is a JSON-encoded string (not a parsed `Value`).
+Tool definitions include a name, description, and parameter schema (arbitrary JSON object). Tool invocations in responses include a tool call ID, function name, and a JSON-encoded arguments string. Callers must re-parse the arguments string to obtain structured parameters.
 
 ### Behavioral Constraints
 
-- All optional request fields absent from the JSON when `None` — the server uses its own defaults.
-- `ChatCompletionRequest` derives `Former` for ergonomic builder-pattern construction.
-- `Tool` and `Function` derive `Former` for builder-pattern construction.
-- The `arguments` field in `FunctionCall` is a raw JSON string, not a `serde_json::Value` — callers must re-parse it.
+- Optional request fields are absent from the JSON when not set — the server uses its own defaults.
+- The `arguments` field in a tool invocation is a raw JSON string — callers must re-parse it.
+
+### Error Handling
+
+Non-2xx HTTP responses produce an `Api` error containing the response body. Network failures produce `Network` or `Timeout` errors. Malformed response JSON produces `Deserialise`. All error variants are defined in `OpenAiCompatError` (see `docs/api/001_endpoint_coverage.md`).
+
+### Compatibility Guarantees
+
+Request and response shapes follow the OpenAI chat completions schema. New optional request fields are additive changes. Changes to required fields or response structure require a major version bump.
 
 ### Sources
 

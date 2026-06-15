@@ -6,9 +6,9 @@
 
 | ID | Name | Category | Status |
 |----|------|----------|--------|
-| PT-01 | Chat completion is async and accepts typed request struct | typed-create | ⏳ |
-| PT-02 | Method return type is Result with typed response | typed-result | ⏳ |
-| PT-03 | Streaming method returns receiver of typed events | typed-streaming | ⏳ |
+| PT-01 | Chat completion is async and accepts typed request struct | typed-create | ✅ |
+| PT-02 | Method return type is Result with typed response | typed-result | ✅ |
+| PT-03 | Streaming method returns receiver of typed events | typed-streaming | ✅ |
 
 ---
 

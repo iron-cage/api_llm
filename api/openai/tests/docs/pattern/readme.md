@@ -11,4 +11,4 @@
 
 | ID | Name | Purpose | Status |
 |----|------|---------|--------|
-| 01 | [`01_async_patterns.md`](01_async_patterns.md) | Verify typed async method signatures and streaming channel pattern -- PT-01..PT-03 (3 scenarios) | ⏳ |
+| 01 | [`01_async_patterns.md`](01_async_patterns.md) | Verify typed async method signatures and streaming channel pattern -- PT-01..PT-03 (3 scenarios) | ✅ |

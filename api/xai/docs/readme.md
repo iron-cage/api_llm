@@ -9,6 +9,7 @@ This directory contains technical documentation for the `api_xai` crate, organiz
 | Path | Purpose |
 |------|---------|
 | `readme.md` | Master documentation index with navigation and Complete Entity Coverage |
+| `entities.md` | Module index — all doc entity types and instances |
 | `invariant/` | Non-negotiable behavioral constraints — thin client principle, testing standards |
 | `api/` | API contracts and endpoint coverage requirements |
 | `feature/` | Optional feature behavior specifications — enterprise reliability modules |
