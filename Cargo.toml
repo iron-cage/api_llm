@@ -103,7 +103,7 @@ path = "api/claude"
 default-features = false
 
 [workspace.dependencies.api_ollama]
-version = "=0.4.1"
+version = "=0.5.1"
 path = "api/ollama"
 default-features = false
 
