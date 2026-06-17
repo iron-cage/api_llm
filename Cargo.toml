@@ -98,7 +98,7 @@ path = "api/openai"
 default-features = false
 
 [workspace.dependencies.api_claude]
-version = "=0.6.1"
+version = "=0.7.1"
 path = "api/claude"
 default-features = false
 
