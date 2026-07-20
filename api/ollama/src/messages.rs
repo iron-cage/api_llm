@@ -6,8 +6,10 @@
 #[ cfg( feature = "enabled" ) ]
 mod private
 {
-  use serde::{ Serialize, Deserialize };
+  use serde::{Serialize, Deserialize, Serializer};
   use core::hash::{ Hash, Hasher };
+  use serde::ser::SerializeStruct;
+  use serde_json::json;
 
   /// Message in chat conversation
   #[ derive( Debug, Clone, Serialize, Deserialize ) ]
@@ -60,7 +62,7 @@ mod private
 
   /// Tool definition for function calling
   #[ cfg( feature = "tool_calling" ) ]
-  #[ derive( Debug, Clone, Serialize, Deserialize ) ]
+  #[ derive( Debug, Clone, Deserialize ) ]
   pub struct ToolDefinition
   {
     /// Name of the tool/function
@@ -69,6 +71,22 @@ mod private
     pub description : String,
     /// JSON schema defining the function parameters
     pub parameters : serde_json::Value,
+  }
+
+  #[ cfg( feature = "tool_calling" ) ]
+  impl Serialize for ToolDefinition
+  {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer
+    {
+      let mut st = serializer.serialize_struct("ToolDefinition", 2)?;
+      st.serialize_field("type", "function")?;
+      st.serialize_field("function", &json!({
+        "name": self.name.clone(),
+        "description": self.description.clone(),
+        "parameters": self.parameters.clone()
+      }))?;
+      st.end()
+    }
   }
 
   #[ cfg( all( feature = "tool_calling", feature = "request_caching" ) ) ]
