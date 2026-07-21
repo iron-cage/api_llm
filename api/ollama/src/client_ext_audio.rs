@@ -390,6 +390,7 @@ impl OllamaClient
         }
       ],
       stream : None,
+      think : None,
       options : None,
       #[ cfg( feature = "tool_calling" ) ]
       tools : None,
