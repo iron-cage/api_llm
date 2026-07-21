@@ -6,11 +6,35 @@
 #[ cfg( feature = "enabled" ) ]
 mod private
 {
-  use serde::{ Serialize, Deserialize };
+  use serde::{Serialize, Deserialize, Serializer};
   use core::hash::{ Hash, Hasher };
   use crate::messages::{ ChatMessage, ToolDefinition, ToolMessage };
   #[ cfg( not( feature = "vision_support" ) ) ]
   use crate::messages::Message;
+
+  /// LLM think level option variants
+  #[ derive( Debug, Clone ) ]
+  pub enum ThinkLevel
+  {
+    /// Thinking is disabled
+    None,
+    /// Medium level of thinking
+    Medium,
+    /// Highest level of thinking
+    High,
+  }
+
+  impl Serialize for ThinkLevel {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer
+    {
+      match self
+      {
+        ThinkLevel::None => serializer.serialize_str("none"),
+        ThinkLevel::Medium => serializer.serialize_str("medium"),
+        ThinkLevel::High => serializer.serialize_str("high"),
+      }
+    }
+  }
 
   /// Chat completion request
   #[ derive( Debug, Clone, Serialize ) ]
@@ -27,6 +51,9 @@ mod private
     #[ serde( skip_serializing_if = "Option::is_none" ) ]
     /// Whether to stream the response
     pub stream : Option< bool >,
+    #[ serde( skip_serializing_if = "Option::is_none" ) ]
+    /// Model reasoning level
+    pub think : Option< ThinkLevel >,
     #[ serde( skip_serializing_if = "Option::is_none" ) ]
     /// Additional model parameters
     pub options : Option< serde_json::Value >,
@@ -116,5 +143,6 @@ crate ::mod_interface!
   {
     ChatRequest,
     ChatResponse,
+    ThinkLevel
   };
 }

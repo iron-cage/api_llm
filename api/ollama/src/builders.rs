@@ -6,6 +6,7 @@
 mod private
 {
   use crate::{ OllamaResult, ChatRequest, GenerateRequest };
+  use crate::chat::ThinkLevel;
   #[ cfg( feature = "vision_support" ) ]
   use crate::{ ChatMessage, MessageRole };
   #[ cfg( feature = "embeddings" ) ]
@@ -24,6 +25,7 @@ mod private
     #[ cfg( not( feature = "vision_support" ) ) ]
     messages : Vec< Message >,
     stream : Option< bool >,
+    think : Option< ThinkLevel >,
     options : Option< serde_json::Value >,
   }
 
@@ -63,6 +65,7 @@ mod private
         model : None,
         messages : Vec::new(),
         stream : Some( false ), // Default to non-streaming for compatibility
+        think: None,
         options : None,
       }
     }
@@ -254,6 +257,7 @@ mod private
         model,
         messages : self.messages,
         stream : self.stream,
+        think : self.think,
         options : self.options,
         #[ cfg( feature = "tool_calling" ) ]
         tools : None,

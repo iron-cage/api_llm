@@ -162,6 +162,7 @@ mod private
         model : self.model,
         messages,
         stream : None,
+        think : None,
         options : Some( options ),
         #[ cfg( feature = "tool_calling" ) ]
         tools : None,
