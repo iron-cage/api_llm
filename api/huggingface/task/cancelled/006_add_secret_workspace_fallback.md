@@ -6,7 +6,7 @@
 - **Actor:** null
 - **Claimed At:** null
 - **Reopen Count:** 0
-- **State:** ❌ (Cancelled)
+- **State:** 🚫 (Cancelled)
 - **Priority:** 2
 - **Closes:** null
 - **Blocked Reason:** null
