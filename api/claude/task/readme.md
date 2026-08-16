@@ -14,7 +14,7 @@ workspace: api_llm
 
 ## Tasks Index
 
-| ID | Title | State | Priority | Advisability | Dir |
+| ID | Task | State | Priority | Advisability | Dir |
 |----|-------|-------|----------|-------------|-----|
 | 001 | [Implement doc test specs](completed/001_implement_doc_test_specs.md) | ✅ | 2 | 180 | `tests/` |
 | 002 | [Implement operation test specs](completed/002_implement_operation_test_specs.md) | ✅ | 2 | 180 | `tests/` |
