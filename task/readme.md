@@ -13,7 +13,7 @@ workspace: api_llm
 
 ## Tasks Index
 
-| ID | Title | State | Priority | Dir |
+| ID | Task | State | Priority | Dir |
 |----|-------|-------|----------|-----|
 | 001 | [Create Test Surface for Normalized Doc Instances](unverified/001_create_test_surface_for_normalized_docs.md) | ❓ | 3 | `api/{openai,ollama,xai}/tests/docs/` |
 
